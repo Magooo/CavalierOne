@@ -79,7 +79,6 @@ fireflies_client = FirefliesClient()
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    brand = get_company_info()
     if not AUTH_ENABLED:
         return redirect(url_for('index'))
     
@@ -103,9 +102,9 @@ def login():
             error_msg = str(e)
             if "Invalid login credentials" in error_msg:
                 error_msg = "Invalid email or password."
-            return render_template('login.html', error=error_msg, brand=brand)
+            return render_template('login.html', error=error_msg)
             
-    return render_template('login.html', brand=brand)
+    return render_template('login.html')
 
 @app.route('/logout')
 def logout():
@@ -117,7 +116,6 @@ def logout():
 def admin_panel():
     error = None
     success = None
-    brand = get_company_info()
     if request.method == 'POST':
         action = request.form.get('action', 'update_role') # Default for backward compatibility
         
@@ -155,7 +153,7 @@ def admin_panel():
     except Exception as e:
         error = f"Fetch failed: {e}"
 
-    return render_template('admin.html', users=users, error=error, success=success, brand=brand)
+    return render_template('admin.html', users=users, error=error, success=success)
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
