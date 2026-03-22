@@ -20,6 +20,17 @@ from marketing import SocialMediaPost
 from utils.notebook_client import NotebookLMClient
 from utils.fireflies_client import FirefliesClient
 
+# Initialize Supabase
+from supabase import create_client, Client
+import tempfile
+import uuid
+
+supabase_url = os.environ.get("SUPABASE_URL")
+supabase_key = os.environ.get("SUPABASE_KEY")
+supabase: Client = None
+if supabase_url and supabase_key:
+    supabase = create_client(supabase_url, supabase_key)
+
 # Initialize Clients
 notebook_client = NotebookLMClient()
 fireflies_client = FirefliesClient()
@@ -130,14 +141,28 @@ Tone: {tone}
             # Handle File Upload
             image_file = request.files.get('post_image')
             image_path = None
+            display_image = None
             if image_file and image_file.filename:
-                # Save to resources/uploads (create dir if needed)
-                upload_dir = os.path.join("resources", "uploads")
-                os.makedirs(upload_dir, exist_ok=True)
-                image_path = os.path.join(upload_dir, image_file.filename)
-                image_file.save(image_path)
-                print(f"Image saved to: {image_path}")
-                # TODO: Pass image path to AI Vision model in future update
+                # Upload directly to Supabase Storage
+                if supabase:
+                    file_ext = os.path.splitext(image_file.filename)[1]
+                    unique_filename = f"{uuid.uuid4().hex}{file_ext}"
+                    filepath = f"public/{unique_filename}"
+                    
+                    # Read the binary data from Flask FileStorage object
+                    file_bytes = image_file.read()
+                    
+                    supabase.storage.from_("cavalierone_uploads").upload(
+                        filepath, file_bytes, {"content-type": image_file.content_type}
+                    )
+                    
+                    # Get public URL
+                    public_url = supabase.storage.from_("cavalierone_uploads").get_public_url(filepath)
+                    image_path = public_url
+                    display_image = public_url
+                    print(f"Image uploaded to Supabase: {public_url}")
+                else:
+                    print("Supabase not configured, skipping image upload.")
             
             post = SocialMediaPost(
                 platform=platform,
@@ -149,11 +174,6 @@ Tone: {tone}
             
             # Convert Markdown to HTML for display
             html_content = markdown.markdown(final_prompt)
-            
-            # Pass relative path for display if image exists
-            display_image = None
-            if image_path:
-                display_image = f"uploads/{os.path.basename(image_path)}"
             
             user_data = {
                 'media_type': f"Social Post ({platform})", 
@@ -606,7 +626,8 @@ def generate_pdf():
     home_name = data.get('home_name', 'Brochure').replace(' ', '_').replace('(', '').replace(')', '')
     filename = f"{home_name}_Brochure.pdf"
     
-    filepath = os.path.join(app.root_path, filename)
+    # Save to /tmp/ for serverless environments
+    filepath = os.path.join(tempfile.gettempdir(), filename)
     
     # Render the HTML content for PDF
     # We reuse the logic from preview_brochure to prep data, or just extract here
@@ -672,7 +693,22 @@ def generate_pdf():
         success = create_brochure_from_html(filepath, html_content)
         
         if success:
-            return send_file(filepath, as_attachment=True, download_name=filename)
+            if supabase:
+                # Upload PDF to Supabase
+                unique_pdf_name = f"{uuid.uuid4().hex}_{filename}"
+                with open(filepath, 'rb') as f:
+                    supabase.storage.from_("cavalierone_pdfs").upload(unique_pdf_name, f.read(), {"content-type": "application/pdf"})
+                pdf_url = supabase.storage.from_("cavalierone_pdfs").get_public_url(unique_pdf_name)
+                # Cleanup local file
+                try:
+                    os.remove(filepath)
+                except:
+                    pass
+                from flask import redirect
+                return redirect(pdf_url)
+            else:
+                # Fallback to local send_file if no storage setup
+                return send_file(filepath, as_attachment=True, download_name=filename)
         else:
             return "Error generating PDF content", 500
     except Exception as e:

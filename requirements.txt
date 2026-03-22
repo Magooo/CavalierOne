@@ -14,3 +14,4 @@ xhtml2pdf
 requests
 replicate
 mcp
+supabase
