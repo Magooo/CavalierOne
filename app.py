@@ -10,7 +10,7 @@ app = Flask(__name__)
 app.secret_key = os.environ.get('FLASK_SECRET', os.urandom(24))
 
 # --- Supabase Role-Based Auth Middleware ---
-AUTH_ENABLED = os.environ.get('SUPABASE_AUTH_ENABLED', 'false').lower() == 'true'
+AUTH_ENABLED = os.environ.get('SUPABASE_AUTH_ENABLED', 'true').lower() == 'true'
 
 def require_role(roles):
     """Decorator to restrict access based on user role."""
