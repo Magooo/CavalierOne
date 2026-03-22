@@ -39,6 +39,14 @@ def global_auth_check():
         return
     if 'user_id' not in session:
         return redirect(url_for('login', next=request.url))
+        
+    # App-Level Multi-Tenancy Firewall
+    # Blocks users who share the Supabase project but aren't assigned a CavalierOne role
+    if session.get('role', 'guest') == 'guest':
+        return Response(
+            "Access Denied: You are authenticated, but you do not have an active role in CavalierOne. "
+            "If you need access, ask your Admin to assign you a role in the CavalierOne Admin Panel.", 403
+        )
 # ---------------------------------------------
 
 # Configuration
