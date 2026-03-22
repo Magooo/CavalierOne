@@ -14,4 +14,4 @@ xhtml2pdf
 requests
 replicate
 supabase
-pycairo==1.26.0
+svglib==1.5.1
