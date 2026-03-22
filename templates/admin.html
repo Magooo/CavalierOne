@@ -134,6 +134,22 @@
         <div class="alert alert-success">{{ success }}</div>
         {% endif %}
 
+        <div class="add-user-card" style="background: #F8F9FA; padding: 20px; border-radius: 8px; margin-bottom: 30px; border: 1px solid #E0E4E8;">
+            <h3 style="font-family: 'Outfit', sans-serif; margin-bottom: 12px; font-size: 1.1rem; color: var(--primary);">Grant CavalierOne Access</h3>
+            <form method="POST" style="display: flex; gap: 15px; align-items: center;">
+                <input type="hidden" name="action" value="add_user">
+                <input type="email" name="new_email" placeholder="User Email Address..." required style="flex: 1; padding: 10px; border: 1px solid #DDD; border-radius: 6px;">
+                <select name="new_role" style="padding: 10px; border: 1px solid #DDD; border-radius: 6px;">
+                    <option value="guest">No Access (Guest)</option>
+                    <option value="sales">Sales Team</option>
+                    <option value="marketing">Marketing Team</option>
+                    <option value="admin">Administrator</option>
+                </select>
+                <button type="submit" style="padding: 10px 20px;">Add Employee</button>
+            </form>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 10px;">Note: They must have signed into CavalierOne at least once before granting them a role.</p>
+        </div>
+
         <table>
             <thead>
                 <tr>
@@ -151,6 +167,7 @@
                     </td>
                     <td>
                         <form class="form-update" method="POST">
+                            <input type="hidden" name="action" value="update_role">
                             <input type="hidden" name="user_id" value="{{ user.id }}">
                             <select name="role">
                                 <option value="guest" {% if user.role == 'guest' %}selected{% endif %}>No Access (Guest)</option>

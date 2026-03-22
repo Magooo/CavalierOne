@@ -119,17 +119,33 @@ def admin_panel():
     success = None
     brand = get_company_info()
     if request.method == 'POST':
-        user_id = request.form.get('user_id')
-        new_role = request.form.get('role')
-        if user_id and new_role:
-            try:
-                # Update role using the RPC securely
-                supabase.rpc('update_user_role', {"p_user_id": user_id, "p_role": new_role}).execute()
-                if user_id == session.get('user_id'):
-                    session['role'] = new_role # Update self session immediately
-                success = "Role updated successfully."
-            except Exception as e:
-                error = f"Update failed. Ensure you are an Admin. Details: {e}"
+        action = request.form.get('action', 'update_role') # Default for backward compatibility
+        
+        if action == 'update_role':
+            user_id = request.form.get('user_id')
+            new_role = request.form.get('role')
+            if user_id and new_role:
+                try:
+                    supabase.rpc('update_user_role', {"p_user_id": user_id, "p_role": new_role}).execute()
+                    if user_id == session.get('user_id'):
+                        session['role'] = new_role
+                    success = "Role updated successfully."
+                except Exception as e:
+                    error = f"Update failed. Ensure you are an Admin. Details: {e}"
+                    
+        elif action == 'add_user':
+            new_email = request.form.get('new_email').strip()
+            new_role = request.form.get('new_role')
+            if new_email and new_role:
+                try:
+                    supabase.rpc('grant_role_by_email', {"p_email": new_email, "p_role": new_role}).execute()
+                    success = f"Granted {new_role} access to {new_email} successfully!"
+                except Exception as e:
+                    error_msg = str(e)
+                    if 'User email not found' in error_msg:
+                        error = "Email not found! They must sign in or be invited via Supabase first."
+                    else:
+                        error = f"Failed to add user: {e}"
 
     users = []
     try:
