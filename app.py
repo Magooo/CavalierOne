@@ -104,6 +104,34 @@ def logout():
     session.clear()
     return redirect(url_for('login'))
 
+@app.route('/admin', methods=['GET', 'POST'])
+@require_role('admin')
+def admin_panel():
+    error = None
+    success = None
+    if request.method == 'POST':
+        user_id = request.form.get('user_id')
+        new_role = request.form.get('role')
+        if user_id and new_role:
+            try:
+                # Update role using the RPC securely
+                supabase.rpc('update_user_role', {"p_user_id": user_id, "p_role": new_role}).execute()
+                if user_id == session.get('user_id'):
+                    session['role'] = new_role # Update self session immediately
+                success = "Role updated successfully."
+            except Exception as e:
+                error = f"Update failed. Ensure you are an Admin. Details: {e}"
+
+    users = []
+    try:
+        # Fetch users + roles securely
+        res = supabase.rpc('get_users_with_roles').execute()
+        users = res.data
+    except Exception as e:
+        error = f"Fetch failed: {e}"
+
+    return render_template('admin.html', users=users, error=error, success=success)
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     # Load library data

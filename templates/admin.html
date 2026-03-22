@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CavalierOne - Admin Panel</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1C2B3A;
+            --primary-light: #2A3C50;
+            --accent: #E5A546;
+            --accent-hover: #F6B859;
+            --bg-color: #F8F9FA;
+            --text-main: #333333;
+            --text-muted: #666666;
+            --white: #FFFFFF;
+            --danger: #E74C3C;
+            --success: #2ECC71;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+        }
+
+        .header {
+            background-color: var(--primary);
+            padding: 20px 40px;
+            color: var(--white);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.8rem;
+            margin: 0;
+        }
+
+        .brand span { color: var(--accent); }
+
+        .nav-links a {
+            color: var(--white);
+            text-decoration: none;
+            margin-left: 20px;
+            font-weight: 500;
+        }
+
+        .nav-links a:hover { color: var(--accent); }
+
+        .container {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 30px;
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        h2 { font-family: 'Outfit', sans-serif; color: var(--primary); margin-bottom: 20px; }
+
+        .alert {
+            padding: 15px; border-radius: 8px; margin-bottom: 20px; font-weight: 500;
+        }
+        .alert-error { background-color: #FDF2F1; color: var(--danger); border: 1px solid #FADCDC; }
+        .alert-success { background-color: #EAFaf1; color: var(--success); border: 1px solid #D5F5E3; }
+
+        table {
+            width: 100%; border-collapse: collapse; margin-top: 10px;
+        }
+        th, td {
+            text-align: left; padding: 16px; border-bottom: 1px solid #EEEEEE;
+        }
+        th { background-color: #F8F9FA; font-weight: 600; color: var(--primary); }
+        
+        .role-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .role-admin { background-color: #E8EAF6; color: #3F51B5; } /* Admin Blue */
+        .role-marketing { background-color: #FFF3E0; color: #E67E22; } /* Marketing Orange */
+        .role-sales { background-color: #E8F5E9; color: #27AE60; } /* Sales Green */
+        .role-guest { background-color: #F2F3F4; color: #95A5A6; }
+
+        .form-update { display: flex; gap: 10px; }
+        
+        select {
+            padding: 8px 12px;
+            border: 1px solid #DDD;
+            border-radius: 6px;
+            font-family: inherit;
+        }
+
+        button {
+            padding: 8px 16px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        button:hover { background-color: var(--accent); }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="brand"><h1>Cavalier<span>One</span></h1></div>
+        <div class="nav-links">
+            <a href="/">App Dashboard</a>
+            <a href="/logout">Logout</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <h2>User Role Management</h2>
+        <p style="color: var(--text-muted); margin-bottom: 25px;">Assign access roles so teams only see modules permitted to their department.</p>
+
+        {% if error %}
+        <div class="alert alert-error">{{ error }}</div>
+        {% endif %}
+        {% if success %}
+        <div class="alert alert-success">{{ success }}</div>
+        {% endif %}
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Email</th>
+                    <th>Current Role</th>
+                    <th>Change Role</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ user.email }}</td>
+                    <td>
+                        <span class="role-badge role-{{ user.role }}">{{ user.role }}</span>
+                    </td>
+                    <td>
+                        <form class="form-update" method="POST">
+                            <input type="hidden" name="user_id" value="{{ user.id }}">
+                            <select name="role">
+                                <option value="guest" {% if user.role == 'guest' %}selected{% endif %}>No Access (Guest)</option>
+                                <option value="sales" {% if user.role == 'sales' %}selected{% endif %}>Sales Team</option>
+                                <option value="marketing" {% if user.role == 'marketing' %}selected{% endif %}>Marketing Team</option>
+                                <option value="admin" {% if user.role == 'admin' %}selected{% endif %}>Administrator</option>
+                            </select>
+                            <button type="submit">Update</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="3">No users found. Ensure you have invited users in Supabase Dashboard.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
