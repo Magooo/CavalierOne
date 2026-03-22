@@ -79,6 +79,7 @@ fireflies_client = FirefliesClient()
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    brand = get_company_info()
     if not AUTH_ENABLED:
         return redirect(url_for('index'))
     
@@ -99,13 +100,12 @@ def login():
                 
             return redirect(request.args.get('next') or url_for('index'))
         except Exception as e:
-            # The exception string often contains JSON from the GoTrue client
             error_msg = str(e)
             if "Invalid login credentials" in error_msg:
                 error_msg = "Invalid email or password."
-            return render_template('login.html', error=error_msg)
+            return render_template('login.html', error=error_msg, brand=brand)
             
-    return render_template('login.html')
+    return render_template('login.html', brand=brand)
 
 @app.route('/logout')
 def logout():
@@ -117,6 +117,7 @@ def logout():
 def admin_panel():
     error = None
     success = None
+    brand = get_company_info()
     if request.method == 'POST':
         user_id = request.form.get('user_id')
         new_role = request.form.get('role')
@@ -138,7 +139,7 @@ def admin_panel():
     except Exception as e:
         error = f"Fetch failed: {e}"
 
-    return render_template('admin.html', users=users, error=error, success=success)
+    return render_template('admin.html', users=users, error=error, success=success, brand=brand)
 
 @app.route('/', methods=['GET', 'POST'])
 def index():

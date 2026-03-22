@@ -8,14 +8,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #1C2B3A;
-            --primary-light: #2A3C50;
-            --accent: #E5A546;
-            --accent-hover: #F6B859;
-            --bg-color: #F8F9FA;
-            --text-main: #333333;
-            --text-muted: #666666;
-            --white: #FFFFFF;
+            --primary: {{ brand.theme.root_css['--primary'] | default('#1C2B3A') }};
+            --primary-light: {{ brand.theme.root_css['--primary'] | default('#2A3C50') }};
+            --accent: {{ brand.theme.root_css['--accent'] | default('#E5A546') }};
+            --accent-hover: {{ brand.theme.root_css['--accent'] | default('#F6B859') }};
+            --bg-color: {{ brand.theme.root_css['--bg'] | default('#eeedec') }};
+            --text-main: {{ brand.theme.root_css['--text'] | default('#000000') }};
+            --text-muted: {{ brand.theme.root_css['--secondary'] | default('#666666') }};
+            --white: {{ brand.theme.root_css['--card'] | default('#ffffff') }};
             --danger: #E74C3C;
         }
 
@@ -26,7 +26,7 @@
         }
 
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Avant Garde Gothic', 'Century Gothic', 'Inter', sans-serif;
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
             min-height: 100vh;
             display: flex;
