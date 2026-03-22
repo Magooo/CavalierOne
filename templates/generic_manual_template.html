@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Playfair+Display:wght@700&display=swap');
+
+        :root {
+            --primary: #000000;
+            --accent: #ad4b43;
+            /* Cavalier Red */
+            --bg: #ffffff;
+            --text-main: #333333;
+            --text-light: #666666;
+            --section-bg: #f8f8f8;
+        }
+
+        /* STRICT PRINT SETTINGS */
+        @media print {
+            @page {
+                size: A4;
+                margin: 15mm;
+            }
+
+            body {
+                margin: 0;
+                padding: 0;
+                background: white;
+            }
+
+            .page {
+                margin: 0 !important;
+                box-shadow: none !important;
+                border: none !important;
+                width: auto;
+                min-height: auto;
+                padding: 0;
+                overflow: visible;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            .footer {
+                display: none;
+                /* Hide HTML footer, let browser print headers/footers natively to prevent overlap */
+            }
+
+            .page-break {
+                page-break-after: always;
+            }
+
+            .page:last-child {
+                page-break-after: auto;
+            }
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+            background: #e0e0e0;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 210mm;
+            margin: 0 auto;
+        }
+
+        .page {
+            width: 210mm;
+            min-height: 296mm;
+            /* Allow expansion if content flows, but usually fixed for print */
+            padding: 15mm 20mm 40mm 20mm;
+            /* Extra bottom padding to clear the absolute footer */
+            box-sizing: border-box;
+            background: white;
+            position: relative;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-family: 'Playfair Display', serif;
+            color: var(--primary);
+            margin-top: 0;
+        }
+
+        h1 {
+            font-size: 32px;
+            border-bottom: 4px solid var(--accent);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            font-size: 24px;
+            color: var(--accent);
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+
+        h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-top: 15px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .brand {
+            font-weight: 700;
+            font-size: 14px;
+            text-transform: uppercase;
+            color: var(--text-light);
+        }
+
+        .highlight-box {
+            background: var(--section-bg);
+            border-left: 4px solid var(--accent);
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 6px;
+        }
+
+        .footer {
+            position: absolute;
+            bottom: 15mm;
+            left: 20mm;
+            right: 20mm;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+            font-size: 12px;
+            color: #999;
+            text-align: center;
+        }
+
+        .toolbar {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #333;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            font-family: sans-serif;
+            font-weight: bold;
+            z-index: 1000;
+        }
+
+        .toolbar:hover {
+            background: var(--accent);
+        }
+
+        /* User Content Styles */
+        .content-area table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        .content-area th,
+        .content-area td {
+            border: 1px solid #eee;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .content-area th {
+            background-color: var(--section-bg);
+            color: var(--accent);
+        }
+    </style>
+</head>
+
+<body>
+
+    <button class="toolbar no-print" onclick="window.print()">Print Manual / Save PDF</button>
+
+    <div class="container">
+        <!-- SINGLE PAGE SCROLLING layout for simplicity in generic tool, or we could split -->
+        <div class="page">
+            <div class="header">
+                <div>
+                    <h1>{{ title }}</h1>
+                    <div style="font-size: 18px; color: #666;">{{ subtitle }}</div>
+                </div>
+                <div class="brand">Cavalier One Internal</div>
+            </div>
+
+            <div class="content-area">
+                {{ body_content | safe }}
+            </div>
+
+            <div class="footer">Confidential Internal Document | Generated via Cavalier One</div>
+        </div>
+    </div>
+
+</body>
+
+</html>

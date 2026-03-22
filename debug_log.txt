@@ -1,0 +1,102 @@
+Testing Miner for Channel ID: UCmpf1h1Nfua7AeH5W77AsQw
+
+--- 1. Fetching Videos ---
+✅ Found 3 videos.
+   - [Cbb4V_lNj4w] Choosing your Bathroom with Cavalier Homes GV
+   - [VRMEzKekGBU] Choosing your Appliances with Cavalier Homes GV
+   - [dD0de5aekbE] Choosing your Kitchen Cabinetry with Cavalier Homes GV
+
+--- 2. Fetching Transcripts ---
+Module file: C:\Users\jason.m.chgv\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\youtube_transcript_api\__init__.py
+Class attributes: ['__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__getstate__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', 'fetch', 'list']
+Type of .list: <class 'function'>
+Type of .fetch: <class 'function'>
+Attempting transcript for: Cbb4V_lNj4w
+   Instantiating and calling .list()...
+   Instance .list() result: For this video (Cbb4V_lNj4w) transcripts are available in the following languages:
+
+(MANUALLY CREATED)
+None
+
+(GENERATED)
+ - en ("English (auto-generated)")[TRANSLATABLE]
+
+(TRANSLATION LANGUAGES)
+ - ar ("Arabic")
+ - zh-Hant ("Chinese (Traditional)")
+ - nl ("Dutch")
+ - fr ("French")
+ - de ("German")
+ - hi ("Hindi")
+ - id ("Indonesian")
+ - it ("Italian")
+ - ja ("Japanese")
+ - ko ("Korean")
+ - pt ("Portuguese")
+ - ru ("Russian")
+ - es ("Spanish")
+ - th ("Thai")
+ - uk ("Ukrainian")
+ - vi ("Vietnamese")
+   Instantiating and calling .fetch()...
+   Instance .fetch() result: FetchedTranscript(snippets=[FetchedTranscriptSnippet(text="Hey everyone, I'm Matt from Cavali Homes", start=0.0, duration=3.28), FetchedTranscriptSnippet(text='in the Golden Valley. Designing your', start=1.839, duration=2.881), FetchedTranscriptSnippet(text='bathroom is a key part of your color', start=3.28, duration=2.64), FetchedTranscriptSnippet(text='selection appointment and our', start=4.72, duration=2.88), FetchedTranscriptSnippet(text='experienced color consultants will be', start=5.92, duration=3.12), FetchedTranscriptSnippet(text='there to guide you through all the', start=7.6, duration=3.119), FetchedTranscriptSnippet(text='options. Included in our standard', start=9.04, duration=3.28), FetchedTranscriptSnippet(text='lifestyle range of floating vanities', start=10.719, duration=3.601), FetchedTranscriptSnippet(text='with laminate benchtops available in a', start=12.32, duration=3.68), FetchedTranscriptSnippet(text='range of colors and finishes, all to', start=14.32, duration=3.44), FetchedTranscriptSnippet(text='match or complement your unique style.', start=16.0, duration=3.6), FetchedTranscriptSnippet(text='In your bathroom, your shower is tiled', start=17.76, duration=3.84), FetchedTranscriptSnippet(text='basin walls complete with a glass shelf', start=19.6, duration=4.08), FetchedTranscriptSnippet(text='and semi-frame shower screen paired with', start=21.6, duration=4.24), FetchedTranscriptSnippet(text='an inset bath, all sized to suit your', start=23.68, duration=3.439), FetchedTranscriptSnippet(text="plan. If you'd like to add a more", start=25.84, duration=2.64), FetchedTranscriptSnippet(text='personalized look to your bathrooms,', start=27.119, duration=3.281), FetchedTranscriptSnippet(text='Cavalier offers the options to add stone', start=28.48, duration=4.16), FetchedTranscriptSnippet(text='benchtops, different mirror profiles, or', start=30.4, duration=3.92), FetchedTranscriptSnippet(text='you can extend the vanity and or shower', start=32.64, duration=3.28), FetchedTranscriptSnippet(text='to your preferred length, as long as the', start=34.32, duration=3.44), FetchedTranscriptSnippet(text='bathroom size allows it. You can then', start=35.92, duration=3.44), FetchedTranscriptSnippet(text='add the finishing touch by extending the', start=37.76, duration=3.84), FetchedTranscriptSnippet(text='wall tiling to a custom height. Swap the', start=39.36, duration=4.16), FetchedTranscriptSnippet(text='glass shower shelf to a tiled recess,', start=41.6, duration=3.36), FetchedTranscriptSnippet(text='and change the inset bath to a', start=43.52, duration=2.96), FetchedTranscriptSnippet(text="freestanding bath if you'd like. To", start=44.96, duration=3.119), FetchedTranscriptSnippet(text='discuss adding these options to your new', start=46.48, duration=2.72), FetchedTranscriptSnippet(text="home, you're welcome to visit our", start=48.079, duration=2.8), FetchedTranscriptSnippet(text='display homes, which are open 7 days a', start=49.2, duration=4.56), FetchedTranscriptSnippet(text='week. Have a great day.', start=50.879, duration=2.881)], video_id='Cbb4V_lNj4w', language='English (auto-generated)', language_code='en', is_generated=True)
+Attempting transcript for: VRMEzKekGBU
+   Instantiating and calling .list()...
+   Instance .list() result: For this video (VRMEzKekGBU) transcripts are available in the following languages:
+
+(MANUALLY CREATED)
+None
+
+(GENERATED)
+ - en ("English (auto-generated)")[TRANSLATABLE]
+
+(TRANSLATION LANGUAGES)
+ - ar ("Arabic")
+ - zh-Hant ("Chinese (Traditional)")
+ - nl ("Dutch")
+ - fr ("French")
+ - de ("German")
+ - hi ("Hindi")
+ - id ("Indonesian")
+ - it ("Italian")
+ - ja ("Japanese")
+ - ko ("Korean")
+ - pt ("Portuguese")
+ - ru ("Russian")
+ - es ("Spanish")
+ - th ("Thai")
+ - uk ("Ukrainian")
+ - vi ("Vietnamese")
+   Instantiating and calling .fetch()...
+   Instance .fetch() result: FetchedTranscript(snippets=[FetchedTranscriptSnippet(text="Hey everyone, I'm Vanessa from Cavalere", start=0.0, duration=3.439), FetchedTranscriptSnippet(text='Homes in the Golden Valley. Choosing', start=1.76, duration=3.84), FetchedTranscriptSnippet(text='your appliances is an important step in', start=3.439, duration=3.521), FetchedTranscriptSnippet(text='bringing together your kitchen during', start=5.6, duration=3.84), FetchedTranscriptSnippet(text='the color selection process. On the day,', start=6.96, duration=3.92), FetchedTranscriptSnippet(text="you'll have our experienced color", start=9.44, duration=3.119), FetchedTranscriptSnippet(text='consultants to guide you through all the', start=10.88, duration=3.839), FetchedTranscriptSnippet(text='options we have available. We include', start=12.559, duration=3.921), FetchedTranscriptSnippet(text='quality Westinghouse stainless steel', start=14.719, duration=3.441), FetchedTranscriptSnippet(text='appliances as part of our standard', start=16.48, duration=3.6), FetchedTranscriptSnippet(text='lifestyle inclusion range for all our', start=18.16, duration=5.76), FetchedTranscriptSnippet(text='new homes with a 60 mm oven, cooktop,', start=20.08, duration=5.76), FetchedTranscriptSnippet(text='slide out range hood, and freestanding', start=23.92, duration=3.679), FetchedTranscriptSnippet(text="dishwasher. If you'd like a different", start=25.84, duration=3.92), FetchedTranscriptSnippet(text='look, we also offer a range of larger', start=27.599, duration=5.041), FetchedTranscriptSnippet(text='900 mm appliances available in regular', start=29.76, duration=5.28), FetchedTranscriptSnippet(text='or dark stainless steel with options for', start=32.64, duration=4.8), FetchedTranscriptSnippet(text='wall oven towers, induction cooktops,', start=35.04, duration=4.56), FetchedTranscriptSnippet(text='and integrated dishwashers, giving you', start=37.44, duration=4.08), FetchedTranscriptSnippet(text='the option to further make your kitchen', start=39.6, duration=3.68), FetchedTranscriptSnippet(text='uniquely yours. If you have any', start=41.52, duration=3.199), FetchedTranscriptSnippet(text='questions or looking to build a new', start=43.28, duration=3.52), FetchedTranscriptSnippet(text='home, please give us a call or visit our', start=44.719, duration=5.441), FetchedTranscriptSnippet(text='display open 7 days a', start=46.8, duration=3.36)], video_id='VRMEzKekGBU', language='English (auto-generated)', language_code='en', is_generated=True)
+Attempting transcript for: dD0de5aekbE
+   Instantiating and calling .list()...
+   Instance .list() result: For this video (dD0de5aekbE) transcripts are available in the following languages:
+
+(MANUALLY CREATED)
+None
+
+(GENERATED)
+ - en ("English (auto-generated)")[TRANSLATABLE]
+
+(TRANSLATION LANGUAGES)
+ - ar ("Arabic")
+ - zh-Hant ("Chinese (Traditional)")
+ - nl ("Dutch")
+ - fr ("French")
+ - de ("German")
+ - hi ("Hindi")
+ - id ("Indonesian")
+ - it ("Italian")
+ - ja ("Japanese")
+ - ko ("Korean")
+ - pt ("Portuguese")
+ - ru ("Russian")
+ - es ("Spanish")
+ - th ("Thai")
+ - uk ("Ukrainian")
+ - vi ("Vietnamese")
+   Instantiating and calling .fetch()...
+   Instance .fetch() result: FetchedTranscript(snippets=[FetchedTranscriptSnippet(text="Hey everyone, I'm Vanessa from Cavalere", start=0.0, duration=3.28), FetchedTranscriptSnippet(text='Homes in the Golden Valley. Choosing', start=1.76, duration=3.44), FetchedTranscriptSnippet(text='your kitchen cabinetry can be one of the', start=3.28, duration=3.28), FetchedTranscriptSnippet(text='most exciting parts of your color', start=5.2, duration=3.52), FetchedTranscriptSnippet(text="selection. On the day, you'll have our", start=6.56, duration=3.84), FetchedTranscriptSnippet(text='experienced color consultants to guide', start=8.72, duration=3.28), FetchedTranscriptSnippet(text='you through the options to create a', start=10.4, duration=3.52), FetchedTranscriptSnippet(text="kitchen that's both functional and", start=12.0, duration=3.759), FetchedTranscriptSnippet(text='personal. Our standard lifestyle', start=13.92, duration=3.68), FetchedTranscriptSnippet(text='inclusions include Polytech laminate', start=15.759, duration=4.001), FetchedTranscriptSnippet(text='cabinetry and benchtops with a range of', start=17.6, duration=4.24), FetchedTranscriptSnippet(text='colors and finishes to choose from. If', start=19.76, duration=3.599), FetchedTranscriptSnippet(text="you'd like to explore more designs,", start=21.84, duration=3.04), FetchedTranscriptSnippet(text="there's the option to include stone", start=23.359, duration=3.84), FetchedTranscriptSnippet(text='benchtops, feature gloss, or panel', start=24.88, duration=4.479), FetchedTranscriptSnippet(text="cabinetry. We've also got a range of", start=27.199, duration=4.16), FetchedTranscriptSnippet(text='cabinet handle colors and designs to', start=29.359, duration=3.921), FetchedTranscriptSnippet(text='choose from to put the final touches on', start=31.359, duration=3.681), FetchedTranscriptSnippet(text='your beautiful new kitchen. If you have', start=33.28, duration=3.36), FetchedTranscriptSnippet(text='any questions or looking to build a new', start=35.04, duration=3.76), FetchedTranscriptSnippet(text='home, please give us a call or visit our', start=36.64, duration=5.52), FetchedTranscriptSnippet(text='display open 7 days a', start=38.8, duration=3.36)], video_id='dD0de5aekbE', language='English (auto-generated)', language_code='en', is_generated=True)
+Standard Mode Error: No module named 'replicate'
+Standard Mode Error: No module named 'replicate'

@@ -1,0 +1,11 @@
+--- MODEL CHECK LOG ---
+models/gemini-1.5-flash: FAILED (404)
+models/gemini-1.5-flash-001: FAILED (404)
+models/gemini-1.5-flash-002: FAILED (404)
+models/gemini-1.5-flash-8b: FAILED (404)
+models/gemini-1.5-pro: FAILED (404)
+models/gemini-1.5-pro-001: FAILED (404)
+models/gemini-pro: FAILED (404)
+models/gemini-1.0-pro: FAILED (404)
+models/gemini-2.0-flash: FAILED (429)
+--- END LOG ---

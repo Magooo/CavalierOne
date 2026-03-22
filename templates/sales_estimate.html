@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sales Estimate Builder | Cavalier Homes</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* =====================  BRAND TOKENS  ===================== */
+    :root {
+      --ch-black:    #000000;
+      --ch-white:    #ffffff;
+      --ch-red:      #ad4b43;
+      --ch-red-dk:   #8b3330;
+      --ch-charcoal: #54595f;
+      --ch-warm:     #aea299;
+      --ch-light:    #dbd9d8;
+      --ch-stone:    #eeedec;
+      --font-serif:  'Playfair Display', Georgia, serif;
+      --font-sans:   'Inter', 'Century Gothic', sans-serif;
+      --r:           6px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; }
+    body { font-family: var(--font-sans); background: #121212; color: #e0e0e0; display: flex; flex-direction: column; }
+
+    /* ── TOP BAR ── */
+    .topbar {
+      background: var(--ch-black);
+      padding: 0 1.25rem;
+      height: 52px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 14px rgba(0,0,0,.6);
+      z-index: 100;
+      position: relative;
+    }
+    .tb-left { display: flex; align-items: center; gap: .9rem; }
+    .tb-brand { font-family: var(--font-serif); color: white; font-size: .95rem; font-weight: 700; letter-spacing: .05em; line-height: 1.1; }
+    .tb-badge { background: var(--ch-red); color: white; font-size: .62rem; font-weight: 700; padding: .18rem .5rem; border-radius: 3px; text-transform: uppercase; letter-spacing: .1em; white-space: nowrap; }
+    .tb-right { display: flex; gap: .5rem; align-items: center; }
+    .btn { display: inline-flex; align-items: center; gap: .3rem; padding: .45rem 1rem; border: none; border-radius: var(--r); font-size: .78rem; font-weight: 600; cursor: pointer; font-family: var(--font-sans); transition: all .12s; white-space: nowrap; }
+    .btn-red    { background: var(--ch-red); color: white; }
+    .btn-red:hover { background: var(--ch-red-dk); }
+    .btn-dark   { background: #2a2a2a; color: white; border: 1px solid #3a3a3a; }
+    .btn-dark:hover { background: #383838; }
+    .btn-outline { background: transparent; color: #aaa; border: 1px solid #444; }
+    .btn-outline:hover { border-color: #888; color: white; }
+    .btn-green   { background: #2e7d32; color: white; }
+    .btn-green:hover { background: #1b5e20; }
+
+    /* ── IMPORT MODAL ── */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.75);
+      z-index: 999;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity .2s;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal-box {
+      background: #161616;
+      border: 1px solid #2a2a2a;
+      border-radius: 10px;
+      width: 540px;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 24px 80px rgba(0,0,0,.7);
+      transform: translateY(-24px);
+      transition: transform .2s;
+    }
+    .modal-overlay.open .modal-box { transform: translateY(0); }
+    .modal-hd {
+      padding: .9rem 1.2rem;
+      border-bottom: 1px solid #222;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .modal-hd h3 { font-size: .9rem; font-weight: 700; color: white; }
+    .modal-close { background: none; border: none; color: #666; font-size: 1.2rem; cursor: pointer; padding: 2px 6px; border-radius: 4px; }
+    .modal-close:hover { color: white; background: #333; }
+    .modal-body { padding: 1.2rem; }
+    .modal-tabs { display: flex; gap: .4rem; margin-bottom: 1rem; }
+    .mt-btn { flex: 1; padding: .45rem; background: #222; border: 1px solid #333; color: #888; border-radius: 4px; font-size: .78rem; font-weight: 600; cursor: pointer; text-align: center; transition: all .12s; }
+    .mt-btn.active { background: var(--ch-red); color: white; border-color: var(--ch-red); }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+    /* Drop zone */
+    .drop-zone {
+      border: 2px dashed #333;
+      border-radius: 8px;
+      padding: 2.5rem 1rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all .15s;
+      background: #111;
+    }
+    .drop-zone:hover, .drop-zone.drag-over { border-color: var(--ch-red); background: #1e1010; }
+    .drop-zone .dz-icon { font-size: 2.2rem; margin-bottom: .5rem; }
+    .drop-zone .dz-title { font-size: .85rem; font-weight: 600; color: white; }
+    .drop-zone .dz-sub { font-size: .72rem; color: #666; margin-top: .3rem; }
+    .drop-zone input[type=file] { display: none; }
+    /* Sheet picker */
+    .sheet-picker { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px; padding: 1rem; margin-top: .8rem; display: none; }
+    .sheet-picker.visible { display: block; }
+    .sheet-picker .sp-lbl { font-size: .7rem; color: #888; text-transform: uppercase; letter-spacing: .1em; margin-bottom: .4rem; }
+    .sheet-picker select { width: 100%; }
+    /* Paste area */
+    .paste-area { width: 100%; min-height: 160px; background: #111; border: 1px solid #2a2a2a; border-radius: 6px; color: #ddd; padding: .6rem; font-size: .77rem; font-family: monospace; resize: vertical; }
+    .paste-area:focus { outline: none; border-color: var(--ch-red); }
+    .paste-hint { font-size: .7rem; color: #555; margin-top: .4rem; line-height: 1.4; }
+    /* Status */
+    .import-status { margin-top: .8rem; padding: .5rem .8rem; border-radius: 5px; font-size: .78rem; display: none; }
+    .import-status.ok  { background: #1b5e20; color: #a5d6a7; display: block; }
+    .import-status.err { background: #4e1515; color: #ef9a9a; display: block; }
+    .import-status.loading { background: #1a1a1a; color: #888; display: block; }
+    .modal-foot { padding: .8rem 1.2rem; border-top: 1px solid #222; display: flex; justify-content: flex-end; gap: .5rem; }
+
+    /* ── WORKSPACE: LEFT + RIGHT PANELS ── */
+    .workspace {
+      display: grid;
+      grid-template-columns: 460px 1fr;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ── LEFT PANEL ── */
+    .left-panel {
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid #222;
+      background: #0e0e0e;
+      overflow: hidden;
+    }
+    .lp-meta {
+      padding: 1rem;
+      border-bottom: 1px solid #1e1e1e;
+      flex-shrink: 0;
+    }
+    .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
+    .meta-grid .span2 { grid-column: 1 / -1; }
+    .lbl { font-size: .65rem; text-transform: uppercase; letter-spacing: .1em; color: #666; font-weight: 700; margin-bottom: .2rem; }
+    input[type=text], input[type=number], input[type=date], select, textarea {
+      width: 100%;
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      color: #ddd;
+      padding: .35rem .55rem;
+      border-radius: 4px;
+      font-size: .8rem;
+      font-family: var(--font-sans);
+      transition: border-color .12s;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--ch-red);
+    }
+    select option { background: #1a1a1a; }
+    textarea { resize: vertical; min-height: 40px; }
+
+    /* ── ESTIMATE TABLE ── */
+    .lp-table-wrap { flex: 1; overflow-y: auto; }
+    .est-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .est-table thead th {
+      background: #111;
+      padding: .4rem .6rem;
+      font-size: .62rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: #666;
+      text-align: left;
+      border-bottom: 1px solid #1e1e1e;
+      position: sticky;
+      top: 0;
+      z-index: 5;
+    }
+    .est-table thead th.r { text-align: right; }
+    .est-table td { border-bottom: 1px solid #1a1a1a; vertical-align: middle; }
+
+    /* Section header rows */
+    .row-section td {
+      background: #1e1e1e;
+      padding: .15rem .4rem;
+    }
+    .row-section input[type=text] {
+      background: transparent;
+      border: none;
+      color: var(--ch-red);
+      font-size: .75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      padding: .2rem .3rem;
+    }
+    .row-section input[type=text]:focus {
+      border-bottom: 1px solid var(--ch-red);
+    }
+
+    /* Line item rows */
+    .row-item td { padding: .25rem .4rem; }
+    .row-item td.td-desc input[type=text] {
+      font-size: .8rem;
+      background: transparent;
+      border-color: transparent;
+    }
+    .row-item td.td-desc input[type=text]:focus {
+      background: #1a1a1a;
+      border-color: #333;
+    }
+    .row-item td.td-flag select {
+      font-size: .7rem;
+      padding: .2rem .2rem;
+      text-align: center;
+      background: #161616;
+      border-color: #2a2a2a;
+      width: 64px;
+    }
+    .row-item td.td-est input,
+    .row-item td.td-con input {
+      font-size: .8rem;
+      text-align: right;
+      width: 88px;
+      background: transparent;
+      border-color: transparent;
+    }
+    .row-item td.td-est input:focus,
+    .row-item td.td-con input:focus {
+      background: #1a1a1a;
+      border-color: #333;
+    }
+    .row-item td.td-rm { width: 24px; }
+    .rm-btn {
+      background: none; border: none; color: #333;
+      cursor: pointer; font-size: .9rem; padding: 2px;
+      transition: color .12s; width: 100%;
+    }
+    .rm-btn:hover { color: var(--ch-red); }
+
+    .add-section-row {
+      display: flex;
+      gap: .4rem;
+      padding: .5rem .6rem;
+      border-top: 1px solid #1e1e1e;
+      background: #0e0e0e;
+      flex-shrink: 0;
+    }
+    .add-section-row .btn { font-size: .72rem; padding: .35rem .7rem; flex: 1; }
+
+    /* Totals bar at bottom of left panel */
+    .totals-bar {
+      background: #111;
+      border-top: 1px solid #222;
+      padding: .5rem 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: .5rem;
+      font-size: .78rem;
+      flex-shrink: 0;
+    }
+    .totals-bar .tb-item { text-align: right; }
+    .totals-bar .tb-item .tbl { font-size: .6rem; color: #555; text-transform: uppercase; letter-spacing: .08em; }
+    .totals-bar .tb-item .tbv { font-weight: 700; color: white; }
+    .totals-bar .tb-grand .tbl { color: var(--ch-red); }
+    .totals-bar .tb-grand .tbv { color: var(--ch-red); font-size: 1.1rem; }
+
+    /* ── RIGHT PANEL — DOCUMENT PREVIEW ── */
+    .right-panel {
+      overflow-y: auto;
+      background: #1a1a1a;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* =====================  DOCUMENT STYLES  ===================== */
+    .doc-page {
+      background: white;
+      width: 794px;
+      box-shadow: 0 8px 40px rgba(0,0,0,.45);
+      overflow: hidden;
+      font-family: var(--font-sans);
+      font-size: 9pt;
+      color: #111;
+      flex-shrink: 0;
+    }
+
+    /* ── COVER ── */
+    .cover { height: 1123px; display: flex; flex-direction: column; }
+    .cover-img {
+      flex: 1;
+      background: linear-gradient(155deg, #2c2c2c 0%, #1a1a1a 50%, #3a3a3a 100%);
+      position: relative;
+      overflow: hidden;
+    }
+    .cover-img::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url('/static/brand_assets/page4_img1_2254x3517.jpeg') center 30% / cover no-repeat;
+      opacity: .7;
+    }
+    .cover-img::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, rgba(0,0,0,.3) 0%, rgba(0,0,0,.02) 35%, rgba(0,0,0,.65) 100%);
+    }
+    .cover-logo {
+      position: absolute; top: 26px; right: 30px; z-index: 2; text-align: right;
+    }
+    .cv-brand { font-family: var(--font-serif); font-size: 21pt; color: white; font-weight: 700; letter-spacing: .06em; line-height: 1; }
+    .cv-sub   { font-size: 7pt; color: rgba(255,255,255,.65); letter-spacing: .22em; text-transform: uppercase; margin-top: 3px; }
+    .cv-tag   { font-size: 7pt; color: rgba(255,255,255,.5); font-style: italic; margin-top: 2px; }
+    .cover-title {
+      position: absolute; bottom: 60px; left: 36px; z-index: 2;
+    }
+    .ct-pre { font-size: 8pt; color: rgba(255,255,255,.65); letter-spacing: .22em; text-transform: uppercase; margin-bottom: 8px; font-weight: 600; }
+    .ct-h   { font-family: var(--font-serif); font-size: 44pt; color: white; font-weight: 900; line-height: .93; }
+    .ct-h em { font-style: italic; font-weight: 400; display: block; }
+    .cover-foot {
+      background: white;
+      padding: 16px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .cf-for { font-size: 8.5pt; }
+    .cf-for strong { display: block; font-size: 13pt; font-family: var(--font-serif); margin-top: 2px; }
+    .cf-contact { font-size: 7.5pt; color: var(--ch-charcoal); text-align: right; line-height: 1.7; }
+
+    /* ── DOCUMENT HEAD ── */
+    .doc-head {
+      background: var(--ch-black);
+      padding: 13px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .dh-brand .brand-m { font-family: var(--font-serif); font-size: 14pt; color: white; font-weight: 700; letter-spacing: .05em; }
+    .dh-brand .brand-s { font-size: 6.5pt; color: var(--ch-red); text-transform: uppercase; letter-spacing: .18em; margin-top: 2px; }
+    .dh-right { text-align: right; }
+    .dh-right .dl  { font-size: 9.5pt; color: white; letter-spacing: .1em; text-transform: uppercase; }
+    .dh-right .dr  { font-size: 7pt; color: #888; margin-top: 3px; }
+    .doc-accent { height: 3px; background: var(--ch-red); }
+
+    /* ── CLIENT BAR ── */
+    .client-bar {
+      padding: 10px 24px;
+      background: var(--ch-stone);
+      border-bottom: 1px solid var(--ch-light);
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+    }
+    .cb-field .cbl { font-size: 6pt; text-transform: uppercase; letter-spacing: .1em; color: var(--ch-charcoal); font-weight: 700; margin-bottom: 1px; }
+    .cb-field .cbv { font-size: 8.5pt; font-weight: 600; }
+
+    /* ── ESTIMATE TABLE (document) ── */
+    .doc-est-tbl { width: 100%; border-collapse: collapse; }
+    .doc-est-tbl .tbl-head th {
+      background: #111;
+      color: white;
+      padding: 5px 10px;
+      font-size: 7pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      text-align: left;
+    }
+    .doc-est-tbl .tbl-head th.r { text-align: right; }
+    .doc-est-tbl tr.doc-sec td {
+      background: var(--ch-stone);
+      padding: 4px 10px;
+      font-size: 7.5pt;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--ch-charcoal);
+      border-top: 1px solid var(--ch-light);
+      border-bottom: 1px solid var(--ch-light);
+    }
+    .doc-est-tbl tr.doc-item td {
+      padding: 5px 10px;
+      font-size: 8.5pt;
+      border-bottom: 1px solid #f5f5f5;
+    }
+    .doc-est-tbl tr.doc-item:nth-child(even) td { background: #fafafa; }
+    .doc-est-tbl .td-est-amt { text-align: right; white-space: nowrap; font-weight: 500; }
+    .doc-est-tbl .td-con-amt { text-align: right; white-space: nowrap; color: var(--ch-charcoal); }
+    .flag-incl { color: #2e7d32; font-weight: 600; }
+    .flag-tbc  { color: #e65100; font-style: italic; }
+    .flag-allow { color: #1565c0; font-style: italic; }
+
+    /* ── TOTALS BLOCK ── */
+    .doc-totals { display: flex; justify-content: flex-end; padding: 12px 24px 20px; }
+    .doc-totals-inner { width: 270px; border-collapse: collapse; }
+    .doc-totals-inner td { padding: 5px 8px; font-size: 9pt; }
+    .doc-totals-inner td:last-child { text-align: right; }
+    .dt-sub td { border-top: 1px solid var(--ch-light); }
+    .dt-disc td { color: var(--ch-red); font-weight: 600; font-size: 8.5pt; }
+    .dt-gst  td { color: var(--ch-charcoal); font-size: 8pt; background: #fafafa; }
+    .dt-grand td { background: var(--ch-black); color: white; font-weight: 700; font-size: 13pt; }
+    .dt-grand td:last-child { color: var(--ch-red); font-family: var(--font-serif); font-size: 15pt; }
+    .dt-valid td { font-size: 7pt; color: var(--ch-charcoal); font-style: italic; background: var(--ch-stone); }
+
+    /* ── T&Cs PAGE ── */
+    .tc-body { padding: 24px; }
+    .tc-body h2 { font-family: var(--font-serif); font-size: 18pt; margin-bottom: 14px; border-bottom: 2px solid var(--ch-red); padding-bottom: 7px; }
+    .tc-body h3 { font-size: 9.5pt; font-weight: 700; margin: 13px 0 4px; }
+    .tc-body p  { font-size: 8pt; line-height: 1.65; color: var(--ch-charcoal); margin-bottom: 4px; }
+    .sign-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 28px; }
+    .sign-field .sf-lbl { font-size: 6.5pt; text-transform: uppercase; letter-spacing: .1em; color: var(--ch-charcoal); font-weight: 700; }
+    .sign-field .sf-name { font-size: 10pt; font-weight: 700; margin-top: 2px; }
+    .sign-line { height: 34px; border-bottom: 1px solid #aaa; margin-top: 10px; }
+    .sign-field .sf-sub { font-size: 6.5pt; color: var(--ch-charcoal); margin-top: 3px; }
+    .disclaimer-box { 
+      margin-top: 20px;
+      background: var(--ch-stone);
+      border-left: 4px solid var(--ch-red);
+      padding: 10px 14px;
+      font-size: 7.5pt;
+      color: var(--ch-charcoal);
+      line-height: 1.5;
+    }
+    .disclaimer-box strong { color: var(--ch-black); }
+
+    /* ── PAYMENT SCHEDULE ── */
+    .pay-schedule { padding: 24px; }
+    .pay-schedule h2 { font-family: var(--font-serif); font-size: 18pt; margin-bottom: 14px; border-bottom: 2px solid var(--ch-red); padding-bottom: 7px; }
+    .pay-tbl { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+    .pay-tbl th { background: var(--ch-black); color: white; padding: 6px 10px; font-size: 7.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; text-align: left; }
+    .pay-tbl td { padding: 6px 10px; border-bottom: 1px solid var(--ch-light); font-size: 8.5pt; }
+    .pay-tbl tr:nth-child(even) td { background: #fafafa; }
+    .pay-tbl .pt-pct { color: var(--ch-charcoal); }
+    .pay-tbl .pt-amt { font-weight: 600; text-align: right; }
+    .gst-box { background: var(--ch-stone); border: 1px solid var(--ch-light); padding: 12px 16px; font-size: 8.5pt; }
+    .gst-box table { width: 280px; }
+    .gst-box td:last-child { text-align: right; font-weight: 600; }
+    .gst-box .gst-total td { font-weight: 700; font-size: 10pt; border-top: 1px solid var(--ch-light); padding-top: 6px; }
+
+    /* ── BACK COVER ── */
+    .back-cover { height: 1123px; display: flex; flex-direction: column; }
+    .bc-top { flex: 1; background: var(--ch-stone); display: flex; flex-direction: column; justify-content: flex-end; padding: 44px; }
+    .bc-pre { font-size: 7.5pt; letter-spacing: .2em; text-transform: uppercase; color: var(--ch-charcoal); margin-bottom: 10px; }
+    .bc-h { font-family: var(--font-serif); font-size: 38pt; font-weight: 400; font-style: italic; line-height: 1.05; }
+    .bc-h em { font-style: normal; font-weight: 700; }
+    .bc-contact { margin-top: 24px; font-size: 9.5pt; color: var(--ch-charcoal); line-height: 1.9; }
+    .bc-contact strong { color: var(--ch-black); }
+    .bc-bottom { background: white; padding: 22px 44px; display: flex; justify-content: space-between; align-items: center; border-top: 3px solid var(--ch-red); }
+    .bc-logo-m { font-family: var(--font-serif); font-size: 17pt; font-weight: 700; letter-spacing: .04em; }
+    .bc-logo-s { font-size: 6pt; letter-spacing: .18em; text-transform: uppercase; color: var(--ch-charcoal); margin-top: 3px; }
+    .bc-right { text-align: right; font-size: 7.5pt; color: var(--ch-charcoal); font-style: italic; line-height: 1.8; }
+
+    /* Page footer */
+    .doc-foot {
+      background: var(--ch-stone);
+      border-top: 1px solid var(--ch-light);
+      padding: 4px 24px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 7pt;
+      color: var(--ch-charcoal);
+    }
+
+    /* ── PRINT ── */
+    @media print {
+      html, body { overflow: visible; height: auto; }
+      .topbar, .left-panel { display: none !important; }
+      .workspace { display: block; }
+      .right-panel { overflow: visible; background: white; padding: 0; }
+      .doc-page { width: 100%; box-shadow: none; break-after: page; }
+      .cover { height: 297mm; }
+      .back-cover { height: 297mm; }
+      @page { size: A4; margin: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="tb-left">
+    <div class="tb-brand">CAVALIER HOMES</div>
+    <div class="tb-badge">Sales Estimate Builder</div>
+  </div>
+  <div class="tb-right">
+    <span id="total-display" style="font-size:.75rem;color:#888;margin-right:.5rem;"></span>
+    <button class="btn btn-green" onclick="openImportModal()" style="font-size:.72rem;padding:.35rem .8rem;">📂 Import Excel</button>
+    <button class="btn btn-outline" onclick="clearAll()" style="font-size:.72rem;padding:.35rem .8rem;">🔄 Clear</button>
+    <button class="btn btn-dark" onclick="window.print()" style="font-size:.72rem;padding:.35rem .8rem;">🖨️ Print / PDF</button>
+    <button class="btn btn-red" onclick="window.location.href='/'">← Engine</button>
+  </div>
+</div>
+
+<!-- IMPORT MODAL -->
+<div class="modal-overlay" id="importModal" onclick="closeImportModal(event)">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-hd">
+      <h3>📂 Import Existing Sales Estimate</h3>
+      <button class="modal-close" onclick="closeImportModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <!-- Tabs -->
+      <div class="modal-tabs">
+        <div class="mt-btn active" id="tab-file-btn" onclick="switchTab('file')">📄 Upload Excel File</div>
+        <div class="mt-btn" id="tab-paste-btn" onclick="switchTab('paste')">📋 Paste from Excel</div>
+      </div>
+
+      <!-- Tab: File Upload -->
+      <div class="tab-pane active" id="tab-file">
+        <div class="drop-zone" id="dropZone"
+          onclick="document.getElementById('fileInput').click()"
+          ondragover="dzDragOver(event)" ondragleave="dzDragLeave(event)" ondrop="dzDrop(event)">
+          <div class="dz-icon">📊</div>
+          <div class="dz-title">Click to browse or drop your .xlsx estimate file here</div>
+          <div class="dz-sub">Works with any Cavalier Homes sales estimate — client name, any sheet layout</div>
+          <input type="file" id="fileInput" accept=".xlsx,.xls" onchange="fileChosen(this)">
+        </div>
+        <div class="sheet-picker" id="sheetPicker">
+          <div class="sp-lbl">📋 Sheets found in <strong>your file</strong> — auto-selected below, change if wrong:</div>
+          <select id="sheetSelect"></select>
+          <div style="font-size:.68rem;color:#888;margin-top:.3rem;">If the wrong data was imported, pick a different sheet and click <strong>Import →</strong> again.</div>
+        </div>
+      </div>
+
+      <!-- Tab: Paste -->
+      <div class="tab-pane" id="tab-paste">
+        <textarea class="paste-area" id="pasteArea"
+          placeholder="Copy rows from Excel (Ctrl+C), then paste here (Ctrl+V).
+Format: Description [Tab] Estimate $ [Tab] Contract $
+Section headers are all-caps lines with no dollar value."></textarea>
+        <div class="paste-hint">💡 Tip: Select your estimate rows in Excel, copy (Ctrl+C), then paste here. Sections are detected automatically from all-caps rows.</div>
+      </div>
+
+      <div class="import-status" id="importStatus"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeImportModal()" style="font-size:.76rem;">Cancel</button>
+      <button class="btn btn-red" id="importBtn" onclick="doImport()" style="font-size:.76rem;">Import →</button>
+    </div>
+  </div>
+</div>
+
+<div class="workspace">
+  <!-- LEFT PANEL -->
+  <div class="left-panel">
+
+    <!-- Meta fields -->
+    <div class="lp-meta">
+      <div class="meta-grid">
+        <div>
+          <div class="lbl">Client Name</div>
+          <input type="text" id="m_client" placeholder="Mr & Mrs Smith" oninput="up()">
+        </div>
+        <div>
+          <div class="lbl">Date</div>
+          <input type="date" id="m_date" oninput="up()">
+        </div>
+        <div>
+          <div class="lbl">Home Design</div>
+          <input type="text" id="m_design" placeholder="Sandown 32" oninput="up()">
+        </div>
+        <div>
+          <div class="lbl">Consultant</div>
+          <input type="text" id="m_consultant" placeholder="Charley Daldy" oninput="up()">
+        </div>
+        <div class="span2">
+          <div class="lbl">Site Address</div>
+          <input type="text" id="m_site" placeholder="36 Westwood Dr, Mooroopna VIC 3629" oninput="up()">
+        </div>
+        <div>
+          <div class="lbl">Ref #</div>
+          <input type="text" id="m_ref" placeholder="SE-2026-0142" oninput="up()">
+        </div>
+        <div>
+          <div class="lbl">Valid (days)</div>
+          <input type="number" id="m_valid" value="30" min="1" oninput="up()">
+        </div>
+        <div>
+          <div class="lbl">Discount label</div>
+          <input type="text" id="m_disc_label" placeholder="e.g. Loyal client" oninput="up()">
+        </div>
+        <div>
+          <div class="lbl">Discount ($)</div>
+          <input type="number" id="m_disc_amt" placeholder="0" step="0.01" min="0" oninput="up()">
+        </div>
+      </div>
+    </div>
+
+    <!-- Estimate table -->
+    <div class="lp-table-wrap">
+      <table class="est-table">
+        <thead>
+          <tr>
+            <th style="width:42%">Description</th>
+            <th style="width:13%" class="r">Flag</th>
+            <th style="width:18%" class="r">Estimate $</th>
+            <th style="width:18%" class="r">Contract $</th>
+            <th style="width:9%"></th>
+          </tr>
+        </thead>
+        <tbody id="est-body"></tbody>
+      </table>
+    </div>
+
+    <!-- Add row buttons -->
+    <div class="add-section-row">
+      <button class="btn btn-outline" onclick="addSection()">+ Section</button>
+      <button class="btn btn-dark" onclick="addItem()">+ Line Item</button>
+    </div>
+
+    <!-- Totals bar -->
+    <div class="totals-bar">
+      <div class="tb-item">
+        <div class="tbl">Subtotal</div>
+        <div class="tbv" id="tb-sub">$0.00</div>
+      </div>
+      <div class="tb-item">
+        <div class="tbl">Discount</div>
+        <div class="tbv" id="tb-disc" style="color:var(--ch-red);">−$0.00</div>
+      </div>
+      <div class="tb-item">
+        <div class="tbl">GST (incl.)</div>
+        <div class="tbv" id="tb-gst">$0.00</div>
+      </div>
+      <div class="tb-item tb-grand">
+        <div class="tbl">TOTAL</div>
+        <div class="tbv" id="tb-total">$0.00</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL (document preview) -->
+  <div class="right-panel" id="preview"></div>
+</div>
+
+<script>
+// ==================================================================
+//  DATA MODEL
+// ==================================================================
+// rows[] — each is either:
+//   { t:'sec', name: '' }
+//   { t:'item', desc:'', flag:'$'|'Incl.'|'TBC'|'Allow.', est:'', con:'' }
+
+const rows = [];
+const META = ['m_client','m_date','m_design','m_consultant','m_site','m_ref','m_valid','m_disc_label','m_disc_amt'];
+
+// ==================================================================
+//  BUILD EDITOR UI
+// ==================================================================
+function rebuildUI() {
+  const tbody = document.getElementById('est-body');
+  tbody.innerHTML = '';
+  rows.forEach((r, i) => {
+    const tr = document.createElement('tr');
+    if (r.t === 'sec') {
+      tr.className = 'row-section';
+      tr.innerHTML = `
+        <td colspan="4">
+          <input type="text" value="${esc(r.name)}" placeholder="SECTION NAME"
+            oninput="rows[${i}].name=this.value;up()">
+        </td>
+        <td><button class="rm-btn" onclick="removeRow(${i})">✕</button></td>`;
+    } else {
+      tr.className = 'row-item';
+      const flagOpts = ['$','Incl.','TBC','Allow.','Note']
+        .map(f => `<option value="${f}"${r.flag===f?' selected':''}>${f}</option>`)
+        .join('');
+      tr.innerHTML = `
+        <td class="td-desc">
+          <input type="text" value="${esc(r.desc)}" placeholder="Description…"
+            oninput="rows[${i}].desc=this.value;up()">
+        </td>
+        <td class="td-flag">
+          <select onchange="rows[${i}].flag=this.value;up()">${flagOpts}</select>
+        </td>
+        <td class="td-est">
+          <input type="text" value="${esc(r.est)}" placeholder="0.00"
+            oninput="rows[${i}].est=this.value;up()">
+        </td>
+        <td class="td-con">
+          <input type="text" value="${esc(r.con)}" placeholder="—"
+            oninput="rows[${i}].con=this.value;up()">
+        </td>
+        <td class="td-rm"><button class="rm-btn" onclick="removeRow(${i})">✕</button></td>`;
+    }
+    tbody.appendChild(tr);
+  });
+  up();
+}
+
+function addSection() {
+  rows.push({ t:'sec', name:'' });
+  rebuildUI();
+}
+function addItem() {
+  rows.push({ t:'item', desc:'', flag:'$', est:'', con:'' });
+  rebuildUI();
+}
+function removeRow(i) {
+  rows.splice(i,1);
+  rebuildUI();
+}
+
+// ==================================================================
+//  IMPORT MODAL
+// ==================================================================
+let _currentFile = null;
+let _lastImportData = null; // cache last server response for sheet switching
+
+function openImportModal() {
+  document.getElementById('importModal').classList.add('open');
+  setStatus('');
+  // Reset sheet picker
+  document.getElementById('sheetPicker').classList.remove('visible');
+  _currentFile = null;
+  _lastImportData = null;
+}
+function closeImportModal(e) {
+  if (e && e.target !== document.getElementById('importModal')) return;
+  document.getElementById('importModal').classList.remove('open');
+}
+function switchTab(tab) {
+  ['file','paste'].forEach(t => {
+    document.getElementById('tab-'+t).classList.toggle('active', t===tab);
+    document.getElementById('tab-'+t+'-btn').classList.toggle('active', t===tab);
+  });
+  setStatus('');
+}
+function dzDragOver(e) { e.preventDefault(); document.getElementById('dropZone').classList.add('drag-over'); }
+function dzDragLeave()  { document.getElementById('dropZone').classList.remove('drag-over'); }
+function dzDrop(e) {
+  e.preventDefault();
+  dzDragLeave();
+  const file = e.dataTransfer.files[0];
+  if (file) { _currentFile = file; doFileImport(); }
+}
+function fileChosen(input) {
+  if (input.files[0]) { _currentFile = input.files[0]; doFileImport(); }
+}
+function setStatus(type, msg) {
+  const el = document.getElementById('importStatus');
+  el.className = 'import-status' + (type ? ' '+type : '');
+  el.textContent = msg || '';
+  if (!type) el.style.display = 'none';
+}
+
+async function doImport() {
+  const activeTab = document.getElementById('tab-file').classList.contains('active') ? 'file' : 'paste';
+  if (activeTab === 'file') {
+    // If we already have data loaded, just apply the selected sheet
+    if (_lastImportData) {
+      const sel = document.getElementById('sheetSelect').value;
+      if (sel && _lastImportData[sel]) {
+        applyImport(_lastImportData[sel]);
+        setStatus('ok', `✅ Imported ${_lastImportData[sel].total_rows} rows from sheet "${sel}"`);
+        setTimeout(() => closeImportModal(), 1300);
+      } else {
+        await doFileImport(true);
+      }
+    } else {
+      await doFileImport(false);
+    }
+  } else {
+    doPasteImport();
+  }
+}
+
+async function doFileImport(applyNow = false) {
+  if (!_currentFile) { setStatus('err','No file selected. Drop or browse for an .xlsx file.'); return; }
+  setStatus('loading', '⏳ Reading file…');
+  document.getElementById('importBtn').disabled = true;
+  const fd = new FormData();
+  fd.append('file', _currentFile);
+  // Include selected sheet if user picked one
+  const sel = document.getElementById('sheetSelect').value;
+  if (sel) fd.append('sheet', sel);
+  try {
+    const resp = await fetch('/sales-estimate/import', { method:'POST', body: fd });
+    const data = await resp.json();
+    if (data.error) { setStatus('err', '❌ ' + data.error); return; }
+
+    // Populate sheet picker with all available sheets
+    if (data.all_sheets && data.all_sheets.length > 1) {
+      const picker = document.getElementById('sheetPicker');
+      const sel2   = document.getElementById('sheetSelect');
+      sel2.innerHTML = data.all_sheets.map(s =>
+        `<option value="${s}" ${s === data.sheet ? 'selected' : ''}>${s}</option>`
+      ).join('');
+      picker.classList.add('visible');
+    }
+
+    // Cache for sheet switching without re-upload
+    if (!_lastImportData) _lastImportData = {};
+    _lastImportData[data.sheet] = data;
+
+    applyImport(data);
+    const sheetMsg = data.all_sheets && data.all_sheets.length > 1
+      ? ` — your file has ${data.all_sheets.length} sheets, auto-selected "${data.sheet}". Wrong one? Pick another above and click Import → again.`
+      : '';
+    setStatus('ok', `✅ Imported ${data.total_rows} rows from "${data.sheet}"${sheetMsg}`);
+
+  } catch(e) {
+    setStatus('err', '❌ Network error: ' + e.message);
+  } finally {
+    document.getElementById('importBtn').disabled = false;
+  }
+}
+
+function doPasteImport() {
+  const raw = document.getElementById('pasteArea').value.trim();
+  if (!raw) { setStatus('err', 'Nothing pasted yet. Copy rows from Excel first.'); return; }
+  const lines = raw.split(/\r?\n/);
+  const newRows = [];
+  let found = 0;
+  lines.forEach(line => {
+    const cols = line.split('\t').map(c => c.trim());
+    const desc = cols[0] || '';
+    const estV = cols[1] || '';
+    const conV = cols[2] || '';
+    if (!desc) return;
+    // Section detection: all-caps, no estimate value
+    const isSection = desc === desc.toUpperCase() && desc.length < 80 && !parseFloat(estV);
+    if (isSection) {
+      newRows.push({ t:'sec', name: desc }); found++;
+    } else {
+      const flag = flagFromStr(estV);
+      const estStr = parseFloat(estV) ? parseFloat(estV).toFixed(2) : (flag !== '$' ? '' : estV);
+      newRows.push({ t:'item', desc, flag, est: estStr, con: parseFloat(conV) ? parseFloat(conV).toFixed(2) : '' });
+      found++;
+    }
+  });
+  if (!found) { setStatus('err', 'No rows detected. Make sure you copied the estimate rows from Excel.'); return; }
+  applyImport({ rows: newRows, meta: {} });
+  setStatus('ok', `✅ Imported ${found} rows from pasted text`);
+  setTimeout(() => closeImportModal(), 1200);
+}
+
+function flagFromStr(val) {
+  const v = val.trim().toLowerCase();
+  if (['included','incl','incl.'].includes(v)) return 'Incl.';
+  if (['tbc','tba'].includes(v)) return 'TBC';
+  if (['allowance','allow','allow.'].includes(v)) return 'Allow.';
+  if (['note only','note','n/a'].includes(v)) return 'Note';
+  return '$';
+}
+
+function applyImport(data) {
+  // Clear existing rows
+  rows.length = 0;
+  data.rows.forEach(r => rows.push(r));
+  // Apply meta if found
+  if (data.meta) {
+    if (data.meta.client)     { const e=document.getElementById('m_client');     if(e) e.value = data.meta.client; }
+    if (data.meta.site)       { const e=document.getElementById('m_site');       if(e) e.value = data.meta.site; }
+    if (data.meta.design)     { const e=document.getElementById('m_design');     if(e) e.value = data.meta.design; }
+    if (data.meta.date)       { const e=document.getElementById('m_date');       if(e) e.value = data.meta.date; }
+  }
+  rebuildUI();
+}
+
+// ==================================================================
+//  COMPUTE TOTALS
+// ==================================================================
+function computeTotals() {
+  let sub = 0;
+  rows.forEach(r => {
+    if (r.t === 'item' && r.flag === '$') {
+      const v = parseFloat(r.est);
+      if (!isNaN(v)) sub += v;
+    }
+  });
+  const disc  = parseFloat(v('m_disc_amt')) || 0;
+  const after = sub - disc;
+  const gst   = after / 11;
+  return { sub, disc, after, gst };
+}
+
+// ==================================================================
+//  LIVE UPDATE
+// ==================================================================
+function up() {
+  const t = computeTotals();
+  document.getElementById('tb-sub').textContent   = fmt(t.sub);
+  document.getElementById('tb-disc').textContent  = t.disc > 0 ? '−'+fmt(t.disc) : '−$0.00';
+  document.getElementById('tb-gst').textContent   = fmt(t.gst);
+  document.getElementById('tb-total').textContent = fmt(t.after);
+  document.getElementById('total-display').textContent = 'Total: ' + fmt(t.after);
+  generatePreview(t);
+}
+
+// ==================================================================
+//  GENERATE PREVIEW PAGES
+// ==================================================================
+function generatePreview(t) {
+  const client     = v('m_client')     || '[Client Name]';
+  const dateRaw    = v('m_date');
+  const dateStr    = dateRaw ? fmtDate(dateRaw) : '[Date]';
+  const design     = v('m_design')     || '[Home Design]';
+  const consultant = v('m_consultant') || '[Consultant]';
+  const siteAddr   = v('m_site')       || '[Site Address]';
+  const ref        = v('m_ref')        || '—';
+  const validDays  = parseInt(v('m_valid')) || 30;
+  const discLabel  = v('m_disc_label') || 'Discount';
+  let validUntil = '';
+  if (dateRaw) {
+    const d = new Date(dateRaw); d.setDate(d.getDate() + validDays);
+    validUntil = fmtDate(d.toISOString().split('T')[0]);
+  }
+
+  // ── Page 1: Cover ──
+  const p1 = `<div class="doc-page">
+    <div class="cover">
+      <div class="cover-img">
+        <div class="cover-logo">
+          <div class="cv-brand">CAVALIER HOMES</div>
+          <div class="cv-sub">Goulburn Valley</div>
+          <div class="cv-tag">Real Homes. Real People.</div>
+        </div>
+        <div class="cover-title">
+          <div class="ct-pre">A Sales Estimate for</div>
+          <div class="ct-h">NEW HOME<em>PROPOSAL</em></div>
+        </div>
+      </div>
+      <div class="cover-foot">
+        <div class="cf-for">
+          Prepared for<br>
+          <strong>${esc(client)}</strong>
+          <div style="font-size:8pt;color:#666;margin-top:3px;">${esc(design)} &nbsp;·&nbsp; ${esc(siteAddr)}</div>
+        </div>
+        <div class="cf-contact">
+          <strong>${esc(consultant)}</strong><br>
+          Cavalier Homes Goulburn Valley<br>
+          03 5823 1859 · www.cavalierhomes.com.au<br>
+          ${esc(dateStr)}
+        </div>
+      </div>
+    </div>
+  </div>`;
+
+  // ── Page 2: Estimate ──
+  let tblRows = '';
+  rows.forEach(r => {
+    if (r.t === 'sec') {
+      tblRows += `<tr class="doc-sec"><td colspan="3">${esc(r.name)}</td></tr>`;
+    } else {
+      const dispEst = fmtCell(r.flag, r.est);
+      const dispCon = r.con ? fmtCell(r.flag, r.con) : '—';
+      const flagClass = r.flag==='Incl.' ? 'flag-incl' : r.flag==='TBC' ? 'flag-tbc' : r.flag==='Allow.' ? 'flag-allow' : '';
+      tblRows += `<tr class="doc-item">
+        <td>${esc(r.desc)||'—'}</td>
+        <td class="td-est-amt ${flagClass}">${dispEst}</td>
+        <td class="td-con-amt">${dispCon}</td>
+      </tr>`;
+    }
+  });
+  if (!tblRows) {
+    tblRows = `<tr class="doc-item"><td colspan="3" style="color:#aaa;font-style:italic;text-align:center;padding:16px;">Add line items using the left panel.</td></tr>`;
+  }
+
+  const p2 = `<div class="doc-page">
+    <div class="doc-head">
+      <div class="dh-brand">
+        <div class="brand-m">CAVALIER HOMES</div>
+        <div class="brand-s">Goulburn Valley</div>
+      </div>
+      <div class="dh-right">
+        <div class="dl">Sales Estimate</div>
+        <div class="dr">Ref: ${esc(ref)} &nbsp;·&nbsp; ABN 50 105 889 745</div>
+      </div>
+    </div>
+    <div class="doc-accent"></div>
+    <!-- Company + client summary -->
+    <div style="padding:10px 24px;display:flex;justify-content:space-between;border-bottom:1px solid ${varCSS('ch-light')};">
+      <div>
+        <div style="font-family:var(--font-serif);font-size:12pt;font-weight:700;">CAVALIER HOMES GOULBURN VALLEY</div>
+        <div style="font-size:7pt;color:#666;">7961 Goulburn Valley Hwy, Kialla VIC 3631 &nbsp;·&nbsp; 03 5823 1859</div>
+        <div style="font-size:7pt;color:#666;">DB-U 9856 (VIC) &nbsp;·&nbsp; 313312C (NSW)</div>
+      </div>
+      <div style="text-align:right;font-size:7.5pt;color:#666;line-height:1.7;">
+        Ref: <strong>${esc(ref)}</strong><br>Date: ${esc(dateStr)}<br>Valid to: ${validUntil||'—'}
+      </div>
+    </div>
+    <div class="client-bar">
+      <div class="cb-field"><div class="cbl">Client</div><div class="cbv">${esc(client)}</div></div>
+      <div class="cb-field"><div class="cbl">Site Address</div><div class="cbv">${esc(siteAddr)}</div></div>
+      <div class="cb-field"><div class="cbl">Home Design</div><div class="cbv">${esc(design)}</div></div>
+    </div>
+    <!-- Estimate table -->
+    <table class="doc-est-tbl">
+      <thead>
+        <tr class="tbl-head">
+          <th>Description</th>
+          <th class="r">Estimate (inc. GST)</th>
+          <th class="r">Contract (inc. GST)</th>
+        </tr>
+      </thead>
+      <tbody>${tblRows}</tbody>
+    </table>
+    <!-- Totals -->
+    <div class="doc-totals">
+      <table class="doc-totals-inner">
+        <tr class="dt-sub">
+          <td>Sub Total</td>
+          <td style="font-weight:600;">${fmt(t.sub)}</td>
+        </tr>
+        ${t.disc>0 ? `<tr class="dt-disc"><td>${esc(discLabel)}</td><td>−${fmt(t.disc)}</td></tr>` : ''}
+        <tr class="dt-gst">
+          <td>Includes GST</td>
+          <td>${fmt(t.gst)}</td>
+        </tr>
+        <tr class="dt-grand">
+          <td>GRAND TOTAL</td>
+          <td>${fmt(t.after)}</td>
+        </tr>
+        ${validUntil ? `<tr class="dt-valid"><td colspan="2">Valid until ${validUntil}</td></tr>` : ''}
+      </table>
+    </div>
+    <div class="doc-foot"><span>Cavalier Homes Goulburn Valley Pty Ltd · ${esc(ref)}</span><span>Page 2</span></div>
+  </div>`;
+
+  // ── Page 3: T&Cs + Signature ──
+  const p3 = `<div class="doc-page">
+    <div class="doc-head">
+      <div class="dh-brand"><div class="brand-m">CAVALIER HOMES</div><div class="brand-s">Goulburn Valley</div></div>
+      <div class="dh-right"><div class="dl">Terms &amp; Conditions</div><div class="dr">Ref: ${esc(ref)}</div></div>
+    </div>
+    <div class="doc-accent"></div>
+    <div class="tc-body">
+      <h2>Estimate Terms &amp; Conditions</h2>
+      <h3>Estimate Pricing</h3>
+      <p>I/we understand that whilst every effort is made to provide accurate estimates prior to groundworks fee, these estimates may not include all site-specific costs. Pricing and scope may be revised once soil test reports and engineering assessments are completed.</p>
+      <h3>Inclusions &amp; Specifications</h3>
+      <p>Prices and inclusions are based on the current standard specification and are subject to variation without notice. All prices are inclusive of GST. Display home designs and inclusions may vary from standard inclusions and are provided as a guide only.</p>
+      <h3>Site Costs</h3>
+      <p>Site-specific costs (including excavation, slab upgrades, services connections) are estimated only and are subject to confirmation following receipt of soil test results, engineering reports, and council requirements. Cavalier Homes Goulburn Valley reserves the right to revise site cost estimates at any time prior to contract execution.</p>
+      <h3>Validity</h3>
+      <p>This estimate is valid for <strong>${validDays} days</strong> from the date of issue (${esc(dateStr)})${validUntil ? ', expiring <strong>'+validUntil+'</strong>' : ''}. After expiry, pricing must be reconfirmed with your Sales Consultant.</p>
+      <h3>Building Commencement &amp; Initial Payment</h3>
+      <p>If I/we enter into a Domestic Building Contract with Cavalier Homes, the initial payment will be deducted from the balance of deposit in accordance with the Building Contract. Prior to commencement, I/we agree to provide all information required within the timeframe set out in the New Home Contract, including land title details, financial confirmation, and any required planning approvals.</p>
+      <h3>Privacy</h3>
+      <p>Cavalier Homes Privacy Policy: <strong>www.cavalierhomes.com.au/privacy-policy/</strong></p>
+      <h3>Representations</h3>
+      <p>I/we acknowledge that I/we will not rely upon any verbal representations made by the builder, its agents, employees or subcontractors when entering into the Building Contract other than those formally detailed in the Building Contract, Specifications, Final Copy Working Drawings or Variation documentation.</p>
+      <!-- Signature block -->
+      <div class="sign-grid">
+        <div class="sign-field">
+          <div class="sf-lbl">Client Name (Primary)</div>
+          <div class="sf-name">${esc(client)}</div>
+          <div class="sign-line"></div>
+          <div class="sf-sub">Signature &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Date</div>
+        </div>
+        <div class="sign-field">
+          <div class="sf-lbl">Client Name (Secondary)</div>
+          <div class="sf-name">&nbsp;</div>
+          <div class="sign-line"></div>
+          <div class="sf-sub">Signature &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Date</div>
+        </div>
+        <div class="sign-field" style="margin-top:16px;">
+          <div class="sf-lbl">Sales Consultant</div>
+          <div class="sf-name">${esc(consultant)}</div>
+          <div style="font-size:7pt;color:#666;margin-top:2px;">Cavalier Homes Goulburn Valley Pty Ltd &nbsp;·&nbsp; DBU 9856 (VIC)</div>
+        </div>
+        <div class="sign-field" style="margin-top:16px;">
+          <div class="disclaimer-box">
+            <strong>Disclaimer:</strong> This estimate does not constitute a binding contract. All figures subject to final documentation, engineering and council approval. ABN: 50 105 889 745. Prices subject to variation without notice.
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="doc-foot"><span>Cavalier Homes Goulburn Valley Pty Ltd</span><span>Page 3</span></div>
+  </div>`;
+
+  // ── Page 4: Payment Schedule ──
+  const stages = [
+    [5,'Deposit'],
+    [15,'Base Stage'],
+    [15,'Frame Stage'],
+    [17.5,'Lock-up Stage A'],
+    [17.5,'Lock-up Stage B'],
+    [20,'Fixing Stage'],
+    [10,'Completion'],
+  ];
+  const contract = t.after;
+  let payRows = stages.map(([pct, stage]) => {
+    const amt = contract * (pct/100);
+    return `<tr>
+      <td>${stage}</td>
+      <td class="pt-pct">${pct}%</td>
+      <td class="pt-amt">${fmt(amt)}</td>
+    </tr>`;
+  }).join('');
+  const exGST = t.after / 1.1;
+  const gst10 = t.after - exGST;
+
+  const p4 = `<div class="doc-page">
+    <div class="doc-head">
+      <div class="dh-brand"><div class="brand-m">CAVALIER HOMES</div><div class="brand-s">Goulburn Valley</div></div>
+      <div class="dh-right"><div class="dl">Payment Schedule</div><div class="dr">Ref: ${esc(ref)}</div></div>
+    </div>
+    <div class="doc-accent"></div>
+    <div class="pay-schedule">
+      <h2>Progress Payments (HIA Victoria)</h2>
+      <table class="pay-tbl">
+        <thead>
+          <tr>
+            <th>Stage of Payment</th>
+            <th>%</th>
+            <th style="text-align:right;">Amount (inc. GST)</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${payRows}
+          <tr style="font-weight:700;background:var(--ch-stone);">
+            <td>Total</td>
+            <td class="pt-pct">100%</td>
+            <td class="pt-amt">${fmt(contract)}</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="gst-box">
+        <strong style="font-size:9.5pt;">GST Summary</strong>
+        <table style="margin-top:8px;">
+          <tr><td>Building contract price excl. GST</td><td>${fmt(exGST)}</td></tr>
+          <tr><td>GST on building contract price</td><td>${fmt(gst10)}</td></tr>
+          <tr class="gst-total"><td>Building contract price incl. GST</td><td>${fmt(contract)}</td></tr>
+        </table>
+      </div>
+      <p style="font-size:7.5pt;color:#666;margin-top:14px;font-style:italic;">
+        All estimates are subject to confirmation. Client/s Signature: __________________________________ Date: ___________
+      </p>
+    </div>
+    <div class="doc-foot"><span>Cavalier Homes Goulburn Valley Pty Ltd</span><span>Page 4</span></div>
+  </div>`;
+
+  // ── Page 5: Back Cover ──
+  const p5 = `<div class="doc-page">
+    <div class="back-cover">
+      <div class="bc-top">
+        <div class="bc-pre">Cavalier Homes Goulburn Valley</div>
+        <div class="bc-h">Let's talk about<br><em>Your New Home</em></div>
+        <div class="bc-contact">
+          <strong>03 5823 1859</strong><br>
+          www.cavalierhomes.com.au<br>
+          7961 Goulburn Valley Hwy, Kialla VIC 3631
+        </div>
+      </div>
+      <div class="bc-bottom">
+        <div>
+          <div class="bc-logo-m">cavalier homes</div>
+          <div class="bc-logo-s">Real Homes. Real People.</div>
+        </div>
+        <div class="bc-right">
+          Prepared by ${esc(consultant)}<br>
+          Confidential — for ${esc(client)} only
+        </div>
+      </div>
+    </div>
+  </div>`;
+
+  document.getElementById('preview').innerHTML = p1 + p2 + p3 + p4 + p5;
+}
+
+// ==================================================================
+//  HELPERS
+// ==================================================================
+function v(id) { const e = document.getElementById(id); return e ? e.value.trim() : ''; }
+function fmt(n) {
+  if (!n && n !== 0) return '$0.00';
+  return '$' + parseFloat(n).toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+function esc(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function fmtDate(d) {
+  try { return new Date(d+'T00:00:00').toLocaleDateString('en-AU',{day:'numeric',month:'long',year:'numeric'}); }
+  catch { return d; }
+}
+function fmtCell(flag, val) {
+  if (flag === 'Incl.') return '<span class="flag-incl">Included</span>';
+  if (flag === 'TBC')   return '<span class="flag-tbc">TBC</span>';
+  if (flag === 'Allow.')return '<span class="flag-allow">Allowance</span>';
+  if (flag === 'Note')  return '<span style="color:#888;font-style:italic;">Note only</span>';
+  // flag === '$'
+  const n = parseFloat(val);
+  return isNaN(n) ? (val||'—') : fmt(n);
+}
+function varCSS(name) { return 'var(--'+name+')'; }
+
+function clearAll() {
+  if (!confirm('Clear all data and start fresh?')) return;
+  rows.length = 0;
+  META.forEach(id => { const e=document.getElementById(id); if(e && id !== 'm_valid') e.value=''; });
+  document.getElementById('m_valid').value = '30';
+  rebuildUI();
+}
+
+// ==================================================================
+//  DEFAULT DATA matching real Cavalier Homes estimate structure
+// ==================================================================
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('m_date').value = new Date().toISOString().split('T')[0];
+
+  const defaults = [
+    { t:'item', desc:'House Type: Sandown 32 Display', flag:'$', est:'', con:'' },
+    { t:'sec',  name:'SERVICE CONNECTIONS' },
+    { t:'item', desc:'Sewer run to suit your block (XXm of additional run)', flag:'$', est:'0', con:'' },
+    { t:'item', desc:'Water run to suit your block (XXm of additional run)', flag:'$', est:'0', con:'' },
+    { t:'item', desc:'Stormwater run to suit your block (XXm of additional run)', flag:'$', est:'0', con:'' },
+    { t:'item', desc:'Electricity run to suit your block (XXm of additional run)', flag:'$', est:'0', con:'' },
+    { t:'item', desc:'Gas service is to be supplied by the service provider', flag:'Note', est:'', con:'' },
+    { t:'item', desc:'Temporary fencing to suit your block (additional XXm)', flag:'$', est:'0', con:'' },
+    { t:'sec',  name:'FOUNDATIONS' },
+    { t:'item', desc:'XXX Class waffle pod slab with XXXmm deep piers (subject to soil test)', flag:'$', est:'0', con:'' },
+    { t:'sec',  name:'BUSHFIRE PRONE AREA' },
+    { t:'item', desc:'Compliance with Victorian Bushfire Regulations (BAL 12.5)', flag:'$', est:'2200', con:'' },
+    { t:'sec',  name:'VARIATIONS TO PLAN & LIFESTYLE INCLUSIONS' },
+    { t:'sec',  name:'FACADE' },
+    { t:'item', desc:'Extend front porch adding a raised portico with rendered bulkhead', flag:'TBC', est:'', con:'' },
+    { t:'item', desc:'Add gable to the front with cement sheet lining as per display', flag:'$', est:'3500', con:'' },
+    { t:'item', desc:'Upgrade garage door to timbergrain from standard Lifestyle inclusion', flag:'$', est:'405', con:'' },
+    { t:'sec',  name:'KITCHEN' },
+    { t:'item', desc:'Add 40mm standard Smartstone range stone benchtops to Kitchen in lieu of laminate', flag:'TBC', est:'', con:'' },
+    { t:'item', desc:'Raised T-bar to island bench with 40mm stone and waterfall ends', flag:'$', est:'2725', con:'' },
+    { t:'item', desc:'Upgrade to 900mm Westinghouse oven, cooktop and rangehood', flag:'TBC', est:'', con:'' },
+    { t:'sec',  name:'ENSUITE' },
+    { t:'item', desc:'Add 20mm standard Smartstone range stone benchtop to Ensuite in lieu of laminate', flag:'TBC', est:'', con:'' },
+    { t:'item', desc:'Upgrade to Omega countertop basins x2 in lieu of standard Lifestyle range', flag:'$', est:'120', con:'' },
+    { t:'sec',  name:'HEATING & COOLING' },
+    { t:'item', desc:'Add Navigator controller to heating and cooling (standard separate controls)', flag:'$', est:'250', con:'' },
+    { t:'item', desc:'Add gas log fire to Lounge', flag:'$', est:'13300', con:'' },
+    { t:'sec',  name:'ELECTRICAL' },
+    { t:'item', desc:'Upgrade light switches and powerpoints to Iconic from Clipsal 2000 series', flag:'$', est:'950', con:'' },
+    { t:'item', desc:'TV antenna', flag:'TBC', est:'', con:'' },
+    { t:'sec',  name:'FLOOR COVERINGS' },
+    { t:'item', desc:'Tile upgrade to Ensuite (TBC)', flag:'Allow.', est:'3700', con:'' },
+    { t:'item', desc:'Tile upgrade to Bathroom (TBC)', flag:'Allow.', est:'3700', con:'' },
+    { t:'item', desc:'Upgrade carpet to Godfrey Hirst', flag:'TBC', est:'', con:'' },
+    { t:'sec',  name:'WINDOW COVERINGS' },
+    { t:'item', desc:'Allowance for blinds (TBC)', flag:'Allow.', est:'5000', con:'' },
+    { t:'sec',  name:'YARD ITEMS' },
+    { t:'item', desc:'Fencing', flag:'$', est:'0', con:'' },
+    { t:'item', desc:'Landscaping', flag:'$', est:'0', con:'' },
+    { t:'sec',  name:'EXTERNAL CONCRETE' },
+    { t:'item', desc:'Exposed aggregate paving to Porch', flag:'$', est:'0', con:'' },
+    { t:'item', desc:'Exposed aggregate paving to Outdoor Living', flag:'$', est:'0', con:'' },
+    { t:'item', desc:'Driveway and crossover - natural concrete', flag:'$', est:'0', con:'' },
+  ];
+  defaults.forEach(r => rows.push(r));
+  rebuildUI();
+});
+</script>
+</body>
+</html>

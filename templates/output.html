@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Cavalier One | Generated Draft</title>
+    <style>
+        :root {
+            --primary: #1e293b;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #0f172a;
+            --border: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            margin: 0;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+
+        .btn-back {
+            text-decoration: none;
+            color: var(--primary);
+            font-weight: 600;
+            border: 1px solid var(--border);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            background: white;
+            transition: all 0.2s;
+        }
+
+        .btn-back:hover {
+            background: var(--border);
+        }
+
+        .output-card {
+            background: var(--card);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .prompt-preview {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+            font-size: 0.9rem;
+            white-space: pre-wrap;
+        }
+
+        .notice {
+            background: #ffffb0;
+            border-left: 4px solid #d97706;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            color: #78350f;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Cavalier One Output</h1>
+            <a href="/" class="btn-back">← Back to Generator</a>
+        </div>
+
+        {% if 'Social' not in data.media_type and 'Rendering' not in data.media_type %}
+        <div class="notice">
+            <strong>Next Step:</strong>
+            <ol style="margin-top: 0.5rem; margin-bottom: 0;">
+                <li>Click <strong>Copy Prompt</strong> below.</li>
+                <li>Open your AI Chat (Gemini, ChatGPT, or Claude).</li>
+                <li>Paste the prompt and hit Enter.</li>
+                <li>The AI will write your professional marketing content!</li>
+            </ol>
+        </div>
+        {% endif %}
+
+        <div class="output-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2 style="margin: 0;">
+                    {% if 'Social' in data.media_type %}
+                    Generative AI Draft
+                    {% elif 'Rendering' in data.media_type %}
+                    Architectural Rendering
+                    {% else %}
+                    Assembled Master Prompt
+                    {% endif %}
+                </h2>
+                <div style="display: flex; gap: 10px;">
+                    {% if 'Social' not in data.media_type and 'Rendering' not in data.media_type %}
+                    <form action="/generate_pdf" method="POST" target="_blank">
+                        <!-- Pass data for PDF generation -->
+                        <input type="hidden" name="home_name" value="{{ data.home_name }}">
+                        <input type="hidden" name="land_details" value="{{ data.land_details }}">
+                        <button type="submit"
+                            style="width: auto; padding: 0.5rem 1rem; background: #64748b; color: white; border: none; border-radius: 8px; font-size: 0.9rem; cursor: pointer;">Download
+                            PDF</button>
+                        <button type="submit" formaction="/preview_brochure"
+                            style="width: auto; padding: 0.5rem 1rem; background: #3b82f6; color: white; border: none; border-radius: 8px; font-size: 0.9rem; cursor: pointer;">Preview
+                            HTML</button>
+                    </form>
+                    {% endif %}
+                    <button onclick="copyToClipboard()" id="copyBtn"
+                        style="width: auto; padding: 0.5rem 1rem; background: var(--accent); color: white; border: none; border-radius: 8px; font-size: 0.9rem; cursor: pointer;">
+                        {% if 'Social' in data.media_type %}Copy Text{% else %}Copy Prompt{% endif %}
+                    </button>
+                </div>
+            </div>
+            <div class="prompt-preview" id="promptText" style="display:none;">{{ prompt }}</div>
+
+            {% if content %}
+            <!-- Social Media Post Preview -->
+            <div class="social-card"
+                style="border: 1px solid #ddd; border-radius: 8px; max-width: 600px; margin: 0 auto; background: white; font-family: Helvetica, Arial, sans-serif;">
+
+                <!-- Header -->
+                <div style="padding: 12px; display: flex; align-items: center; border-bottom: 1px solid #f0f2f5;">
+                    <div style="width: 40px; height: 40px; background: #ddd; border-radius: 50%; margin-right: 10px;">
+                    </div>
+                    <div>
+                        <div style="font-weight: bold; color: #050505;">Cavalier Homes Goulburn Valley</div>
+                        <div style="font-size: 12px; color: #65676b;">Just now · 🌎</div>
+                    </div>
+                </div>
+
+                <!-- Caption (AI Text) -->
+                <div style="padding: 12px; color: #050505; font-size: 15px; line-height: 1.5;">
+                    <p style="margin-bottom:8px; font-weight:bold; color: #ff0000; font-size: 13px;">INTERNAL AI
+                        ANALYSIS (DEBUG):</p>
+                    <div
+                        style="background:#f1f5f9; padding:10px; border-radius:6px; font-size:13px; color:#475569; margin-bottom:15px; border:1px dashed #cbd5e1;">
+                        {{ content|safe }}
+                    </div>
+                </div>
+
+                <!-- Image -->
+                {% if data.image %}
+                <div style="width: 100%; overflow: hidden;">
+                    <img src="{{ url_for('uploaded_file', filename=data.image.split('/')[-1]) }}" alt="Post Image"
+                        style="width: 100%; display: block; height: auto;">
+                </div>
+                {% endif %}
+
+                <!-- Footer Mockup -->
+                <div
+                    style="padding: 10px; border-top: 1px solid #f0f2f5; color: #65676b; font-size: 14px; display: flex; justify-content: space-around;">
+                    <span>👍 Like</span>
+                    <span>💬 Comment</span>
+                    <span>↗ Share</span>
+                </div>
+            </div>
+            {% else %}
+            <div class="prompt-preview">{{ prompt }}</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        function copyToClipboard() {
+            const text = document.getElementById('promptText').innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = document.getElementById('copyBtn');
+                btn.innerText = "Copied!";
+                btn.style.backgroundColor = "#10b981"; // Green
+                setTimeout(() => {
+                    btn.innerText = "Copy Prompt";
+                    btn.style.backgroundColor = ""; // Reset
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+
+</html>

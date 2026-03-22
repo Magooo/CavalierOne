@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>CavalierOne Brain</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .brain-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px;
+        }
+
+        .brain-header {
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .refresh-auth-btn {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: #f0f0f0;
+            color: #333;
+            font-size: 0.8em;
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+        }
+
+        .brain-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        h2 {
+            margin-top: 0;
+            color: #333;
+        }
+
+        .notebook-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .notebook-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .notebook-item:hover,
+        .notebook-item.active {
+            background: #f9f9f9;
+        }
+
+        .chat-box {
+            height: 400px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow-y: auto;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: #fcfcfc;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            border-radius: 8px;
+            max-width: 80%;
+        }
+
+        .user-msg {
+            background: #007bff;
+            color: white;
+            margin-left: auto;
+        }
+
+        .ai-msg {
+            background: #e9ecef;
+            color: #333;
+        }
+
+        button {
+            background: #D4AF37;
+            /* Cavalier Gold */
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        button:hover {
+            background: #b5952f;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="brain-container">
+        <div class="brain-header">
+            <h1>🧠 CavalierOne Brain</h1>
+            <p>Deep Research & Meeting Intelligence Engine</p>
+            <a href="/">← Back to Marketing Hub</a>
+            <button class="refresh-auth-btn" onclick="refreshAuth()">↻ Refresh Auth</button>
+        </div>
+
+        <div class="brain-grid">
+            <!-- LEFT: Controls -->
+            <div class="card">
+                <h3>📂 Notebooks</h3>
+                <ul class="notebook-list" id="notebookList">
+                    {% if notebooks %}
+                    {% for nb in notebooks %}
+                    <li class="notebook-item" id="nb_item_{{ nb.id }}"
+                        onclick="selectNotebook('{{ nb.id }}', '{{ nb.title }}')">
+                        <strong>{{ nb.title }}</strong>
+                    </li>
+                    {% endfor %}
+                    {% else %}
+                    <li style="padding:15px; color:#777; font-style:italic;">No notebooks found yet.</li>
+                    {% endif %}
+                </ul>
+                <button onclick="createNotebook()" style="width:100%; margin-top:10px;">+ New Notebook</button>
+
+                <hr>
+
+                <h3>👂 Fireflies Meetings</h3>
+                {% if meetings %}
+                <ul class="notebook-list">
+                    {% for m in meetings %}
+                    <li class="notebook-item">
+                        <div style="font-size:0.9em; font-weight:bold;">{{ m.title }}</div>
+                        <div style="font-size:0.8em; color:#666;">{{ m.dateString }}</div>
+                        <button onclick="importMeeting('{{ m.id }}')"
+                            style="font-size:0.7em; padding:5px 10px; margin-top:5px;">Import to Brain</button>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p style="font-size:0.9em; color:#888;">No recent meetings found. <br><br>
+                    Record your first meeting with the <strong>Fireflies.ai App</strong>:<br>
+                    <a href="https://apps.apple.com/us/app/fireflies-ai-meeting-notes/id1527848601"
+                        target="_blank">iOS</a> |
+                    <a href="https://play.google.com/store/apps/details?id=com.fireflies.android"
+                        target="_blank">Android</a>
+                </p>
+                {% endif %}
+            </div>
+
+            <!-- RIGHT: Interaction -->
+            <div class="card">
+                <h3 id="currentNotebookTitle">Chat with Data</h3>
+                <div class="chat-box" id="chatBox">
+                    <div class="message ai-msg">Hello! I am connected to your NotebookLM Brain. Ask me anything about
+                        your documents or meetings.</div>
+                </div>
+
+                <div style="display:flex; gap:10px;">
+                    <input type="text" id="queryInput" placeholder="Ask a question...">
+                    <button onclick="sendQuery()">Send</button>
+                </div>
+
+                <hr>
+                <h4>Add Source</h4>
+                <div style="display:flex; gap:10px; margin-bottom:10px;">
+                    <input type="text" id="sourceUrl" placeholder="Paste URL (YouTube/Web)">
+                    <button onclick="addSource()">Add URL</button>
+                </div>
+                <!-- File Upload -->
+                <div style="display:flex; gap:10px; align-items: center;">
+                    <input type="file" id="sourceFile" accept=".pdf,.txt,.md" style="padding: 5px;">
+                    <button onclick="uploadFile()">Upload File</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentNotebookId = localStorage.getItem('c1_notebook_id') || '';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (currentNotebookId) {
+                // Try to auto-select if exists
+                const item = document.getElementById('nb_item_' + currentNotebookId);
+                if (item) {
+                    // Get title from element text content (rough check)
+                    const title = item.innerText.trim();
+                    selectNotebook(currentNotebookId, title, true);
+                }
+            }
+        });
+
+        function selectNotebook(id, title, isAutoSelect = false) {
+            currentNotebookId = id;
+            localStorage.setItem('c1_notebook_id', currentNotebookId);
+
+            // UI Update
+            document.querySelectorAll('.notebook-item').forEach(el => el.classList.remove('active'));
+            const el = document.getElementById('nb_item_' + id);
+            if (el) el.classList.add('active');
+
+            // Header Update
+            const header = document.getElementById('currentNotebookTitle');
+            if (header) header.innerText = "Notebook: " + title;
+
+            // Clear chat if user clicked (not auto-select on load)
+            if (!isAutoSelect) {
+                const box = document.getElementById('chatBox');
+                box.innerHTML = '';
+                appendMessage('ai', `Switched to notebook: <b>${title}</b>.<br>Ask me anything!`);
+            } else {
+                // First load message
+                setTimeout(() => {
+                    const box = document.getElementById('chatBox');
+                    // Avoid double hello if already there
+                    if (box.children.length <= 1) { // 1 is default Hello
+                        appendMessage('ai', `Reconnected to: <b>${title}</b>`);
+                    }
+                }, 500);
+            }
+        }
+
+        function appendMessage(role, text) {
+            const div = document.createElement('div');
+            div.className = `message ${role === 'user' ? 'user-msg' : 'ai-msg'}`;
+            div.classList.add(role); // Helper class
+
+            // Allow rudimentary HTML/Markdown-like rendering
+            // Convert newlines to breaks
+            const formattedText = typeof text === 'string' ? text.replace(/\n/g, '<br>') : JSON.stringify(text, null, 2);
+            div.innerHTML = formattedText;
+
+            const box = document.getElementById('chatBox');
+            box.appendChild(div);
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function parseMcpResponse(data) {
+            // Helper to extract actual data from MCP envelope
+            if (!data) return null;
+
+            // Case 0: Error in MCP response
+            if (data.isError) {
+                console.error("MCP Error:", data);
+                // Try to find error message in content
+                if (data.content && data.content[0] && data.content[0].text) {
+                    return { error: data.content[0].text };
+                }
+                return { error: "Unknown MCP Error" };
+            }
+
+            // Case 1: Structured Content (Best)
+            if (data.structuredContent) {
+                return data.structuredContent;
+            }
+
+            // Case 2: Text Content that might be JSON
+            if (data.content && Array.isArray(data.content)) {
+                let combinedText = data.content
+                    .filter(c => c.type === 'text')
+                    .map(c => c.text)
+                    .join('');
+
+                try {
+                    // Try parsing as JSON first
+                    return JSON.parse(combinedText);
+                } catch (e) {
+                    // Return raw text if not JSON
+                    return combinedText;
+                }
+            }
+
+            // Case 3: Flat object (Legacy/Direct)
+            return data;
+        }
+
+        async function createNotebook() {
+            const title = prompt("Notebook Title:");
+            if (!title) return;
+
+            // Reset current ID to avoid confusion
+            currentNotebookId = "";
+            localStorage.removeItem('c1_notebook_id');
+
+            const formData = new FormData();
+            formData.append('title', title);
+
+            try {
+                const res = await fetch('/api/brain/create_notebook', { method: 'POST', body: formData });
+                const rawData = await res.json();
+                const data = parseMcpResponse(rawData);
+
+                // Check for Notebook ID in various places
+                let newId = null;
+                if (data.notebook_id) newId = data.notebook_id;
+                else if (data.notebook && data.notebook.id) newId = data.notebook.id;
+                else if (data.id) newId = data.id;
+
+                if (newId) {
+                    currentNotebookId = newId;
+                    localStorage.setItem('c1_notebook_id', currentNotebookId);
+
+                    // Add to UI List
+                    const list = document.getElementById('notebookList');
+                    // Remove "No notebooks" placeholder
+                    if (list.children.length > 0 && list.children[0].innerText.includes("No notebooks found")) {
+                        list.innerHTML = '';
+                    }
+
+                    const li = document.createElement('li');
+                    li.className = 'notebook-item active';
+                    li.id = 'nb_item_' + newId;
+                    li.onclick = function () { selectNotebook(newId, title); };
+                    li.innerHTML = `<strong>${title}</strong>`;
+                    list.appendChild(li);
+
+                    alert("Notebook Created! ID: " + currentNotebookId);
+
+                    // Select it
+                    selectNotebook(newId, title);
+                    appendMessage('ai', `Notebook "${title}" created and ready.`);
+                } else {
+                    alert("Error creating notebook: " + (data.error || JSON.stringify(data)));
+                }
+            } catch (e) {
+                alert("Network/Server Error: " + e.message);
+            }
+        }
+
+        async function uploadFile() {
+            if (!currentNotebookId) {
+                alert("No active notebook.");
+                return;
+            }
+
+            const fileInput = document.getElementById('sourceFile');
+            const file = fileInput.files[0];
+            if (!file) {
+                alert("Please select a file.");
+                return;
+            }
+
+            const btn = document.querySelector('button[onclick="uploadFile()"]');
+            const originalText = btn.innerText;
+            btn.innerText = "Uploading...";
+            btn.disabled = true;
+
+            appendMessage('ai', `Uploading ${file.name}...`);
+
+            const formData = new FormData();
+            formData.append('notebook_id', currentNotebookId);
+            formData.append('file', file);
+
+            try {
+                const res = await fetch('/api/brain/upload_file', { method: 'POST', body: formData });
+                const rawData = await res.json();
+                const data = parseMcpResponse(rawData);
+
+                if (data.error) {
+                    appendMessage('ai', '❌ Error uploading file: ' + data.error);
+                } else {
+                    appendMessage('ai', '✅ File uploaded successfully: ' + file.name);
+                    fileInput.value = ''; // Reset
+                }
+            } catch (e) {
+                appendMessage('ai', '❌ System Error: ' + e.message);
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        async function addSource() {
+            if (!currentNotebookId) {
+                alert("No active notebook. Please create one first.");
+                return;
+            }
+
+            const url = document.getElementById('sourceUrl').value;
+            if (!url) return;
+
+            const btn = document.querySelector('button[onclick="addSource()"]');
+            const originalText = btn.innerText;
+            btn.innerText = "Adding...";
+            btn.disabled = true;
+
+            appendMessage('ai', 'Adding source... please wait.');
+
+            const formData = new FormData();
+            formData.append('notebook_id', currentNotebookId);
+            formData.append('url', url);
+
+            try {
+                const res = await fetch('/api/brain/add_source', { method: 'POST', body: formData });
+                const rawData = await res.json();
+                const data = parseMcpResponse(rawData);
+
+                if (data.error) {
+                    appendMessage('ai', '❌ Error adding source: ' + data.error);
+                } else {
+                    appendMessage('ai', '✅ Source added successfully.');
+                    document.getElementById('sourceUrl').value = '';
+                }
+            } catch (e) {
+                appendMessage('ai', '❌ System Error: ' + e.message);
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        async function sendQuery() {
+            if (!currentNotebookId) {
+                alert("Please create a notebook first!");
+                return;
+            }
+
+            const q = document.getElementById('queryInput').value;
+            if (!q) return;
+
+            appendMessage('user', q);
+            document.getElementById('queryInput').value = '';
+
+            const formData = new FormData();
+            formData.append('notebook_id', currentNotebookId);
+            formData.append('question', q);
+
+            // Show loading indicator?
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'message ai-msg';
+            loadingDiv.innerText = 'Thinking...';
+            loadingDiv.id = 'loadingMsg';
+            document.getElementById('chatBox').appendChild(loadingDiv);
+
+            try {
+                const res = await fetch('/api/brain/query', { method: 'POST', body: formData });
+                const rawData = await res.json();
+                const data = parseMcpResponse(rawData);
+
+                // Remove loading
+                const loader = document.getElementById('loadingMsg');
+                if (loader) loader.remove();
+
+                if (data.error) {
+                    appendMessage('ai', "Error: " + data.error);
+                } else {
+                    // Query response is usually plain text in the content, or just a string if parseMcpResponse found text
+                    // If it's an object with 'answer', use that.
+                    let answer = data;
+                    if (typeof data === 'object') {
+                        // Check if answer field exists (even if empty string)
+                        if ('answer' in data) {
+                            answer = data.answer;
+                            if (!answer) answer = "<i>I found no specific answer in the notebook sources.</i>";
+                        } else {
+                            answer = data.content || JSON.stringify(data);
+                        }
+                    }
+                    appendMessage('ai', answer);
+                }
+            } catch (e) {
+                const loader = document.getElementById('loadingMsg');
+                if (loader) loader.remove();
+                appendMessage('ai', "Error: " + e.message);
+            }
+        }
+
+        async function importMeeting(transcriptId) {
+            if (!currentNotebookId) {
+                alert("Please create or select a notebook first.");
+                return;
+            }
+
+            appendMessage('ai', 'Importing meeting transcript... this may take a moment.');
+
+            const formData = new FormData();
+            formData.append('notebook_id', currentNotebookId);
+            formData.append('transcript_id', transcriptId);
+
+            try {
+                const res = await fetch('/api/brain/import_meeting', { method: 'POST', body: formData });
+                const rawData = await res.json();
+                const data = parseMcpResponse(rawData);
+
+                if (data.error) {
+                    appendMessage('ai', "Error importing: " + data.error);
+                } else {
+                    appendMessage('ai', 'Meeting Imported! You can now query it.');
+                }
+            } catch (e) {
+                appendMessage('ai', "Error: " + e.message);
+            }
+        }
+        async function refreshAuth() {
+            if (!confirm("Refresh NotebookLM Authentication? Make sure you have an active NotebookLM tab open in Chrome.")) return;
+
+            const btn = document.querySelector('.refresh-auth-btn');
+            const originalText = btn.innerText;
+            btn.innerText = "Refreshing...";
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/brain/refresh_auth', { method: 'POST' });
+                const data = await res.json();
+
+                if (data.error) {
+                    alert("Error: " + data.error);
+                } else {
+                    alert("Auth Refreshed! " + data.message);
+                    location.reload();
+                }
+            } catch (e) {
+                alert("Sys Error: " + e.message);
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        }
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{title}} | Cavalier Homes</title>
+  <style>
+    :root{
+      --ch-black:#000;
+      --ch-white:#fff;
+      --ch-red:#AD4B43;
+      --ch-warm-grey:#AEA299;
+      --ch-stone:#eeedec;
+      --ch-mid-grey:#dbd9d8;
+      --ch-charcoal:#54595f;
+
+      --font-primary:"Avant Garde Gothic","Century Gothic",Arial,sans-serif;
+      --font-secondary:"Playfair Display",Georgia,"Times New Roman",serif;
+
+      --radius:16px;
+      --shadow:0 8px 24px rgba(0,0,0,0.08);
+      --max:1200px;
+    }
+
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family:var(--font-primary);
+      color:var(--ch-black);
+      background:var(--ch-white);
+      line-height:1.45;
+    }
+    a{ color:inherit; }
+
+    .wrap{ max-width:var(--max); margin:0 auto; padding:24px; }
+    .topbar{
+      display:flex; align-items:center; justify-content:space-between; gap:16px;
+      padding:18px 0;
+      border-bottom:1px solid var(--ch-mid-grey);
+    }
+    .logo{ height:44px; width:auto; }
+    .top-cta{
+      text-decoration:none;
+      padding:12px 16px;
+      border-radius:999px;
+      border:1px solid var(--ch-black);
+      font-weight:700;
+    }
+
+    .hero{
+      display:grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap:24px;
+      padding:28px 0 10px 0;
+      align-items:center;
+    }
+    .kicker{
+      text-transform:uppercase;
+      letter-spacing:.10em;
+      font-size:12px;
+      color:var(--ch-charcoal);
+      margin:0 0 10px 0;
+    }
+    h1{
+      font-family:var(--font-secondary);
+      font-size: clamp(34px, 4vw, 54px);
+      line-height:1.02;
+      margin:0 0 12px 0;
+    }
+    .sub{
+      margin:0 0 18px 0;
+      color:var(--ch-charcoal);
+      font-size:18px;
+      max-width:52ch;
+    }
+    .btns{ display:flex; gap:12px; flex-wrap:wrap; }
+    .btn{
+      display:inline-block;
+      text-decoration:none;
+      padding:12px 16px;
+      border-radius:999px;
+      font-weight:800;
+      border:1px solid var(--ch-black);
+    }
+    .btn.primary{
+      background:var(--ch-black);
+      color:var(--ch-white);
+    }
+    .btn.secondary{
+      background:transparent;
+    }
+
+    .hero-media{
+      border-radius:var(--radius);
+      overflow:hidden;
+      border:1px solid var(--ch-mid-grey);
+      box-shadow: var(--shadow);
+      background:var(--ch-stone);
+    }
+    .hero-media img{ width:100%; display:block; height:auto; }
+
+    .stats{
+      margin-top:18px;
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap:12px;
+    }
+    .stat{
+      border:1px solid var(--ch-mid-grey);
+      border-radius:var(--radius);
+      padding:14px;
+      background:var(--ch-white);
+    }
+    .stat .l{ color:var(--ch-charcoal); font-size:12px; margin:0; }
+    .stat .v{ font-weight:900; margin:6px 0 0 0; font-size:18px; }
+
+    .section{ padding:26px 0; border-top:1px solid var(--ch-mid-grey); margin-top:26px; }
+    .section h2{
+      margin:0 0 12px 0;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      font-size:14px;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap:18px;
+    }
+
+    .card{
+      border:1px solid var(--ch-mid-grey);
+      border-radius:var(--radius);
+      padding:18px;
+      background:var(--ch-white);
+    }
+
+    .price{
+      border-left:4px solid var(--ch-red);
+      padding:14px 14px 14px 16px;
+      background:var(--ch-stone);
+      border-radius:12px;
+    }
+    .price .amt{ font-size:28px; font-weight:1000; margin:0; }
+    .price .note{ margin:6px 0 0 0; color:var(--ch-charcoal); }
+
+    ul{ margin:0; padding-left:18px; }
+    li{ margin:8px 0; }
+
+    .contact{
+      display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .legal{
+      color:var(--ch-charcoal);
+      font-size:12px;
+      line-height:1.35;
+    }
+
+    @media (max-width: 900px){
+      .hero{ grid-template-columns: 1fr; }
+      .grid{ grid-template-columns: 1fr; }
+      .stats{ grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <img class="logo" src="{{logo_path_primary}}" alt="Cavalier Homes Logo" />
+      <a class="top-cta" href="{{cta_primary_link}}">{{cta_primary_label}}</a>
+    </div>
+
+    <section class="hero">
+      <div>
+        <p class="kicker">{{build_stage}} · {{estate}}</p>
+        <h1>{{title}}</h1>
+        <p class="sub">{{hero_subheadline}}</p>
+
+        <div class="btns">
+          <a class="btn primary" href="{{cta_primary_link}}">{{cta_primary_label}}</a>
+          {{#if cta_secondary_link}}
+            <a class="btn secondary" href="{{cta_secondary_link}}">{{cta_secondary_label}}</a>
+          {{/if}}
+        </div>
+
+        <div class="stats">
+          <div class="stat"><p class="l">Bedrooms</p><p class="v">{{bedrooms}}</p></div>
+          <div class="stat"><p class="l">Bathrooms</p><p class="v">{{bathrooms}}</p></div>
+          <div class="stat"><p class="l">Car Spaces</p><p class="v">{{car_spaces}}</p></div>
+          <div class="stat"><p class="l">Total Area</p><p class="v">{{total_area_m2}}m²</p></div>
+        </div>
+      </div>
+
+      <div class="hero-media">
+        <img src="{{hero_image}}" alt="{{hero_image_alt}}" />
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="grid">
+        <div class="card">
+          <h2>Overview</h2>
+          <p style="margin:0;">{{long_description}}</p>
+
+          {{#if key_features}}
+          <div style="height:14px;"></div>
+          <h2>Key features</h2>
+          <ul>
+            {{#each key_features}}
+              <li>{{this}}</li>
+            {{/each}}
+          </ul>
+          {{/if}}
+        </div>
+
+        <div class="card">
+          <h2>Price</h2>
+          <div class="price">
+            <p class="amt">{{price}}</p>
+            <p class="note">{{price_note}}</p>
+          </div>
+
+          <div style="height:14px;"></div>
+          <h2>Location</h2>
+          <p style="margin:0;"><strong>Lot:</strong> {{lot_number}}</p>
+          <p style="margin:6px 0 0 0;"><strong>Address:</strong> {{address}}</p>
+          <p style="margin:6px 0 0 0;"><strong>Region:</strong> {{region}}</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="grid">
+        <div class="card">
+          <h2>Inclusions</h2>
+          <ul>
+            {{#each inclusions_summary}}
+              <li>{{this}}</li>
+            {{/each}}
+          </ul>
+        </div>
+
+        <div class="card">
+          <h2>Floorplan</h2>
+          <img src="{{floorplan_image}}" alt="Floorplan for {{title}}" style="width:100%; height:auto; border:1px solid var(--ch-mid-grey); border-radius:12px;" />
+          <p class="legal" style="margin-top:10px;">Room sizes are approximate. Refer to final working drawings.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="card contact">
+        <div>
+          <h2 style="margin-bottom:8px;">Let’s talk about your new home.</h2>
+          <div style="font-weight:800;">{{contact_name}}</div>
+          <div>{{contact_phone}} · {{contact_email}}</div>
+          <div class="legal" style="margin-top:6px;">{{office_location}}</div>
+        </div>
+        <div>
+          <a class="btn primary" href="{{cta_primary_link}}">{{cta_primary_label}}</a>
+        </div>
+      </div>
+
+      <div style="height:14px;"></div>
+      <div class="legal">
+        <p style="margin:0;">{{legal_disclaimer_text}}</p>
+        <p style="margin:10px 0 0 0;">{{builder_registration_numbers}} · {{copyright_notice}}</p>
+      </div>
+    </section>
+  </div>
+</body>
+</html>

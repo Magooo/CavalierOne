@@ -1,0 +1,492 @@
+{
+    "_comment": "These templates define the structure for inputs into the marketing generator. Fill these out to create 'library' items.",
+    "home_design_template": [
+        {
+            "name": "Ascot 36",
+            "bedrooms": 4,
+            "bathrooms": 2,
+            "cars": 2,
+            "width_m": 12.5,
+            "depth_m": 25.0,
+            "key_features": [
+                "Grand al-fresco area",
+                "Butler's pantry",
+                "Master suite with retreat"
+            ],
+            "inclusions_tier": "Cavalier Standard Inclusions",
+            "facades": [
+                "The Rise",
+                "Standard",
+                "The Summit"
+            ]
+        },
+        {
+            "name": "Ashwood 17",
+            "bedrooms": 3,
+            "bathrooms": 2,
+            "cars": 2,
+            "width_m": 12.5,
+            "depth_m": 21.0,
+            "key_features": [
+                "Compact 3-bedroom design",
+                "Open plan living",
+                "Ideal for narrow blocks"
+            ],
+            "inclusions_tier": "Fast Keys Inclusions",
+            "facades": [
+                "Standard"
+            ]
+        },
+        {
+            "name": "Ashwood 20",
+            "bedrooms": 4,
+            "bathrooms": 2,
+            "cars": 2,
+            "width_m": 12.5,
+            "depth_m": 23.5,
+            "key_features": [
+                "4 Bedrooms",
+                "Separate Laundry",
+                "Walk-in Pantry"
+            ],
+            "inclusions_tier": "Fast Keys Inclusions",
+            "facades": [
+                "Standard"
+            ]
+        },
+        {
+            "name": "Byron 19",
+            "bedrooms": 3,
+            "bathrooms": 2,
+            "cars": 2,
+            "width_m": 14.0,
+            "depth_m": 19.0,
+            "key_features": [
+                "Wide frontage design",
+                "Master at front",
+                "Large alfresco"
+            ],
+            "inclusions_tier": "Fast Keys Inclusions",
+            "facades": [
+                "Standard"
+            ]
+        },
+        {
+            "name": "Byron 22A",
+            "bedrooms": 4,
+            "bathrooms": 2,
+            "cars": 2,
+            "width_m": 14.0,
+            "depth_m": 21.5,
+            "key_features": [
+                "Spacious 4-bedder",
+                "Theatre room option",
+                "Double garage"
+            ],
+            "inclusions_tier": "Fast Keys Inclusions",
+            "facades": [
+                "Standard"
+            ]
+        },
+        {
+            "name": "Byron 22B",
+            "bedrooms": 4,
+            "bathrooms": 2,
+            "cars": 2,
+            "width_m": 14.0,
+            "depth_m": 21.5,
+            "key_features": [
+                "Alternative layout for Byron",
+                "Rear master suite",
+                "Central kitchen"
+            ],
+            "inclusions_tier": "Fast Keys Inclusions",
+            "facades": [
+                "Standard"
+            ]
+        },
+        {
+            "name": "Malvern 20 (Fast Keys)",
+            "bedrooms": 4,
+            "bathrooms": 2,
+            "cars": 2,
+            "width_m": 10.7,
+            "depth_m": 22.14,
+            "key_features": [
+                "Compact width (10.7m)",
+                "Open plan Meals & Family",
+                "Efficient 4-bedroom layout"
+            ],
+            "inclusions_tier": "Fast Keys Premium Inclusions",
+            "facades": [
+                "The Rise",
+                "Standard",
+                "The Crest"
+            ]
+        },
+        {
+            "name": "Malvern 23 (Fast Keys)",
+            "bedrooms": 4,
+            "bathrooms": 2,
+            "cars": 2,
+            "width_m": 10.7,
+            "depth_m": 25.23,
+            "key_features": [
+                "Separate Rumpus Room",
+                "Large Walk-in Pantry",
+                "Extended Outdoor Living potential"
+            ],
+            "inclusions_tier": "Fast Keys Premium Inclusions",
+            "facades": [
+                "The Rise",
+                "Standard",
+                "The Crest"
+            ]
+        },
+        {
+            "name": "Malvern 25",
+            "bedrooms": 4,
+            "bathrooms": 2,
+            "cars": 2,
+            "width_m": 10.7,
+            "depth_m": 27.5,
+            "key_features": [
+                "Largest Malvern design",
+                "Study nook",
+                "Grand master suite"
+            ],
+            "inclusions_tier": "Fast Keys Premium Inclusions",
+            "facades": [
+                "The Rise",
+                "Standard",
+                "The Crest"
+            ]
+        }
+    ],
+    "land_details_template": [
+        {
+            "lot_number": "Lot 104",
+            "estate_name": "Seven Creeks Estate",
+            "street_address": "123 Eucalyptus Drive, Kialla",
+            "dimensions": "16m x 32m",
+            "total_area_sqm": 512,
+            "orientation": "North-facing backyard",
+            "titles_expected": "September 2026"
+        },
+        {
+            "estate_name": "Hughs Creek Estate",
+            "suburb": "Avenel",
+            "lot_number": "TBA",
+            "total_area_sqm": "TBC",
+            "dimensions": "Refer to Plan of Subdivision",
+            "titles_expected": "Check with Sales Manager",
+            "has_covenants": false
+        },
+        {
+            "estate_name": "River Road Cobram_Pat Viscotti",
+            "suburb": "Cobram",
+            "lot_number": "TBA",
+            "total_area_sqm": "TBC",
+            "dimensions": "Refer to Plan of Subdivision",
+            "titles_expected": "Check with Sales Manager",
+            "has_covenants": false
+        },
+        {
+            "estate_name": "Rivertown Estate Cobram",
+            "suburb": "Cobram",
+            "lot_number": "TBA",
+            "total_area_sqm": "TBC",
+            "dimensions": "Refer to Plan of Subdivision",
+            "titles_expected": "Check with Sales Manager",
+            "has_covenants": true,
+            "covenants_file": "Rivertown covenants.pdf"
+        },
+        {
+            "estate_name": "Kurrajong Estate_Deniliquin",
+            "suburb": "Deniliquin",
+            "lot_number": "TBA",
+            "total_area_sqm": "TBC",
+            "dimensions": "Refer to Plan of Subdivision",
+            "titles_expected": "Check with Sales Manager",
+            "has_covenants": false
+        },
+        {
+            "estate_name": "Echuca Acres_CLK",
+            "suburb": "Echuca",
+            "lot_number": "TBA",
+            "total_area_sqm": "TBC",
+            "dimensions": "Refer to Plan of Subdivision",
+            "titles_expected": "Check with Sales Manager",
+            "has_covenants": true,
+            "covenants_file": "Covenants.pdf"
+        },
+        {
+            "estate_name": "Echuca Bushlands",
+            "suburb": "Echuca",
+            "lot_number": "TBA",
+            "total_area_sqm": "TBC",
+            "dimensions": "Refer to Plan of Subdivision",
+            "titles_expected": "Check with Sales Manager",
+            "has_covenants": true,
+            "covenants_file": "Covenants on Bushland Views Echuca 9.9.21.pdf"
+        },
+        {
+            "estate_name": "Echuca Fields Estate",
+            "suburb": "Echuca",
+            "lot_number": "TBA",
+            "total_area_sqm": "TBC",
+            "dimensions": "Refer to Plan of Subdivision",
+            "titles_expected": "Check with Sales Manager",
+            "has_covenants": true,
+            "covenants_file": "Estate Covenants_ALL.pdf"
+        },
+        {
+            "estate_name": "McMahon Place_Oliver Hume",
+            "suburb": "Echuca",
+            "lot_number": "TBA",
+            "total_area_sqm": "TBC",
+            "dimensions": "Refer to Plan of Subdivision",
+            "titles_expected": "Check with Sales Manager",
+            "has_covenants": false
+        },
+        {
+            "estate_name": "Murray Gardens",
+            "suburb": "Echuca",
+            "lot_number": "TBA",
+            "total_area_sqm": "TBC",
+            "dimensions": "Refer to Plan of Subdivision",
+            "titles_expected": "Check with Sales Manager",
+            "has_covenants": true,
+            "covenants_file": "Stage-4-Covenant.pdf"
+        },
+        {
+            "estate_name": "Parkview Echuca",
+            "suburb": "Echuca",
+            "lot_number": "TBA",
+            "total_area_sqm": "TBC",
+            "dimensions": "Refer to Plan of Subdivision",
+            "titles_expected": "Check with Sales Manager",
+            "has_covenants": true,
+            "covenants_file": "Restrictive-Covenant-Parkview Estate.pdf"
+        },
+        {
+            "estate_name": "Wharparilla Estate_CLK",
+            "suburb": "Echuca",
+            "lot_number": "TBA",
+            "total_area_sqm": "TBC",
+            "dimensions": "Refer to Plan of Subdivision",
+            "titles_expected": "Check with Sales Manager",
+            "has_covenants": false
+        },
+        {
+            "estate_name": "Yallarah Estate_Wel.Co",
+            "suburb": "Echuca",
+            "lot_number": "TBA",
+            "total_area_sqm": "TBC",
+            "dimensions": "Refer to Plan of Subdivision",
+            "titles_expected": "Check with Sales Manager",
+            "has_covenants": false
+        },
+        {
+            "estate_name": "Bolzonello Estate",
+            "suburb": "Kialla",
+            "lot_number": "TBA",
+            "total_area_sqm": "TBC",
+            "dimensions": "Refer to Plan of Subdivision",
+            "titles_expected": "Check with Sales Manager",
+            "has_covenants": false
+        },
+        {
+            "estate_name": "Edgewater Estate Kialla",
+            "suburb": "Kialla",
+            "lot_number": "TBA",
+            "total_area_sqm": "TBC",
+            "dimensions": "Refer to Plan of Subdivision",
+            "titles_expected": "Check with Sales Manager",
+            "has_covenants": true,
+            "covenants_file": "Covenants.pdf"
+        },
+        {
+            "estate_name": "Emerald Bank Kialla",
+            "suburb": "Kialla",
+            "lot_number": "TBA",
+            "total_area_sqm": "TBC",
+            "dimensions": "Refer to Plan of Subdivision",
+            "titles_expected": "Check with Sales Manager",
+            "has_covenants": true,
+            "covenants_file": "Covenant - April 2025 - VIC Instrument AA010716 (6727300).pdf"
+        },
+        {
+            "estate_name": "Kerange Ave",
+            "suburb": "Kialla",
+            "lot_number": "TBA",
+            "total_area_sqm": "TBC",
+            "dimensions": "Refer to Plan of Subdivision",
+            "titles_expected": "Check with Sales Manager",
+            "has_covenants": false
+        },
+        {
+            "estate_name": "Kialla Green",
+            "suburb": "Kialla",
+            "lot_number": "TBA",
+            "total_area_sqm": "TBC",
+            "dimensions": "Refer to Plan of Subdivision",
+            "titles_expected": "Check with Sales Manager",
+            "has_covenants": true,
+            "covenants_file": "Kialla Green covenants.pdf"
+        },
+        {
+            "estate_name": "Kialla Lakes",
+            "suburb": "Kialla",
+            "lot_number": "TBA",
+            "total_area_sqm": "TBC",
+            "dimensions": "Refer to Plan of Subdivision",
+            "titles_expected": "Check with Sales Manager",
+            "has_covenants": true,
+            "covenants_file": "Kialla Lakes covenants.pdf"
+        },
+        {
+            "estate_name": "Riverwood",
+            "suburb": "Kialla",
+            "lot_number": "TBA",
+            "total_area_sqm": "TBC",
+            "dimensions": "Refer to Plan of Subdivision",
+            "titles_expected": "Check with Sales Manager",
+            "has_covenants": true,
+            "covenants_file": "Stage 9 Covenant.pdf"
+        },
+        {
+            "estate_name": "Riviera Park",
+            "suburb": "Kialla",
+            "lot_number": "TBA",
+            "total_area_sqm": "TBC",
+            "dimensions": "Refer to Plan of Subdivision",
+            "titles_expected": "Check with Sales Manager",
+            "has_covenants": false
+        },
+        {
+            "estate_name": "Sanctuary Park",
+            "suburb": "Kialla",
+            "lot_number": "TBA",
+            "total_area_sqm": "TBC",
+            "dimensions": "Refer to Plan of Subdivision",
+            "titles_expected": "Check with Sales Manager",
+            "has_covenants": true,
+            "covenants_file": "~$nctuary Park Covenants.docx"
+        },
+        {
+            "estate_name": "Seven Creeks",
+            "suburb": "Kialla",
+            "lot_number": "TBA",
+            "total_area_sqm": "TBC",
+            "dimensions": "Refer to Plan of Subdivision",
+            "titles_expected": "Check with Sales Manager",
+            "has_covenants": true,
+            "covenants_file": "Seven Creeks Covenant  (Lot under 1,000 sq.pdf"
+        },
+        {
+            "estate_name": "Shiralee Estate",
+            "suburb": "Kialla",
+            "lot_number": "TBA",
+            "total_area_sqm": "TBC",
+            "dimensions": "Refer to Plan of Subdivision",
+            "titles_expected": "Check with Sales Manager",
+            "has_covenants": false
+        },
+        {
+            "estate_name": "Taylor Meadows",
+            "suburb": "Kialla",
+            "lot_number": "TBA",
+            "total_area_sqm": "TBC",
+            "dimensions": "Refer to Plan of Subdivision",
+            "titles_expected": "Check with Sales Manager",
+            "has_covenants": true,
+            "covenants_file": "Proposed Covenants - Taylors Estate.pdf"
+        },
+        {
+            "estate_name": "The Grange",
+            "suburb": "Kialla",
+            "lot_number": "TBA",
+            "total_area_sqm": "TBC",
+            "dimensions": "Refer to Plan of Subdivision",
+            "titles_expected": "Check with Sales Manager",
+            "has_covenants": true,
+            "covenants_file": "covenant.pdf"
+        },
+        {
+            "estate_name": "Belthorpe Estate, Kyabram",
+            "suburb": "Kyabram",
+            "lot_number": "TBA",
+            "total_area_sqm": "TBC",
+            "dimensions": "Refer to Plan of Subdivision",
+            "titles_expected": "Check with Sales Manager",
+            "has_covenants": true,
+            "covenants_file": "Covenants Belthorpe.pdf"
+        },
+        {
+            "estate_name": "Bluegum Fields",
+            "suburb": "Kyabram",
+            "lot_number": "TBA",
+            "total_area_sqm": "TBC",
+            "dimensions": "Refer to Plan of Subdivision",
+            "titles_expected": "Check with Sales Manager",
+            "has_covenants": false
+        },
+        {
+            "estate_name": "Fauna View Estate",
+            "suburb": "Kyabram",
+            "lot_number": "TBA",
+            "total_area_sqm": "TBC",
+            "dimensions": "Refer to Plan of Subdivision",
+            "titles_expected": "Check with Sales Manager",
+            "has_covenants": false
+        },
+        {
+            "estate_name": "Green Estate Kyabram",
+            "suburb": "Kyabram",
+            "lot_number": "TBA",
+            "total_area_sqm": "TBC",
+            "dimensions": "Refer to Plan of Subdivision",
+            "titles_expected": "Check with Sales Manager",
+            "has_covenants": false
+        },
+        {
+            "estate_name": "Lakeside Estate, Kyabram",
+            "suburb": "Kyabram",
+            "lot_number": "TBA",
+            "total_area_sqm": "TBC",
+            "dimensions": "Refer to Plan of Subdivision",
+            "titles_expected": "Check with Sales Manager",
+            "has_covenants": true,
+            "covenants_file": "Lakeside Covenants .pdf"
+        },
+        {
+            "estate_name": "Murray River Estate",
+            "suburb": "Kyabram",
+            "lot_number": "TBA",
+            "total_area_sqm": "TBC",
+            "dimensions": "Refer to Plan of Subdivision",
+            "titles_expected": "Check with Sales Manager",
+            "has_covenants": false
+        },
+        {
+            "estate_name": "Riverland Gardens Project - Allan Street, Kyabram",
+            "suburb": "Kyabram",
+            "lot_number": "TBA",
+            "total_area_sqm": "TBC",
+            "dimensions": "Refer to Plan of Subdivision",
+            "titles_expected": "Check with Sales Manager",
+            "has_covenants": false
+        },
+        {
+            "estate_name": "Sunrise Estate, Kyabram",
+            "suburb": "Kyabram",
+            "lot_number": "TBA",
+            "total_area_sqm": "TBC",
+            "dimensions": "Refer to Plan of Subdivision",
+            "titles_expected": "Check with Sales Manager",
+            "has_covenants": true,
+            "covenants_file": "KYABRAM COVENANT.pdf"
+        }
+    ]
+}

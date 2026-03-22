@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Brochure Preview</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/brochure.css') }}">
+</head>
+
+<body>
+
+    <div class="page">
+
+        <!-- Hero Section (Top Half) -->
+        <div class="hero-container">
+            <img src="{{ image_path }}" class="hero-image" alt="Facade">
+            <div class="hero-overlay"></div> <!-- Gradient -->
+
+            <!-- Floating Titles -->
+            <div class="hero-title">
+                <h1>{{ home_name }}</h1>
+            </div>
+
+            <!-- Floating Logo (White) -->
+            <div class="hero-logo">
+                <img src="{{ url_for('static', filename='brand_assets/logo_primary_page5.png') }}"
+                    class="brand-logo-white" alt="Cavalier Homes">
+            </div>
+
+            <!-- Floating Icons & Price -->
+            <div class="hero-icons">
+                <div class="icon-item">
+                    <span>{{ bedrooms }}</span> <span style="font-size:12pt; opacity:0.8;">🛏</span>
+                </div>
+                <div class="icon-item">
+                    <span>{{ bathrooms }}</span> <span style="font-size:12pt; opacity:0.8;">🛁</span>
+                </div>
+                <div class="icon-item">
+                    <span>{{ cars }}</span> <span style="font-size:12pt; opacity:0.8;">🚗</span>
+                </div>
+            </div>
+            <div class="hero-price">
+                Price: Call for Details
+            </div>
+        </div>
+
+        <!-- Middle Bar: Package Info -->
+        <div class="package-info-bar">
+            <div class="package-title-group">
+                <div class="package-text">House & Land <span>package</span></div>
+            </div>
+            <div class="lot-info-group">
+                <strong>{{ lot_details }}</strong><br>
+                Width: {{ width }}m<br>
+                Cavalier Homes Goulburn Valley
+            </div>
+        </div>
+
+        <!-- Lower Content: Description & Plan -->
+        <div class="lower-content">
+            <div class="desc-box">
+                <h3>Property Description</h3>
+                <p>{{ description }}</p>
+            </div>
+
+            <div class="plan-box">
+                {% if plan_path %}
+                <img src="{{ plan_path }}" class="plan-img" alt="Floor Plan">
+                {% else %}
+                <p style="color:#ccc; font-size:10pt;">Floor Plan Selection Pending</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div>*Images for illustrative purposes. Refer to contract.</div>
+            <div>cavalierhomes.com.au</div>
+        </div>
+    </div>
+
+</body>
+
+</html>

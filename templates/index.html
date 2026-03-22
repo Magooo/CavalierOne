@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Cavalier One | Marketing Generator</title>
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.jpeg') }}" type="image/jpeg">
+    <style>
+        :root {
+
+            /* Corporate Palette mapped from brand_config.json */
+            --primary: {
+                    {
+                    brand.theme.root_css['--primary'] | default('#000000')
+                }
+            }
+
+            ;
+
+            ;
+
+            --secondary: {
+                    {
+                    brand.theme.root_css['--secondary'] | default('#54595f')
+                }
+            }
+
+            ;
+
+            ;
+
+            --accent: {
+                    {
+                    brand.theme.root_css['--accent'] | default('#ad4b43')
+                }
+            }
+
+            ;
+
+            ;
+
+            --bg: {
+                    {
+                    brand.theme.root_css['--bg'] | default('#eeedec')
+                }
+            }
+
+            ;
+
+            ;
+
+            --card: {
+                    {
+                    brand.theme.root_css['--card'] | default('#ffffff')
+                }
+            }
+
+            ;
+
+            ;
+
+            --text: {
+                    {
+                    brand.theme.root_css['--text'] | default('#000000')
+                }
+            }
+
+            ;
+
+            ;
+        }
+
+        body {
+            font-family: 'Avant Garde Gothic', 'Century Gothic', 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            margin: 0;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            color: var(--primary);
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: var(--secondary);
+            font-size: 1.1rem;
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            padding: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--secondary);
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+            /* Fix width overflow */
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        button {
+            background-color: var(--accent);
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background-color: var(--primary);
+        }
+
+        .helper-text {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-top: 0.25rem;
+        }
+
+        /* Tabs CSS */
+        .tabs {
+            display: flex;
+            margin-bottom: 0;
+        }
+
+        .tab-btn {
+            padding: 1rem 2rem;
+            border: none;
+            background: #e2e8f0;
+            cursor: pointer;
+            border-radius: 12px 12px 0 0;
+            font-weight: 600;
+            color: var(--secondary);
+            margin-right: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: var(--card);
+            color: var(--accent);
+            box-shadow: 0 -4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+
+        .card {
+            border-top-left-radius: 0;
+            /* Connect to tab */
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="/{{ brand.assets.logo_primary }}" alt="Cavalier Homes"
+                style="max-height: 80px; margin-bottom: 1rem;">
+            <h1>CAVALIER ONE</h1>
+            <p>Master Marketing Content Generator</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="openTab(event, 'tab-house-land')">House & Land</button>
+            <button class="tab-btn" onclick="openTab(event, 'tab-social-media')">Social Media</button>
+            <button class="tab-btn" onclick="openTab(event, 'tab-youtube-miner')">🎥 YouTube Miner</button>
+            <button class="tab-btn" onclick="openTab(event, 'tab-rendering')">🏠 Rendering</button>
+            <button class="tab-btn" onclick="openTab(event, 'tab-doc-formatter')">📝 Doc Formatter</button>
+            <button class="tab-btn" onclick="window.location.href='/sales-estimate'" style="background: #ad4b43; color: white; border-radius: 12px 12px 0 0;">💲 Sales Estimate</button>
+            <button class="tab-btn" onclick="window.location.href='/brain'">🧠 Brain</button>
+        </div>
+
+        <div class="card">
+            <!-- TAB 1: HOUSE & LAND (Legacy) -->
+            <div id="tab-house-land" class="tab-content active">
+                <form method="POST" action="/">
+                    <input type="hidden" name="form_type" value="house_land">
+                    <div class="form-group">
+                        <label for="media_type">Marketing Media Type</label>
+                        <select name="media_type" id="media_type" required>
+                            <option value="">Select Media Type...</option>
+                            <option value="House & Land Brochure">House & Land Brochure</option>
+                            <option value="Investment Brochure">Investment Brochure</option>
+                            <option value="Display Home Brochure">Display Home Brochure</option>
+                            <option value="Website Listing">Website Listing</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="home_select">Select Home Design (from Library)</label>
+                        <select name="home_select" id="home_select" onchange="updateHomeDetails()">
+                            <option value="">-- Choose a Design --</option>
+                            {% for home in home_designs %}
+                            <option value="{{ home.name }}" data-inclusions="{{ home.inclusions_tier }}"
+                                data-facades="{{ home.facades | join(',') if home.facades else '' }}">{{ home.name }}
+                                ({{ home.bedrooms }} Bed, {{ home.bathrooms }} Bath)</option>
+                            {% endfor %}
+                            <option value="custom">Custom Entry</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="facade_group" style="display: none;">
+                        <label for="facade_select">Select Facade</label>
+                        <select name="facade_select" id="facade_select">
+                            <option value="">-- Choose Facade --</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="custom_home_group" style="display: none;">
+                        <label for="home_name">Custom Home Name</label>
+                        <input type="text" name="home_name" id="home_name" placeholder="e.g. The Ascend 24">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="state">State (for Compliance)</label>
+                        <select name="state" id="state" required>
+                            <option value="NSW">New South Wales</option>
+                            <option value="VIC">Victoria</option>
+                            <option value="QLD">Queensland</option>
+                            <option value="WA">Western Australia</option>
+                            <option value="SA">South Australia</option>
+                            <option value="ACT">ACT</option>
+                            <option value="TAS">Tasmania</option>
+                            <option value="NT">Northern Territory</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="target_audience">Target Audience</label>
+                        <input type="text" name="target_audience" id="target_audience"
+                            placeholder="e.g. First Home Buyer, Investor, Downsizer">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="land_select">Select Land / Estate (from Library)</label>
+                        <select name="land_select" id="land_select" onchange="updateLandDetails()">
+                            <option value="">-- Choose Land --</option>
+                            {% for land in land_info %}
+                            <option value="{{ land.lot_number }} {{ land.estate_name }}"
+                                data-details="Lot: {{ land.lot_number }}, {{ land.estate_name }}&#10;Size: {{ land.total_area_sqm }}sqm ({{ land.dimensions }})&#10;Orientation: {{ land.orientation }}&#10;Titles Due: {{ land.titles_expected }}">
+                                {{ land.lot_number }} {{ land.estate_name }}</option>
+                            {% endfor %}
+                            <option value="custom">Custom Entry</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="land_details">Land / Estate Details</label>
+                        <textarea name="land_details" id="land_details" required
+                            placeholder="Estate name, location highlights, lot size, aspect..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="inclusions">Inclusions List</label>
+                        <textarea name="inclusions" id="inclusions" required
+                            placeholder="Paste key inclusions or reference package..."></textarea>
+                        <div class="helper-text">Be specific. Do not rely on 'Standard Inclusions' without detail.</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="examples">Approved Example / Style Reference (Optional)</label>
+                        <textarea name="examples" id="examples"
+                            placeholder="Paste previously approved copy to mirror tone..."></textarea>
+                    </div>
+
+                    <button type="submit">Generate Content Draft</button>
+                </form>
+            </div>
+
+            <!-- TAB 2: SOCIAL MEDIA (New) -->
+            <div id="tab-social-media" class="tab-content">
+                <!-- (Existing content preserved) -->
+                <form method="POST" action="/" enctype="multipart/form-data">
+                    <input type="hidden" name="form_type" value="social_media">
+                    <input type="hidden" name="media_type" value="Social Media Content">
+                    <!-- ... fields ... -->
+                    <div class="form-group">
+                        <label for="platform">Platform</label>
+                        <select name="platform" id="platform" required>
+                            <option value="Facebook">Facebook (Conversational)</option>
+                            <option value="Instagram">Instagram (Visual + Hashtags)</option>
+                            <option value="LinkedIn">LinkedIn (Professional)</option>
+                            <option value="Generic">Generic / All</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tone">Tone of Voice</label>
+                        <select name="tone" id="tone" required>
+                            <option value="Professional & Trustworthy">Professional & Trustworthy (Default)</option>
+                            <option value="Urgent / Sales">Urgent / Sales ("Last Chance!")</option>
+                            <option value="Community Focused">Community Focused</option>
+                            <option value="Fun & Engaging">Fun & Engaging</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="post_image">Upload Photo (Optional)</label>
+                        <input type="file" name="post_image" id="post_image" accept="image/*">
+                        <div class="helper-text">Uploading a photo helps the AI understand the context (Coming Soon: AI
+                            Vision).</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="raw_content">
+                            Raw Data / Notes / Brain Dump
+                            <button type="button" id="mic-btn" onclick="toggleRecording()"
+                                style="width:auto; padding: 0.2rem 0.8rem; margin-left: 10px; font-size: 0.9rem; background: #ef4444;">
+                                🎤 Record
+                            </button>
+                            <span id="mic-status"
+                                style="font-weight: normal; font-size: 0.9rem; color: #ef4444; margin-left:10px; display:none;">Listening...</span>
+                        </label>
+                        <textarea name="raw_content" id="raw_content" required placeholder="Paste your raw notes here or click Record to speak. E.g.
+- New display home opening this Sat
+- Free coffee
+- The mapleton 32 design" style="min-height: 200px;"></textarea>
+                    </div>
+
+                    <button type="submit">Generate Social Post</button>
+                </form>
+            </div>
+
+            <!-- TAB 3: YOUTUBE MINER (New) -->
+            <div id="tab-youtube-miner" class="tab-content" style="display: none;">
+                <div class="header-small" style="margin-bottom: 20px;">
+                    <h2 style="margin-top:0;">Turn Videos into Posts</h2>
+                    <p style="color: #64748b;">Paste your Channel URL to auto-generate content from your latest videos.
+                    </p>
+                </div>
+                <form action="/" method="POST">
+                    <input type="hidden" name="form_type" value="youtube_miner">
+
+                    <div class="form-group">
+                        <label for="channel_url">YouTube Channel ID or URL</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="text" id="channel_url" name="channel_url" value="UCmpf1h1Nfua7AeH5W77AsQw"
+                                placeholder="e.g. UC..." required style="flex-grow: 1;">
+                            <button type="button" onclick="loadVideos()"
+                                style="width: auto; padding: 0.75rem 1rem; background-color: #ef4444;">⬇ Load
+                                Videos</button>
+                        </div>
+                        <small style="color: #64748b;">Default: Cavalier Homes GV</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="selected_video_id">Select Video to Mine</label>
+                        <!-- Hidden fields to store details for backend -->
+                        <input type="hidden" name="selected_video_title" id="selected_video_title">
+
+                        <select name="selected_video_id" id="selected_video_id" onchange="updateVideoDetails()">
+                            <option value="">-- Click 'Load Videos' first --</option>
+                        </select>
+
+                        <div style="margin-top: 10px; font-size: 0.9rem; color: #64748b;">
+                            Or fetch recent:
+                            <select name="video_count" id="video_count"
+                                style="width: auto; padding: 0.2rem; display: inline-block;">
+                                <option value="1">Latest 1</option>
+                                <option value="3" selected>Latest 3</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="yt_tone">Tone of Voice</label>
+                        <select name="yt_tone" id="yt_tone">
+                            <option value="Professional" selected>Professional & Trustworthy</option>
+                            <option value="Exciting">Exciting & Urgent</option>
+                            <option value="Educational">Educational & Informative</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" style="background-color: #ef4444;">⛏️ Mine Content</button>
+                </form>
+            </div>
+
+            <!-- TAB 5: DOC FORMATTER (New) -->
+            <div id="tab-doc-formatter" class="tab-content" style="display: none;">
+                <div class="header-small" style="margin-bottom: 20px;">
+                    <h2 style="margin-top:0;">📝 AI Document Formatter</h2>
+                    <p style="color: #64748b;">Convert raw notes, data, or spreadsheets into beautifully formatted
+                        documents.</p>
+                </div>
+                <form action="/" method="POST">
+                    <input type="hidden" name="form_type" value="doc_formatter">
+
+                    <div class="form-group">
+                        <label for="doc_title">Document Title</label>
+                        <input type="text" name="doc_title" id="doc_title" placeholder="e.g. Fast Keys Sales Process"
+                            required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="doc_subtitle">Subtitle or Date (Optional)</label>
+                        <input type="text" name="doc_subtitle" id="doc_subtitle" placeholder="e.g. Updated Q4 2026">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="doc_style">Document Processing Style</label>
+                        <select name="doc_style" id="doc_style">
+                            <option value="Standard Manual">Standard Manual (Structured headings & paragraphs)</option>
+                            <option value="Data Table">Data Table (Clean tabular layout for data)</option>
+                            <option value="Step by Step Guide">Step by Step Guide (Numbered process flows)</option>
+                            <option value="Sales Framework">Sales Framework / Playbook Tone</option>
+                            <option value="Meeting Notes Processor">📋 Meeting Notes Processor (Executive Action Plan)
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="doc_context">Reference Internal Knowledge Base (Optional)</label>
+                        <select name="doc_context" id="doc_context">
+                            <option value="none">None (Build from scratch using my notes)</option>
+                            <option value="fast_keys">Fast Keys Sales Pipeline (Final Data)</option>
+                            <option value="master_prompt">Cavalier 1 Master Brand Guidelines</option>
+                        </select>
+                        <div class="helper-text">Select a source if you want the AI to base the document on Cavalier's
+                            internal rules/lists.</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="raw_doc_content">
+                            <span id="doc-content-label">Extra Notes / Instructions (Optional)</span>
+                            <button type="button" id="mic-btn-doc"
+                                onclick="toggleRecording('raw_doc_content', 'mic-btn-doc', 'mic-status-doc')"
+                                style="width:auto; padding: 0.2rem 0.8rem; margin-left: 10px; font-size: 0.9rem; background: #ef4444;">
+                                🎤 Record
+                            </button>
+                            <span id="mic-status-doc"
+                                style="font-weight: normal; font-size: 0.9rem; color: #ef4444; margin-left:10px; display:none;">Listening...</span>
+                        </label>
+                        <div id="meeting-notes-hint"
+                            style="display:none; background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 14px; margin-bottom: 10px; font-size: 0.9rem; color: #92400e;">
+                            <div style="margin-bottom: 10px;">
+                                📋 <strong>Meeting Notes Processor:</strong> Paste raw meeting notes below, or pull a
+                                transcript directly from Fireflies.
+                            </div>
+                            <!-- Fireflies Picker -->
+                            <div
+                                style="background: rgba(255,255,255,0.6); border-radius: 6px; padding: 10px; border: 1px solid #f59e0b;">
+                                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                                    <div
+                                        style="font-weight: 600; font-size: 0.85rem; color: #78350f; white-space: nowrap;">
+                                        🎙️ Fireflies:</div>
+                                    <select id="fireflies-meeting-select"
+                                        style="flex: 1; min-width: 180px; padding: 6px 10px; border-radius: 6px; border: 1px solid #d97706; font-size: 0.85rem; background: white; color: #333;"
+                                        onchange="onFirefliesMeetingChange()">
+                                        <option value="">-- Click Load to fetch meetings --</option>
+                                    </select>
+                                    <button type="button" id="ff-load-btn" onclick="loadFirefliesMeetings()"
+                                        style="width: auto; padding: 6px 14px; font-size: 0.85rem; background: #d97706; color: white; border-radius: 6px; border: none; cursor: pointer; white-space: nowrap;">
+                                        ⬇ Load
+                                    </button>
+                                    <button type="button" id="ff-use-btn" onclick="useFirefliesTranscript()" disabled
+                                        style="width: auto; padding: 6px 14px; font-size: 0.85rem; background: #92400e; color: white; border-radius: 6px; border: none; cursor: pointer; opacity: 0.5; white-space: nowrap;">
+                                        ✅ Use Transcript
+                                    </button>
+                                </div>
+                                <div id="ff-status"
+                                    style="margin-top: 6px; font-size: 0.8rem; color: #78350f; display: none;"></div>
+                            </div>
+                        </div>
+
+
+                        <!-- ===== MEETING ATTENDEES CHIP PICKER ===== -->
+                        <div id="meeting-attendees-group" style="display: none; margin-bottom: 1.5rem;">
+                            <label style="display: block; font-weight: 600; margin-bottom: 0.4rem; color: #555;">
+                                👥 Who is Present in This Meeting?
+                            </label>
+                            <div style="font-size: 0.8rem; color: #888; margin-bottom: 10px;">
+                                Select from the staff list, or add someone new. New staff will be saved to the company
+                                profile.
+                            </div>
+
+                            <!-- Chips display -->
+                            <div id="attendee-chips"
+                                style="display: flex; flex-wrap: wrap; gap: 6px; min-height: 36px; padding: 6px; background: #fffbf5; border: 1px solid #d97706; border-radius: 8px; margin-bottom: 8px; align-items: flex-start;">
+                                <span id="chips-placeholder"
+                                    style="color: #bbb; font-size: 0.85rem; line-height: 28px;">No attendees selected
+                                    yet...</span>
+                            </div>
+
+                            <!-- Dropdown + Add row -->
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                                <select id="staff-dropdown"
+                                    style="flex: 1; min-width: 200px; padding: 8px 10px; border: 1px solid #d97706; border-radius: 6px; background: white; font-size: 0.875rem; color: #333;">
+                                    <option value="">⏳ Loading staff list...</option>
+                                </select>
+                                <button type="button" onclick="addSelectedAttendee()"
+                                    style="width:auto; padding: 8px 16px; font-size: 0.875rem; background: #d97706; color: white; border: none; border-radius: 6px; cursor: pointer; white-space: nowrap;">
+                                    ➕ Add to Meeting
+                                </button>
+                                <button type="button" onclick="showAddPersonModal()"
+                                    style="width:auto; padding: 8px 16px; font-size: 0.875rem; background: #78350f; color: white; border: none; border-radius: 6px; cursor: pointer; white-space: nowrap;">
+                                    👤 Add New Person
+                                </button>
+                            </div>
+
+                            <!-- Hidden field submitted with form — contains formatted attendee string -->
+                            <input type="hidden" name="meeting_attendees" id="meeting_attendees">
+                        </div>
+
+                        <!-- ===== ADD NEW PERSON MODAL ===== -->
+                        <div id="add-person-modal"
+                            style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9000; align-items:center; justify-content:center;">
+                            <div
+                                style="background:white; border-radius:12px; padding:28px; max-width:420px; width:90%; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+                                <h3 style="margin:0 0 6px; font-size:1.1rem; color:#78350f;">👤 Add New Person</h3>
+                                <p style="margin:0 0 18px; font-size:0.85rem; color:#888;">If this person is a staff
+                                    member, they'll be saved to the company profile automatically.</p>
+
+                                <label
+                                    style="font-size:0.85rem; font-weight:600; color:#555; display:block; margin-bottom:4px;">Full
+                                    Name *</label>
+                                <input type="text" id="new-person-name" placeholder="e.g. Sarah Jones"
+                                    style="width:100%; padding:8px 12px; border:1px solid #d97706; border-radius:6px; font-size:0.9rem; margin-bottom:14px; box-sizing:border-box;">
+
+                                <label
+                                    style="font-size:0.85rem; font-weight:600; color:#555; display:block; margin-bottom:4px;">Role
+                                    / Title *</label>
+                                <input type="text" id="new-person-role" placeholder="e.g. Site Supervisor"
+                                    style="width:100%; padding:8px 12px; border:1px solid #d97706; border-radius:6px; font-size:0.9rem; margin-bottom:14px; box-sizing:border-box;">
+
+                                <label
+                                    style="display:flex; align-items:center; gap:8px; font-size:0.85rem; color:#555; margin-bottom:20px; cursor:pointer;">
+                                    <input type="checkbox" id="new-person-save" checked
+                                        style="width:16px; height:16px; accent-color:#d97706;">
+                                    Save to company profile (company_info.md)
+                                </label>
+
+                                <div id="add-person-status"
+                                    style="font-size:0.8rem; margin-bottom:12px; min-height:18px;"></div>
+
+                                <div style="display:flex; gap:10px; justify-content:flex-end;">
+                                    <button type="button" onclick="hideAddPersonModal()"
+                                        style="width:auto; padding:8px 18px; background:#f1f5f9; color:#333; border:1px solid #ddd; border-radius:6px; cursor:pointer; font-size:0.875rem;">
+                                        Cancel
+                                    </button>
+                                    <button type="button" onclick="confirmAddPerson()" id="confirm-add-btn"
+                                        style="width:auto; padding:8px 18px; background:#d97706; color:white; border:none; border-radius:6px; cursor:pointer; font-size:0.875rem; font-weight:600;">
+                                        Add to Meeting
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Additional Instructions -->
+                        <div id="meeting-instructions-group" style="display: none; margin-bottom: 1.5rem;">
+                            <label for="meeting_extra_instructions"
+                                style="display: block; font-weight: 600; margin-bottom: 0.4rem; color: #555;">
+                                🎯 Additional Instructions (Optional)
+                            </label>
+                            <div style="font-size: 0.8rem; color: #888; margin-bottom: 6px;">
+                                Any specific focus areas, tone requirements, or sections to emphasise.
+                                <br>e.g. <em>Focus on HubSpot integration actions. Assign all pricing tasks to
+                                    Courtney.</em>
+                            </div>
+                            <textarea name="meeting_extra_instructions" id="meeting_extra_instructions"
+                                placeholder="e.g. Emphasise the Companion software rollout timeline. Flag any actions dependent on IT sign-off."
+                                style="min-height: 90px; border: 1px solid #d97706; border-radius: 8px; background: #fffbf5;"></textarea>
+                        </div>
+
+                        <textarea name="raw_doc_content" id="raw_doc_content"
+                            placeholder="Type any extra instructions here, or paste raw data directly if you aren't using an internal source..."
+                            style="min-height: 250px;"></textarea>
+                    </div>
+
+
+                    <button type="submit" style="background-color: #f59e0b;">✨ Format Document</button>
+                </form>
+            </div>
+
+            <!-- TAB 4: RENDERING (New) -->
+            <div id="tab-rendering" class="tab-content" style="display: none;">
+                <div class="header-small" style="margin-bottom: 20px;">
+                    <h2 style="margin-top:0;">Architectural Rendering</h2>
+                    <p style="color: #64748b;">Upload a 2D floor plan or elevation sketch to generate a photorealistic
+                        rendering.</p>
+                </div>
+                <form action="/generate_rendering" method="POST" enctype="multipart/form-data">
+
+                    <div class="form-group">
+                        <label for="plan_image">Upload Plan / Sketch</label>
+                        <input type="file" name="plan_image" id="plan_image" accept="image/*" required>
+                        <div class="helper-text">Accepts JPG, PNG. Clear black & white lines work best.</div>
+                        <div class="form-text text-muted"
+                            style="background: #eef2ff; padding: 10px; border-radius: 6px; border: 1px solid #c7d2fe; color: #3730a3; margin-top: 8px; font-size: 0.9em;">
+                            <i class="fas fa-info-circle"></i> <strong>Pro Tip:</strong> For best accuracy, upload a
+                            <strong>Front Elevation (Facade View)</strong> using the "Modern Australian" style.
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="render_style">Architectural Style</label>
+                        <select name="style" id="render_style">
+                            <option value="Modern Australian">Modern Australian (Light brick, Colorbond roof)</option>
+                            <option value="Hamptons">Hamptons (Weatherboard, gables)</option>
+                            <option value="Coastal">Coastal (Light render, flat/skillion roof)</option>
+                            <option value="Country">Country (Verandah, rusticated brick)</option>
+                            <option value="Hamptons_White">Hamptons (Weatherboard, White trim)</option>
+                            <option value="Industrial">Industrial (Concrete, Black steel)</option>
+                            <option value="Mid-Century Modern">Mid-Century Modern</option>
+                            <option value="Minimalist">Minimalist</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 15px;">
+                        <label style="display: flex; align-items: start; gap: 10px; cursor: pointer;">
+                            <input type="checkbox" name="strict_mode" value="true" style="margin-top: 5px;">
+                            <div>
+                                <strong>Global Geometry Lock (Experimental)</strong><br>
+                                <span style="font-size: 0.85em; color: #64748b;">
+                                    Uses a different AI method (Variation) to stick closer to your sketch's shape.
+                                    Quality may be lower, but shape will be more accurate.
+                                </span>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="render_notes">Additional Details</label>
+                        <textarea name="notes" id="render_notes"
+                            placeholder="e.g. Red brick facade, large front window, native landscaping..."></textarea>
+                    </div>
+
+                    <button type="submit" style="background-color: #0ea5e9;">✨ Generate Rendering</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- VOICE RECOGNITION SETUP ---
+        var recognition;
+        var isRecording = false;
+        var currentMicTarget = 'raw_content';
+        var currentMicBtn = 'mic-btn';
+        var currentMicStatus = 'mic-status';
+
+        if ('webkitSpeechRecognition' in window) {
+            recognition = new webkitSpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = 'en-AU'; // Set to Australian English
+
+            recognition.onstart = function () {
+                isRecording = true;
+                document.getElementById(currentMicStatus).style.display = 'inline';
+                document.getElementById(currentMicBtn).innerHTML = "⏹ Stop";
+                document.getElementById(currentMicBtn).style.background = "#333";
+            };
+
+            recognition.onend = function () {
+                isRecording = false;
+                document.getElementById(currentMicStatus).style.display = 'none';
+                document.getElementById(currentMicBtn).innerHTML = "🎤 Record";
+                document.getElementById(currentMicBtn).style.background = "#ef4444";
+            };
+
+            recognition.onresult = function (event) {
+                var finalTranscript = '';
+                for (var i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) {
+                        finalTranscript += event.results[i][0].transcript + ' ';
+                    }
+                }
+                if (finalTranscript) {
+                    var textarea = document.getElementById(currentMicTarget);
+                    textarea.value += finalTranscript;
+                }
+            };
+
+            recognition.onerror = function (event) {
+                console.error("Speech recognition error", event.error);
+                if (isRecording) recognition.stop();
+            };
+        } else {
+            document.getElementById('mic-btn').style.display = 'none';
+            if (document.getElementById('mic-btn-doc')) document.getElementById('mic-btn-doc').style.display = 'none';
+            console.log("Web Speech API not supported in this browser.");
+        }
+
+        function toggleRecording(targetId = 'raw_content', btnId = 'mic-btn', statusId = 'mic-status') {
+            if (!recognition) {
+                alert("Voice input not supported in this browser. Try Chrome or Edge.");
+                return;
+            }
+            if (isRecording) {
+                recognition.stop();
+            } else {
+                currentMicTarget = targetId;
+                currentMicBtn = btnId;
+                currentMicStatus = statusId;
+                recognition.start();
+            }
+        }
+        // -------------------------------
+
+        function openTab(evt, tabName) {
+            var i, tabcontent, tablinks;
+
+            // Hide all content
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+                tabcontent[i].classList.remove("active");
+            }
+
+            // Deactivate all buttons
+            tablinks = document.getElementsByClassName("tab-btn");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+
+            // Show current and activate button
+            document.getElementById(tabName).style.display = "block";
+            document.getElementById(tabName).classList.add("active");
+            evt.currentTarget.className += " active";
+        }
+
+        function updateHomeDetails() {
+            const select = document.getElementById('home_select');
+            const customGroup = document.getElementById('custom_home_group');
+            const homeNameInput = document.getElementById('home_name');
+            const inclusionsInput = document.getElementById('inclusions');
+            const facadeGroup = document.getElementById('facade_group');
+            const facadeSelect = document.getElementById('facade_select');
+
+            // Reset facade
+            facadeSelect.innerHTML = '<option value="">-- Choose Facade --</option>';
+            facadeGroup.style.display = 'none';
+
+            if (select.value === 'custom') {
+                customGroup.style.display = 'block';
+                homeNameInput.required = true;
+                homeNameInput.value = "";
+                inclusionsInput.value = "";
+            } else {
+                customGroup.style.display = 'none';
+                homeNameInput.required = false;
+                if (select.value) {
+                    homeNameInput.value = select.value;
+                    const selectedOption = select.options[select.selectedIndex];
+                    inclusionsInput.value = selectedOption.getAttribute('data-inclusions');
+
+                    // Facade Logic
+                    const facadesRaw = selectedOption.getAttribute('data-facades');
+                    if (facadesRaw) {
+                        const facades = facadesRaw.split(',');
+                        facades.forEach(f => {
+                            const opt = document.createElement('option');
+                            opt.value = f.trim();
+                            opt.text = f.trim();
+                            facadeSelect.appendChild(opt);
+                        });
+                        facadeGroup.style.display = 'block';
+                    }
+                }
+            }
+        }
+
+        function updateLandDetails() {
+            const select = document.getElementById('land_select');
+            const landDetailsInput = document.getElementById('land_details');
+
+            if (select.value === 'custom') {
+                landDetailsInput.value = "";
+                landDetailsInput.placeholder = "Enter custom land details here...";
+            } else if (select.value) {
+                const selectedOption = select.options[select.selectedIndex];
+                landDetailsInput.value = selectedOption.getAttribute('data-details');
+            }
+        }
+
+        // --- YOUTUBE MINER FUNCTIONS ---
+        async function loadVideos() {
+            const channelUrl = document.getElementById('channel_url').value;
+            const btn = event.currentTarget; // The button clicked
+            const originalText = btn.innerHTML;
+            const select = document.getElementById('selected_video_id');
+
+            if (!channelUrl) {
+                alert("Please enter a Channel ID first.");
+                return;
+            }
+
+            btn.innerHTML = "⏳ Loading...";
+            btn.disabled = true;
+            select.innerHTML = '<option>Loading videos...</option>';
+
+            try {
+                // Call our internal API
+                const response = await fetch(`/api/get_channel_videos?channel_url=${encodeURIComponent(channelUrl)}&limit=15`);
+                const videos = await response.json();
+
+                if (videos.error) {
+                    alert("Error: " + videos.error);
+                    select.innerHTML = '<option value="">Error loading videos</option>';
+                } else if (videos.length === 0) {
+                    select.innerHTML = '<option value="">No videos found</option>';
+                } else {
+                    select.innerHTML = '<option value="">-- Select a Video --</option>';
+                    videos.forEach(vid => {
+                        const opt = document.createElement('option');
+                        opt.value = vid.video_id;
+                        opt.text = vid.title;
+                        opt.setAttribute('data-title', vid.title); // Store title
+                        select.appendChild(opt);
+                    });
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Failed to load videos. Check console.");
+                select.innerHTML = '<option value="">Failed to load</option>';
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        function updateVideoDetails() {
+            const select = document.getElementById('selected_video_id');
+            const hiddenTitle = document.getElementById('selected_video_title');
+            if (select.selectedIndex > 0) {
+                hiddenTitle.value = select.options[select.selectedIndex].getAttribute('data-title');
+            } else {
+                hiddenTitle.value = "";
+            }
+        }
+
+        // --- DOC FORMATTER: Dynamic style hints ---
+        const docStyleSelect = document.getElementById('doc_style');
+        const meetingHint = document.getElementById('meeting-notes-hint');
+        const docContentLabel = document.getElementById('doc-content-label');
+        const docContentTextarea = document.getElementById('raw_doc_content');
+
+        let staffListLoaded = false;
+
+        function updateDocStyleUI() {
+            const isMeeting = docStyleSelect.value === 'Meeting Notes Processor';
+            meetingHint.style.display = isMeeting ? 'block' : 'none';
+            document.getElementById('meeting-attendees-group').style.display = isMeeting ? 'block' : 'none';
+            document.getElementById('meeting-instructions-group').style.display = isMeeting ? 'block' : 'none';
+
+            if (isMeeting) {
+                docContentLabel.textContent = 'Meeting Notes / Transcript *';
+                docContentTextarea.placeholder = 'Paste your raw meeting notes or transcript here. Even rough notes work — the AI will structure everything.';
+                docContentTextarea.style.minHeight = '300px';
+                // Load staff list the first time Meeting Notes Processor is selected
+                if (!staffListLoaded) {
+                    staffListLoaded = true;
+                    loadStaffList();
+                }
+            } else {
+                docContentLabel.textContent = 'Extra Notes / Instructions (Optional)';
+                docContentTextarea.placeholder = 'Type any extra instructions here, or paste raw data directly if you aren\'t using an internal source...';
+                docContentTextarea.style.minHeight = '250px';
+            }
+        }
+
+        if (docStyleSelect) {
+            docStyleSelect.addEventListener('change', updateDocStyleUI);
+        }
+
+        // --- FIREFLIES MEETING PICKER ---
+        async function loadFirefliesMeetings() {
+            const btn = document.getElementById('ff-load-btn');
+            const select = document.getElementById('fireflies-meeting-select');
+            const status = document.getElementById('ff-status');
+
+            btn.textContent = '⏳ Loading...';
+            btn.disabled = true;
+            status.style.display = 'block';
+            status.textContent = 'Fetching meetings from Fireflies...';
+
+            try {
+                const res = await fetch('/api/doc/get_meetings');
+                const meetings = await res.json();
+
+                if (meetings.error) {
+                    status.textContent = '❌ Error: ' + meetings.error;
+                    return;
+                }
+
+                select.innerHTML = '<option value="">-- Select a meeting --</option>';
+                if (meetings.length === 0) {
+                    status.textContent = 'No meetings found in Fireflies.';
+                    return;
+                }
+
+                meetings.forEach(m => {
+                    const opt = document.createElement('option');
+                    opt.value = m.id;
+                    opt.text = `${m.title || 'Untitled'} — ${m.dateString || ''}`;
+                    select.appendChild(opt);
+                });
+
+                status.textContent = `✅ ${meetings.length} meeting(s) loaded. Select one and click Use Transcript.`;
+            } catch (err) {
+                status.textContent = '❌ Network error: ' + err.message;
+            } finally {
+                btn.textContent = '⬇ Load';
+                btn.disabled = false;
+            }
+        }
+
+        function onFirefliesMeetingChange() {
+            const select = document.getElementById('fireflies-meeting-select');
+            const useBtn = document.getElementById('ff-use-btn');
+            if (select.value) {
+                useBtn.disabled = false;
+                useBtn.style.opacity = '1';
+            } else {
+                useBtn.disabled = true;
+                useBtn.style.opacity = '0.5';
+            }
+        }
+
+        async function useFirefliesTranscript() {
+            const select = document.getElementById('fireflies-meeting-select');
+            const status = document.getElementById('ff-status');
+            const useBtn = document.getElementById('ff-use-btn');
+            const meetingId = select.value;
+
+            if (!meetingId) return;
+
+            useBtn.textContent = '⏳ Fetching...';
+            useBtn.disabled = true;
+            status.style.display = 'block';
+            status.textContent = 'Pulling transcript from Fireflies — this may take a moment...';
+
+            try {
+                const res = await fetch(`/api/doc/fetch_transcript?id=${encodeURIComponent(meetingId)}`);
+                const data = await res.json();
+
+                if (data.error) {
+                    status.textContent = '❌ ' + data.error;
+                    return;
+                }
+
+                // Populate the textarea
+                const textarea = document.getElementById('raw_doc_content');
+                textarea.value = data.text;
+                status.textContent = '✅ Transcript loaded! Review the text below then click Format Document.';
+                textarea.focus();
+
+            } catch (err) {
+                status.textContent = '❌ Network error: ' + err.message;
+            } finally {
+                useBtn.textContent = '✅ Use Transcript';
+                useBtn.disabled = false;
+            }
+        }
+
+        // ===== STAFF CHIP PICKER =====
+        let staffList = [];       // Full list from /api/staff
+        let selectedAttendees = []; // [{name, role}]
+
+        // Load staff when Meeting Notes Processor is first selected
+        async function loadStaffList() {
+            const dropdown = document.getElementById('staff-dropdown');
+            if (!dropdown) return;
+            try {
+                const res = await fetch('/api/staff');
+                staffList = await res.json();
+                if (staffList.error) {
+                    dropdown.innerHTML = '<option value="">⚠️ Could not load staff</option>';
+                    staffListLoaded = false; // allow retry
+                    return;
+                }
+                populateStaffDropdown();
+            } catch (e) {
+                console.error('loadStaffList error:', e);
+                dropdown.innerHTML = '<option value="">⚠️ Could not load staff</option>';
+                staffListLoaded = false; // allow retry on next style switch
+            }
+        }
+
+        function populateStaffDropdown() {
+            const dropdown = document.getElementById('staff-dropdown');
+            dropdown.innerHTML = '<option value="">— Select a staff member —</option>';
+
+            // Group by category
+            const groups = {};
+            staffList.forEach(s => {
+                const cat = s.category || 'Other';
+                if (!groups[cat]) groups[cat] = [];
+                groups[cat].push(s);
+            });
+
+            Object.entries(groups).forEach(([category, members]) => {
+                const group = document.createElement('optgroup');
+                group.label = category;
+                members.forEach(s => {
+                    // Skip if already selected
+                    if (selectedAttendees.find(a => a.name === s.name)) return;
+                    const opt = document.createElement('option');
+                    opt.value = JSON.stringify({ name: s.name, role: s.role });
+                    opt.text = `${s.name} — ${s.role}`;
+                    group.appendChild(opt);
+                });
+                if (group.children.length > 0) dropdown.appendChild(group);
+            });
+        }
+
+        function addSelectedAttendee() {
+            const dropdown = document.getElementById('staff-dropdown');
+            if (!dropdown.value) return;
+            const person = JSON.parse(dropdown.value);
+            addAttendeeChip(person.name, person.role);
+        }
+
+        function addAttendeeChip(name, role) {
+            // Prevent duplicates
+            if (selectedAttendees.find(a => a.name.toLowerCase() === name.toLowerCase())) return;
+
+            selectedAttendees.push({ name, role });
+            renderChips();
+            updateHiddenAttendees();
+            populateStaffDropdown(); // refresh to remove selected person from dropdown
+        }
+
+        function removeAttendee(name) {
+            selectedAttendees = selectedAttendees.filter(a => a.name !== name);
+            renderChips();
+            updateHiddenAttendees();
+            populateStaffDropdown(); // add them back to dropdown
+        }
+
+        function renderChips() {
+            const container = document.getElementById('attendee-chips');
+            const placeholder = document.getElementById('chips-placeholder');
+
+            // Remove old chips (keep placeholder)
+            container.querySelectorAll('.attendee-chip').forEach(el => el.remove());
+
+            if (selectedAttendees.length === 0) {
+                placeholder.style.display = 'inline';
+            } else {
+                placeholder.style.display = 'none';
+                selectedAttendees.forEach(person => {
+                    const chip = document.createElement('span');
+                    chip.className = 'attendee-chip';
+                    chip.style.cssText = 'display:inline-flex; align-items:center; gap:5px; padding:4px 10px; background:#fef3c7; border:1px solid #f59e0b; border-radius:20px; font-size:0.8rem; color:#78350f; font-weight:500;';
+                    chip.innerHTML = `👤 ${person.name} <span style="color:#92400e; font-size:0.75rem;">(${person.role})</span> <button type="button" onclick="removeAttendee('${person.name.replace(/'/g, "\\'")}')" style="background:none;border:none;cursor:pointer;color:#d97706;font-size:0.9rem;padding:0;line-height:1;" title="Remove">×</button>`;
+                    container.appendChild(chip);
+                });
+            }
+        }
+
+        function updateHiddenAttendees() {
+            const hidden = document.getElementById('meeting_attendees');
+            if (!hidden) return;
+            hidden.value = selectedAttendees.map(a => `${a.name} — ${a.role}`).join('\n');
+        }
+
+        // ===== ADD NEW PERSON MODAL =====
+        function showAddPersonModal() {
+            document.getElementById('add-person-modal').style.display = 'flex';
+            document.getElementById('new-person-name').focus();
+            document.getElementById('add-person-status').textContent = '';
+        }
+
+        function hideAddPersonModal() {
+            document.getElementById('add-person-modal').style.display = 'none';
+            document.getElementById('new-person-name').value = '';
+            document.getElementById('new-person-role').value = '';
+            document.getElementById('add-person-status').textContent = '';
+        }
+
+        async function confirmAddPerson() {
+            const name = document.getElementById('new-person-name').value.trim();
+            const role = document.getElementById('new-person-role').value.trim();
+            const saveToProfile = document.getElementById('new-person-save').checked;
+            const statusEl = document.getElementById('add-person-status');
+            const btn = document.getElementById('confirm-add-btn');
+
+            if (!name) { statusEl.style.color = '#ef4444'; statusEl.textContent = '⚠️ Name is required.'; return; }
+
+            btn.textContent = '⏳ Adding...';
+            btn.disabled = true;
+
+            if (saveToProfile) {
+                try {
+                    const res = await fetch('/api/staff/add', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name, role: role || 'Staff Member' })
+                    });
+                    const data = await res.json();
+
+                    if (data.error) {
+                        statusEl.style.color = '#ef4444';
+                        statusEl.textContent = '❌ ' + data.error;
+                        return;
+                    }
+
+                    if (data.already_exists) {
+                        statusEl.style.color = '#d97706';
+                        statusEl.textContent = '✓ Already in company profile. Adding to meeting...';
+                    } else {
+                        // Update local staff list
+                        staffList = data.staff;
+                        statusEl.style.color = '#10b981';
+                        statusEl.textContent = '✅ Saved to company profile!';
+                    }
+                } catch (e) {
+                    statusEl.style.color = '#ef4444';
+                    statusEl.textContent = '❌ Could not save to profile: ' + e.message;
+                }
+            }
+
+            // Add chip regardless of save outcome
+            addAttendeeChip(name, role || 'Staff Member');
+
+            // Brief delay so user sees the success msg, then close
+            setTimeout(() => {
+                hideAddPersonModal();
+                btn.textContent = 'Add to Meeting';
+                btn.disabled = false;
+            }, 900);
+        }
+
+        // Close modal on backdrop click
+        document.getElementById('add-person-modal').addEventListener('click', function (e) {
+            if (e.target === this) hideAddPersonModal();
+        });
+
+        // Enter key submits the add person modal
+        ['new-person-name', 'new-person-role'].forEach(id => {
+            document.getElementById(id).addEventListener('keydown', e => {
+                if (e.key === 'Enter') { e.preventDefault(); confirmAddPerson(); }
+            });
+        });
+
+        // Staff list is loaded on demand (first time Meeting Notes Processor is selected)
+        // — see updateDocStyleUI() above.
+
+    </script>
+
+</body>
+
+</html>

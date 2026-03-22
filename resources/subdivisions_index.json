@@ -1,0 +1,317 @@
+[
+    {
+        "estate_name": "Hughs Creek Estate",
+        "suburb": "Avenel",
+        "lot_number": "TBA",
+        "total_area_sqm": "TBC",
+        "dimensions": "Refer to Plan of Subdivision",
+        "titles_expected": "Check with Sales Manager",
+        "has_covenants": false
+    },
+    {
+        "estate_name": "River Road Cobram_Pat Viscotti",
+        "suburb": "Cobram",
+        "lot_number": "TBA",
+        "total_area_sqm": "TBC",
+        "dimensions": "Refer to Plan of Subdivision",
+        "titles_expected": "Check with Sales Manager",
+        "has_covenants": false
+    },
+    {
+        "estate_name": "Rivertown Estate Cobram",
+        "suburb": "Cobram",
+        "lot_number": "TBA",
+        "total_area_sqm": "TBC",
+        "dimensions": "Refer to Plan of Subdivision",
+        "titles_expected": "Check with Sales Manager",
+        "has_covenants": true,
+        "covenants_file": "Rivertown covenants.pdf"
+    },
+    {
+        "estate_name": "Kurrajong Estate_Deniliquin",
+        "suburb": "Deniliquin",
+        "lot_number": "TBA",
+        "total_area_sqm": "TBC",
+        "dimensions": "Refer to Plan of Subdivision",
+        "titles_expected": "Check with Sales Manager",
+        "has_covenants": false
+    },
+    {
+        "estate_name": "Echuca Acres_CLK",
+        "suburb": "Echuca",
+        "lot_number": "TBA",
+        "total_area_sqm": "TBC",
+        "dimensions": "Refer to Plan of Subdivision",
+        "titles_expected": "Check with Sales Manager",
+        "has_covenants": true,
+        "covenants_file": "Covenants.pdf"
+    },
+    {
+        "estate_name": "Echuca Bushlands",
+        "suburb": "Echuca",
+        "lot_number": "TBA",
+        "total_area_sqm": "TBC",
+        "dimensions": "Refer to Plan of Subdivision",
+        "titles_expected": "Check with Sales Manager",
+        "has_covenants": true,
+        "covenants_file": "Covenants on Bushland Views Echuca 9.9.21.pdf"
+    },
+    {
+        "estate_name": "Echuca Fields Estate",
+        "suburb": "Echuca",
+        "lot_number": "TBA",
+        "total_area_sqm": "TBC",
+        "dimensions": "Refer to Plan of Subdivision",
+        "titles_expected": "Check with Sales Manager",
+        "has_covenants": true,
+        "covenants_file": "Estate Covenants_ALL.pdf"
+    },
+    {
+        "estate_name": "McMahon Place_Oliver Hume",
+        "suburb": "Echuca",
+        "lot_number": "TBA",
+        "total_area_sqm": "TBC",
+        "dimensions": "Refer to Plan of Subdivision",
+        "titles_expected": "Check with Sales Manager",
+        "has_covenants": false
+    },
+    {
+        "estate_name": "Murray Gardens",
+        "suburb": "Echuca",
+        "lot_number": "TBA",
+        "total_area_sqm": "TBC",
+        "dimensions": "Refer to Plan of Subdivision",
+        "titles_expected": "Check with Sales Manager",
+        "has_covenants": true,
+        "covenants_file": "Stage-4-Covenant.pdf"
+    },
+    {
+        "estate_name": "Parkview Echuca",
+        "suburb": "Echuca",
+        "lot_number": "TBA",
+        "total_area_sqm": "TBC",
+        "dimensions": "Refer to Plan of Subdivision",
+        "titles_expected": "Check with Sales Manager",
+        "has_covenants": true,
+        "covenants_file": "Restrictive-Covenant-Parkview Estate.pdf"
+    },
+    {
+        "estate_name": "Wharparilla Estate_CLK",
+        "suburb": "Echuca",
+        "lot_number": "TBA",
+        "total_area_sqm": "TBC",
+        "dimensions": "Refer to Plan of Subdivision",
+        "titles_expected": "Check with Sales Manager",
+        "has_covenants": false
+    },
+    {
+        "estate_name": "Yallarah Estate_Wel.Co",
+        "suburb": "Echuca",
+        "lot_number": "TBA",
+        "total_area_sqm": "TBC",
+        "dimensions": "Refer to Plan of Subdivision",
+        "titles_expected": "Check with Sales Manager",
+        "has_covenants": false
+    },
+    {
+        "estate_name": "Bolzonello Estate",
+        "suburb": "Kialla",
+        "lot_number": "TBA",
+        "total_area_sqm": "TBC",
+        "dimensions": "Refer to Plan of Subdivision",
+        "titles_expected": "Check with Sales Manager",
+        "has_covenants": false
+    },
+    {
+        "estate_name": "Edgewater Estate Kialla",
+        "suburb": "Kialla",
+        "lot_number": "TBA",
+        "total_area_sqm": "TBC",
+        "dimensions": "Refer to Plan of Subdivision",
+        "titles_expected": "Check with Sales Manager",
+        "has_covenants": true,
+        "covenants_file": "Covenants.pdf"
+    },
+    {
+        "estate_name": "Emerald Bank Kialla",
+        "suburb": "Kialla",
+        "lot_number": "TBA",
+        "total_area_sqm": "TBC",
+        "dimensions": "Refer to Plan of Subdivision",
+        "titles_expected": "Check with Sales Manager",
+        "has_covenants": true,
+        "covenants_file": "Covenant - April 2025 - VIC Instrument AA010716 (6727300).pdf"
+    },
+    {
+        "estate_name": "Kerange Ave",
+        "suburb": "Kialla",
+        "lot_number": "TBA",
+        "total_area_sqm": "TBC",
+        "dimensions": "Refer to Plan of Subdivision",
+        "titles_expected": "Check with Sales Manager",
+        "has_covenants": false
+    },
+    {
+        "estate_name": "Kialla Green",
+        "suburb": "Kialla",
+        "lot_number": "TBA",
+        "total_area_sqm": "TBC",
+        "dimensions": "Refer to Plan of Subdivision",
+        "titles_expected": "Check with Sales Manager",
+        "has_covenants": true,
+        "covenants_file": "Kialla Green covenants.pdf"
+    },
+    {
+        "estate_name": "Kialla Lakes",
+        "suburb": "Kialla",
+        "lot_number": "TBA",
+        "total_area_sqm": "TBC",
+        "dimensions": "Refer to Plan of Subdivision",
+        "titles_expected": "Check with Sales Manager",
+        "has_covenants": true,
+        "covenants_file": "Kialla Lakes covenants.pdf"
+    },
+    {
+        "estate_name": "Riverwood",
+        "suburb": "Kialla",
+        "lot_number": "TBA",
+        "total_area_sqm": "TBC",
+        "dimensions": "Refer to Plan of Subdivision",
+        "titles_expected": "Check with Sales Manager",
+        "has_covenants": true,
+        "covenants_file": "Stage 9 Covenant.pdf"
+    },
+    {
+        "estate_name": "Riviera Park",
+        "suburb": "Kialla",
+        "lot_number": "TBA",
+        "total_area_sqm": "TBC",
+        "dimensions": "Refer to Plan of Subdivision",
+        "titles_expected": "Check with Sales Manager",
+        "has_covenants": false
+    },
+    {
+        "estate_name": "Sanctuary Park",
+        "suburb": "Kialla",
+        "lot_number": "TBA",
+        "total_area_sqm": "TBC",
+        "dimensions": "Refer to Plan of Subdivision",
+        "titles_expected": "Check with Sales Manager",
+        "has_covenants": true,
+        "covenants_file": "~$nctuary Park Covenants.docx"
+    },
+    {
+        "estate_name": "Seven Creeks",
+        "suburb": "Kialla",
+        "lot_number": "TBA",
+        "total_area_sqm": "TBC",
+        "dimensions": "Refer to Plan of Subdivision",
+        "titles_expected": "Check with Sales Manager",
+        "has_covenants": true,
+        "covenants_file": "Seven Creeks Covenant  (Lot under 1,000 sq.pdf"
+    },
+    {
+        "estate_name": "Shiralee Estate",
+        "suburb": "Kialla",
+        "lot_number": "TBA",
+        "total_area_sqm": "TBC",
+        "dimensions": "Refer to Plan of Subdivision",
+        "titles_expected": "Check with Sales Manager",
+        "has_covenants": false
+    },
+    {
+        "estate_name": "Taylor Meadows",
+        "suburb": "Kialla",
+        "lot_number": "TBA",
+        "total_area_sqm": "TBC",
+        "dimensions": "Refer to Plan of Subdivision",
+        "titles_expected": "Check with Sales Manager",
+        "has_covenants": true,
+        "covenants_file": "Proposed Covenants - Taylors Estate.pdf"
+    },
+    {
+        "estate_name": "The Grange",
+        "suburb": "Kialla",
+        "lot_number": "TBA",
+        "total_area_sqm": "TBC",
+        "dimensions": "Refer to Plan of Subdivision",
+        "titles_expected": "Check with Sales Manager",
+        "has_covenants": true,
+        "covenants_file": "covenant.pdf"
+    },
+    {
+        "estate_name": "Belthorpe Estate, Kyabram",
+        "suburb": "Kyabram",
+        "lot_number": "TBA",
+        "total_area_sqm": "TBC",
+        "dimensions": "Refer to Plan of Subdivision",
+        "titles_expected": "Check with Sales Manager",
+        "has_covenants": true,
+        "covenants_file": "Covenants Belthorpe.pdf"
+    },
+    {
+        "estate_name": "Bluegum Fields",
+        "suburb": "Kyabram",
+        "lot_number": "TBA",
+        "total_area_sqm": "TBC",
+        "dimensions": "Refer to Plan of Subdivision",
+        "titles_expected": "Check with Sales Manager",
+        "has_covenants": false
+    },
+    {
+        "estate_name": "Fauna View Estate",
+        "suburb": "Kyabram",
+        "lot_number": "TBA",
+        "total_area_sqm": "TBC",
+        "dimensions": "Refer to Plan of Subdivision",
+        "titles_expected": "Check with Sales Manager",
+        "has_covenants": false
+    },
+    {
+        "estate_name": "Green Estate Kyabram",
+        "suburb": "Kyabram",
+        "lot_number": "TBA",
+        "total_area_sqm": "TBC",
+        "dimensions": "Refer to Plan of Subdivision",
+        "titles_expected": "Check with Sales Manager",
+        "has_covenants": false
+    },
+    {
+        "estate_name": "Lakeside Estate, Kyabram",
+        "suburb": "Kyabram",
+        "lot_number": "TBA",
+        "total_area_sqm": "TBC",
+        "dimensions": "Refer to Plan of Subdivision",
+        "titles_expected": "Check with Sales Manager",
+        "has_covenants": true,
+        "covenants_file": "Lakeside Covenants .pdf"
+    },
+    {
+        "estate_name": "Murray River Estate",
+        "suburb": "Kyabram",
+        "lot_number": "TBA",
+        "total_area_sqm": "TBC",
+        "dimensions": "Refer to Plan of Subdivision",
+        "titles_expected": "Check with Sales Manager",
+        "has_covenants": false
+    },
+    {
+        "estate_name": "Riverland Gardens Project - Allan Street, Kyabram",
+        "suburb": "Kyabram",
+        "lot_number": "TBA",
+        "total_area_sqm": "TBC",
+        "dimensions": "Refer to Plan of Subdivision",
+        "titles_expected": "Check with Sales Manager",
+        "has_covenants": false
+    },
+    {
+        "estate_name": "Sunrise Estate, Kyabram",
+        "suburb": "Kyabram",
+        "lot_number": "TBA",
+        "total_area_sqm": "TBC",
+        "dimensions": "Refer to Plan of Subdivision",
+        "titles_expected": "Check with Sales Manager",
+        "has_covenants": true,
+        "covenants_file": "KYABRAM COVENANT.pdf"
+    }
+]

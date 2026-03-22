@@ -1,0 +1,16 @@
+flask
+markdown
+PyPDF2
+pdfminer.six
+python-dotenv
+google-generativeai
+openai
+scrapetube
+youtube-transcript-api
+reportlab
+pymupdf
+Pillow
+xhtml2pdf
+requests
+replicate
+mcp

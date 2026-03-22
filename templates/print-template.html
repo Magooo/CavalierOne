@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{title}} | Cavalier Homes</title>
+  <style>
+    /* =========================
+       Cavalier Homes Print Template (A4)
+       ========================= */
+
+    :root{
+      /* Brand palette (locked) */
+      --ch-black: #000000;
+      --ch-white: #ffffff;
+      --ch-red: #AD4B43;
+      --ch-warm-grey: #AEA299;
+      --ch-stone: #eeedec;
+      --ch-mid-grey: #dbd9d8;
+      --ch-charcoal: #54595f;
+
+      /* Typography */
+      --font-primary: "Avant Garde Gothic", "Century Gothic", Arial, sans-serif;
+      --font-secondary: "Playfair Display", Georgia, "Times New Roman", serif;
+
+      /* Print sizing */
+      --page-margin: 16mm;
+      --radius: 10px;
+    }
+
+    @page {
+      size: A4;
+      margin: var(--page-margin);
+    }
+
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      color: var(--ch-black);
+      font-family: var(--font-primary);
+      font-size: 10.5pt;
+      line-height: 1.35;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+      background: var(--ch-white);
+    }
+
+    /* Utility */
+    .muted { color: var(--ch-charcoal); }
+    .rule { height: 1px; background: var(--ch-mid-grey); border: 0; margin: 10mm 0; }
+    .pb { page-break-before: always; }
+    .avoid-break { break-inside: avoid; page-break-inside: avoid; }
+    .small { font-size: 9pt; }
+    .tiny { font-size: 8pt; }
+    .caps { text-transform: uppercase; letter-spacing: 0.08em; font-size: 8.5pt; }
+
+    /* Layout grid */
+    .page {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      min-height: calc(297mm - (2 * var(--page-margin)));
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12mm;
+    }
+    .logo {
+      max-height: 18mm; /* keep above min-size rule by controlling image export size */
+      height: auto;
+      width: auto;
+    }
+    .tagline {
+      font-family: var(--font-secondary);
+      font-weight: 400;
+      font-size: 12pt;
+      margin: 0;
+      text-align: right;
+    }
+
+    /* Hero */
+    .hero {
+      margin-top: 6mm;
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid var(--ch-mid-grey);
+    }
+    .hero img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+    .hero-meta {
+      padding: 6mm;
+      background: var(--ch-white);
+    }
+    .title {
+      margin: 0;
+      font-family: var(--font-secondary);
+      font-weight: 700;
+      font-size: 28pt;
+      line-height: 1.05;
+    }
+    .subtitle {
+      margin: 2mm 0 0 0;
+      font-size: 12pt;
+      color: var(--ch-charcoal);
+    }
+
+    /* Stats row */
+    .stats {
+      margin-top: 6mm;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4mm;
+    }
+    .stat {
+      border: 1px solid var(--ch-mid-grey);
+      border-radius: var(--radius);
+      padding: 4mm;
+      background: var(--ch-stone);
+    }
+    .stat .label { margin: 0; font-size: 8.5pt; color: var(--ch-charcoal); }
+    .stat .value { margin: 1.5mm 0 0 0; font-weight: 700; font-size: 12pt; }
+
+    /* Two-column content */
+    .content {
+      margin-top: 7mm;
+      display: grid;
+      grid-template-columns: 1.25fr 0.85fr;
+      gap: 8mm;
+      align-items: start;
+    }
+
+    /* Cards */
+    .card {
+      border: 1px solid var(--ch-mid-grey);
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: var(--ch-white);
+    }
+    .card .card-hd {
+      padding: 4mm 5mm;
+      border-bottom: 1px solid var(--ch-mid-grey);
+      background: var(--ch-white);
+    }
+    .card .card-hd h2 {
+      margin: 0;
+      font-size: 11pt;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .card .card-bd { padding: 5mm; }
+
+    /* Lists */
+    ul.clean {
+      margin: 0;
+      padding-left: 4.5mm;
+    }
+    ul.clean li { margin: 1.5mm 0; }
+
+    /* Price box */
+    .price {
+      border-left: 4px solid var(--ch-red);
+      padding: 4mm 5mm;
+      background: var(--ch-stone);
+      border-radius: var(--radius);
+    }
+    .price .amount {
+      font-size: 18pt;
+      font-weight: 800;
+      margin: 0;
+    }
+    .price .note {
+      margin: 1mm 0 0 0;
+      color: var(--ch-charcoal);
+      font-size: 9pt;
+    }
+
+    /* Floorplan */
+    .floorplan img{
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: var(--radius);
+      border: 1px solid var(--ch-mid-grey);
+    }
+
+    /* CTA */
+    .cta {
+      margin-top: 6mm;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6mm;
+      border: 1px solid var(--ch-mid-grey);
+      border-radius: var(--radius);
+      padding: 5mm;
+      background: var(--ch-white);
+    }
+    .cta .left h3{
+      margin: 0;
+      font-size: 12pt;
+      font-weight: 800;
+    }
+    .cta .left p{
+      margin: 1mm 0 0 0;
+      color: var(--ch-charcoal);
+    }
+    .cta .right{
+      text-align: right;
+      font-weight: 700;
+    }
+    .cta .right .phone { font-size: 12pt; }
+    .cta .right .web { font-size: 9.5pt; color: var(--ch-charcoal); }
+
+    /* Footer legal */
+    .footer {
+      margin-top: 6mm;
+      padding-top: 4mm;
+      border-top: 1px solid var(--ch-mid-grey);
+    }
+    .legal {
+      font-size: 7.8pt;
+      color: var(--ch-charcoal);
+      line-height: 1.25;
+      margin: 0;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+    <!-- HEADER -->
+    <header class="header avoid-break">
+      <img class="logo" src="{{logo_path_primary}}" alt="Cavalier Homes Logo" />
+      <p class="tagline">{{brand_tagline}}</p>
+    </header>
+
+    <!-- MAIN -->
+    <main>
+      <!-- HERO -->
+      <section class="hero avoid-break">
+        <img src="{{hero_image}}" alt="{{hero_image_alt}}" />
+        <div class="hero-meta">
+          <h1 class="title">{{title}}</h1>
+          <p class="subtitle">{{subtitle}}</p>
+        </div>
+      </section>
+
+      <!-- STATS -->
+      <section class="stats avoid-break">
+        <div class="stat">
+          <p class="label">Bedrooms</p>
+          <p class="value">{{bedrooms}}</p>
+        </div>
+        <div class="stat">
+          <p class="label">Bathrooms</p>
+          <p class="value">{{bathrooms}}</p>
+        </div>
+        <div class="stat">
+          <p class="label">Car Spaces</p>
+          <p class="value">{{car_spaces}}</p>
+        </div>
+        <div class="stat">
+          <p class="label">Total Area</p>
+          <p class="value">{{total_area_m2}}m²</p>
+        </div>
+      </section>
+
+      <!-- CONTENT -->
+      <section class="content">
+        <!-- LEFT COLUMN -->
+        <div>
+          <div class="card avoid-break">
+            <div class="card-hd"><h2>Overview</h2></div>
+            <div class="card-bd">
+              <p class="muted" style="margin-top:0;">{{hero_subheadline}}</p>
+              <p style="margin-bottom:0;">{{long_description}}</p>
+            </div>
+          </div>
+
+          <div style="height:6mm;"></div>
+
+          <div class="card avoid-break">
+            <div class="card-hd"><h2>Inclusions</h2></div>
+            <div class="card-bd">
+              <ul class="clean">
+                {{#each inclusions_summary}}
+                  <li>{{this}}</li>
+                {{/each}}
+              </ul>
+              {{#if site_costs_included}}
+                <p class="tiny muted" style="margin:4mm 0 0 0;">Site costs included (subject to reports and contract).</p>
+              {{else}}
+                <p class="tiny muted" style="margin:4mm 0 0 0;">Site costs may be additional (subject to reports and contract).</p>
+              {{/if}}
+            </div>
+          </div>
+
+          <div style="height:6mm;"></div>
+
+          <!-- OPTIONAL: LOCATION -->
+          <div class="card avoid-break">
+            <div class="card-hd"><h2>Location</h2></div>
+            <div class="card-bd">
+              <p style="margin:0;"><strong>Lot:</strong> {{lot_number}}</p>
+              <p style="margin:1.5mm 0 0 0;"><strong>Address:</strong> {{address}}</p>
+              <p style="margin:1.5mm 0 0 0;"><strong>Estate:</strong> {{estate}}</p>
+              <p style="margin:1.5mm 0 0 0;"><strong>Region:</strong> {{region}}</p>
+              {{#if estimated_completion}}
+                <p class="tiny muted" style="margin:3mm 0 0 0;"><strong>Estimated completion:</strong> {{estimated_completion}}</p>
+              {{/if}}
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT COLUMN -->
+        <aside>
+          <!-- PRICE -->
+          <div class="card avoid-break">
+            <div class="card-hd"><h2>Price</h2></div>
+            <div class="card-bd">
+              <div class="price">
+                <p class="amount">{{price}}</p>
+                <p class="note">{{price_note}}</p>
+              </div>
+              <p class="tiny muted" style="margin:4mm 0 0 0;">
+                {{build_stage}}
+              </p>
+            </div>
+          </div>
+
+          <div style="height:6mm;"></div>
+
+          <!-- FLOORPLAN -->
+          <div class="card avoid-break">
+            <div class="card-hd"><h2>Floorplan</h2></div>
+            <div class="card-bd floorplan">
+              <img src="{{floorplan_image}}" alt="Floorplan for {{title}}" />
+              <p class="tiny muted" style="margin:3mm 0 0 0;">
+                Room sizes are approximate. Refer to final working drawings.
+              </p>
+            </div>
+          </div>
+        </aside>
+      </section>
+
+      <!-- CTA -->
+      <section class="cta avoid-break">
+        <div class="left">
+          <h3>{{cta_primary_label}}</h3>
+          <p>{{cta_message}}</p>
+        </div>
+        <div class="right">
+          <div class="phone">{{contact_phone}}</div>
+          <div class="web">{{website_url}}</div>
+        </div>
+      </section>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+      <p class="legal">
+        {{legal_disclaimer_text}}
+      </p>
+      <p class="legal" style="margin-top:2mm;">
+        {{builder_registration_numbers}} · {{copyright_notice}}
+      </p>
+    </footer>
+  </div>
+
+  <!-- OPTIONAL PAGE 2 FOR GALLERY / DETAILS -->
+  {{#if include_second_page}}
+  <div class="pb"></div>
+  <div class="page">
+    <header class="header avoid-break">
+      <img class="logo" src="{{logo_path_primary}}" alt="Cavalier Homes Logo" />
+      <p class="tagline">{{brand_tagline}}</p>
+    </header>
+
+    <main>
+      <h2 class="caps" style="margin:6mm 0 3mm 0;">Gallery</h2>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:4mm;">
+        {{#each gallery_images}}
+          <img src="{{this}}" alt="Gallery image" style="width:100%; border:1px solid var(--ch-mid-grey); border-radius: var(--radius);" />
+        {{/each}}
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p class="legal">{{legal_disclaimer_text}}</p>
+    </footer>
+  </div>
+  {{/if}}
+</body>
+</html>

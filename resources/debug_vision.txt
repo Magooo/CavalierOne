@@ -1,0 +1,23 @@
+--- Vision Analysis for square_Screenshot 2026-02-06 150634.png.png ---
+ROOF_FORM:
+- Type: Hip roof.
+- Pitch/slope direction: Slopes towards all sides.
+
+EAVES:
+- Garage: Flush Eave (roof ends exactly at the external brick line with fascia/gutter).
+- Main House: Eave width not specified, appears to be a standard width overhang.
+
+PIERS_AND_COLUMNS:
+- Material: Brick pier with post.
+- Assumption: Full height from ground to roof.
+
+POSITIVE_CONSTRUCTION:
+- Garage eave detail: Flush Eave.
+
+MATERIALS:
+- Materials: Brick, Aluminum (for windows).
+- Is there render? NO RENDER.
+
+STORY_COUNT:
+- Single Story.
+-----------------------------------

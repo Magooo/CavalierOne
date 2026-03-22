@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Cavalier Homes Brochure</title>
+    <!-- Use absolute path for PDF generation or url_for in Flask -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/marketing_print.css') }}">
+</head>
+
+<body>
+
+    <div class="page">
+        <!-- 1. Header -->
+        <div class="header">
+            <div class="logo-container">
+                <!-- Ensure this path resolves correctly in both Web and PDF modes -->
+                <img src="{{ url_for('static', filename='brand_assets/logo_primary_page5.png') }}" alt="Cavalier Homes">
+            </div>
+            <div class="header-text">
+                <div class="header-brand">CAVALIER HOMES</div>
+                <div class="header-sub">Goulburn Valley</div>
+            </div>
+        </div>
+
+        <!-- 2. Hero Section -->
+        <!-- 2. Hero Section -->
+        <div class="hero">
+            {% if hero_image %}
+            <img src="{{ hero_image }}" alt="Facade">
+            {% else %}
+            <div
+                style="background: #ccc; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #666;">
+                No Header Image Selected
+            </div>
+            {% endif %}
+
+            <div class="hero-overlay"></div>
+
+            <div class="hero-content">
+                <div class="hero-title">
+                    <h1>{{ title }}</h1>
+                    <div class="hero-subtitle">{{ subtitle }}</div>
+                </div>
+            </div>
+
+            <div class="price-tag">
+                {% if price %}
+                {{ price }}
+                {% else %}
+                POA
+                {% endif %}
+            </div>
+
+            <!-- Stats Bar (Floating overlap) -->
+            <div class="stats-bar">
+                <div class="stat-item">{{ bedrooms }} <span>Bed</span></div>
+                <div class="stat-item">{{ bathrooms }} <span>Bath</span></div>
+                <div class="stat-item">{{ car_spaces }} <span>Car</span></div>
+            </div>
+        </div>
+
+        <!-- 4. Content Grid -->
+        <div class="content-grid">
+            <div class="left-col">
+                <!-- Description -->
+                <div>
+                    <div class="section-title">Property Description</div>
+                    <div class="description">{{ long_description }}</div>
+                </div>
+
+                <!-- Inclusions -->
+                <div>
+                    <div class="section-title">Key Inclusions</div>
+                    <ul class="inclusions-list">
+                        {% for item in inclusions_summary %}
+                        <li>{{ item }}</li>
+                        {% endfor %}
+                        <li>Builder Registration: CDB-U 9856</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="right-col">
+                <!-- Floorplan -->
+                <div class="floorplan-container">
+                    {% if floorplan_image %}
+                    <img src="{{ floorplan_image }}" class="floorplan-img" alt="Floorplan">
+                    {% else %}
+                    <div style="text-align: center; color: #999;">
+                        <p>Floorplan Placeholder</p>
+                        <small>{{ title }}</small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. Footer -->
+        <div class="footer">
+            <div class="contact-info">
+                <span class="contact-label">Contact</span>
+                {{ contact_name }}<br>
+                {{ contact_phone }} | {{ contact_email }}<br>
+                {{ website_url }}
+            </div>
+            <div class="disclaimer">
+                Independently Owned and Operated.<br>
+                {{ legal_disclaimer_text }}
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

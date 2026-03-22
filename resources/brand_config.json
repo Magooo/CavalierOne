@@ -1,0 +1,50 @@
+{
+    "brand_name": "Cavalier Homes",
+    "typography": {
+        "primary_font": "Avant Garde Gothic",
+        "primary_font_stack": "'Avant Garde Gothic', 'Century Gothic', 'Inter', sans-serif",
+        "secondary_font": "Playfair Display",
+        "secondary_font_stack": "'Playfair Display', serif",
+        "substitute_font": "Century Gothic",
+        "fallback_font": "Arial, sans-serif"
+    },
+    "colors": {
+        "primary": {
+            "black": "#000000",
+            "white": "#ffffff"
+        },
+        "secondary": {
+            "red": "#ad4b43",
+            "dark_grey": "#54595f",
+            "medium_grey": "#aea299",
+            "light_grey": "#dbd9d8",
+            "very_light_grey": "#eeedec"
+        }
+    },
+    "theme": {
+        "root_css": {
+            "--primary": "#000000",
+            "--secondary": "#54595f",
+            "--accent": "#ad4b43",
+            "--bg": "#eeedec",
+            "--card": "#ffffff",
+            "--text": "#000000"
+        }
+    },
+    "assets": {
+        "logo_primary": "static/brand_assets/logo_primary_page5.png",
+        "logo_reversed": "static/brand_assets/page6_img2_404x360.jpeg",
+        "favicon": "static/brand_assets/page25_img3_205x205.jpeg",
+        "email_signature": "static/brand_assets/page25_img1_1332x595.jpeg",
+        "social_icon": "static/brand_assets/page25_img3_205x205.jpeg"
+    },
+    "imagery_rules": [
+        "Fresh, modern, bright and well lit",
+        "Combination of detail shots and interior/exterior shots",
+        "Renders must be from a consistent front-on angle"
+    ],
+    "disclaimers": {
+        "general": "Cavalier Homes are independently owned and operated. Room sizes shown are approximate only.",
+        "pricing": "Prices, inclusions and plans are subject to variation without notice."
+    }
+}

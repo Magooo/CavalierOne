@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Generated Content | Cavalier One</title>
+    <style>
+        :root {
+            --primary: #1e293b;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #0f172a;
+            --accent: #2563eb;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            padding: 2rem;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .btn-back {
+            display: inline-block;
+            margin-bottom: 1rem;
+            text-decoration: none;
+            color: var(--secondary);
+            font-weight: 600;
+        }
+
+        /* Card Styles */
+        .post-card {
+            background: var(--card);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            margin-bottom: 2rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .post-header {
+            padding: 1rem 1.5rem;
+            background: #f1f5f9;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .post-title h3 {
+            margin: 0;
+            font-size: 1.1rem;
+            color: var(--primary);
+        }
+
+        .post-link a {
+            font-size: 0.85rem;
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .social-preview {
+            padding: 1.5rem;
+            background: white;
+            /* Facebook Card Mockup */
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-family: Helvetica, Arial, sans-serif;
+            margin: 1.5rem;
+        }
+
+        .fb-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .fb-avatar {
+            width: 40px;
+            height: 40px;
+            background: #ddd;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .fb-meta {
+            font-size: 12px;
+            color: #65676b;
+        }
+
+        .fb-name {
+            font-weight: bold;
+            color: #050505;
+            font-size: 14px;
+        }
+
+        .fb-body {
+            color: #050505;
+            font-size: 15px;
+            line-height: 1.5;
+        }
+
+        .fb-video-placeholder {
+            margin-top: 10px;
+            background: #000;
+            color: white;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            cursor: pointer;
+        }
+
+        .actions {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #e2e8f0;
+            text-align: right;
+            background: #f8fafc;
+        }
+
+        button {
+            background-color: var(--accent);
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script>
+        function copyText(id) {
+            const el = document.getElementById(id);
+            const text = el.innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                alert("Text Copied!");
+            });
+        }
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <a href="/" class="btn-back">← Back to Generator</a>
+        <div class="header">
+            <h1>Generated Social Content</h1>
+            <p>From your latest YouTube videos</p>
+        </div>
+
+        {% if not posts %}
+        <div class="post-card" style="padding: 2rem; text-align: center;">
+            <h3>No captions found.</h3>
+            <p>Make sure your videos have CC/transcripts enabled.</p>
+        </div>
+        {% endif %}
+
+        {% for post in posts %}
+        <div class="post-card">
+            <div class="post-header">
+                <div class="post-title">
+                    <h3>Video: {{ post.title }}</h3>
+                </div>
+                <div class="post-link">
+                    <a href="{{ post.url }}" target="_blank">Watch Video ↗</a>
+                </div>
+            </div>
+
+            <div class="social-preview">
+                <!-- Facebook Mockup -->
+                <div class="fb-header">
+                    <div class="fb-avatar"></div>
+                    <div>
+                        <div class="fb-name">Cavalier Homes Goulburn Valley</div>
+                        <div class="fb-meta">Just now · 🎥</div>
+                    </div>
+                </div>
+
+                <div class="fb-body" id="content-{{ loop.index }}">
+                    {{ post.content | safe }}
+                </div>
+
+                <div class="fb-video-placeholder">
+                    ▶ Video Preview
+                </div>
+            </div>
+
+            <div class="actions">
+                <button onclick="copyText('content-{{ loop.index }}')">Copy Caption</button>
+            </div>
+        </div>
+        {% endfor %}
+
+    </div>
+</body>
+
+</html>

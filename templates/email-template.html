@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>{{title}} | Cavalier Homes</title>
+</head>
+<body style="margin:0; padding:0; background:#ffffff;">
+  <!-- Outer wrapper -->
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#ffffff;">
+    <tr>
+      <td align="center" style="padding:18px 12px;">
+
+        <!-- Container -->
+        <table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="width:600px; max-width:600px; border:1px solid #dbd9d8; border-radius:14px; overflow:hidden;">
+          <!-- Header -->
+          <tr>
+            <td style="padding:16px 18px; font-family: Century Gothic, Arial, sans-serif; border-bottom:1px solid #dbd9d8;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                <tr>
+                  <td align="left" style="vertical-align:middle;">
+                    <img src="{{logo_path_primary}}" width="150" alt="Cavalier Homes" style="display:block; height:auto; border:0;">
+                  </td>
+                  <td align="right" style="vertical-align:middle; font-family: Georgia, 'Times New Roman', serif; font-size:14px; color:#54595f;">
+                    {{brand_tagline}}
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Hero image -->
+          <tr>
+            <td>
+              <img src="{{hero_image}}" width="600" alt="{{hero_image_alt}}" style="display:block; width:100%; height:auto; border:0;">
+            </td>
+          </tr>
+
+          <!-- Body -->
+          <tr>
+            <td style="padding:18px; font-family: Century Gothic, Arial, sans-serif; color:#000000;">
+              <div style="font-family: Georgia, 'Times New Roman', serif; font-size:28px; line-height:1.05; font-weight:700;">
+                {{title}}
+              </div>
+              <div style="margin-top:8px; font-size:16px; line-height:1.35; color:#54595f;">
+                {{hero_subheadline}}
+              </div>
+
+              <!-- Stats row -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-top:14px;">
+                <tr>
+                  <td style="padding:10px; border:1px solid #dbd9d8; border-radius:10px; font-size:14px;">
+                    <strong>{{bedrooms}}</strong> Beds
+                  </td>
+                  <td width="8"></td>
+                  <td style="padding:10px; border:1px solid #dbd9d8; border-radius:10px; font-size:14px;">
+                    <strong>{{bathrooms}}</strong> Baths
+                  </td>
+                  <td width="8"></td>
+                  <td style="padding:10px; border:1px solid #dbd9d8; border-radius:10px; font-size:14px;">
+                    <strong>{{car_spaces}}</strong> Car
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Price -->
+              <div style="margin-top:14px; padding:12px 12px 12px 14px; background:#eeedec; border-left:4px solid #AD4B43; border-radius:10px;">
+                <div style="font-size:22px; font-weight:800;">{{price}}</div>
+                <div style="margin-top:4px; font-size:12px; color:#54595f;">{{price_note}}</div>
+              </div>
+
+              <!-- Inclusions (bullets) -->
+              <div style="margin-top:16px; font-size:14px; line-height:1.5;">
+                <div style="text-transform:uppercase; letter-spacing:0.08em; font-size:12px; font-weight:700;">Inclusions</div>
+                <ul style="margin:8px 0 0 18px; padding:0;">
+                  {{#each inclusions_summary}}
+                    <li style="margin:6px 0;">{{this}}</li>
+                  {{/each}}
+                </ul>
+              </div>
+
+              <!-- CTA button -->
+              <div style="margin-top:16px;">
+                <a href="{{cta_primary_link}}"
+                   style="display:inline-block; text-decoration:none; background:#000000; color:#ffffff; padding:12px 16px; border-radius:999px; font-weight:800; font-size:14px; font-family: Century Gothic, Arial, sans-serif;">
+                  {{cta_primary_label}}
+                </a>
+              </div>
+
+              <!-- Contact -->
+              <div style="margin-top:16px; padding-top:14px; border-top:1px solid #dbd9d8; font-size:13px; color:#54595f;">
+                <strong style="color:#000000;">{{contact_name}}</strong><br>
+                {{contact_phone}} · {{contact_email}}<br>
+                {{website_url}}
+              </div>
+
+              <!-- Legal -->
+              <div style="margin-top:14px; font-size:11px; line-height:1.35; color:#54595f;">
+                {{legal_disclaimer_text}}<br><br>
+                {{builder_registration_numbers}} · {{copyright_notice}}
+              </div>
+            </td>
+          </tr>
+        </table>
+        <!-- /Container -->
+
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

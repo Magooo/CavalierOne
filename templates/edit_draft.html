@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Draft | {{ title }}</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f1117;
+            --surface: #1a1d27;
+            --surface-2: #222536;
+            --border: #2e3248;
+            --accent: #ad4b43;
+            --accent-hover: #c45c53;
+            --green: #10b981;
+            --text: #e2e8f0;
+            --text-muted: #8b92a5;
+            --preview-bg: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* ─── TOP BAR ─── */
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            height: 56px;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+            z-index: 10;
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 500;
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            transition: all 0.15s;
+        }
+
+        .back-btn:hover {
+            color: var(--text);
+            border-color: #4b5280;
+        }
+
+        .doc-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .doc-subtitle {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tag {
+            font-size: 0.75rem;
+            padding: 3px 10px;
+            border-radius: 20px;
+            background: rgba(173, 75, 67, 0.15);
+            color: var(--accent);
+            border: 1px solid rgba(173, 75, 67, 0.3);
+            font-weight: 600;
+        }
+
+        .btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 18px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+        }
+
+        .btn-ghost:hover {
+            color: var(--text);
+            border-color: #4b5280;
+            background: var(--surface-2);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 2px 8px rgba(173, 75, 67, 0.35);
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(173, 75, 67, 0.45);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-success {
+            background: var(--green);
+            color: white;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+        }
+
+        .btn-success:hover {
+            background: #0ea472;
+            transform: translateY(-1px);
+        }
+
+        /* ─── MAIN PANE ─── */
+        .pane-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .pane {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .pane+.pane {
+            border-left: 2px solid var(--border);
+        }
+
+        .pane-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 16px;
+            background: var(--surface-2);
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .pane-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .word-count {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* ─── EDITOR ─── */
+        #editor-textarea {
+            flex: 1;
+            width: 100%;
+            border: none;
+            outline: none;
+            resize: none;
+            background: var(--surface);
+            color: #c9d1e0;
+            font-family: 'JetBrains Mono', 'Menlo', monospace;
+            font-size: 0.875rem;
+            line-height: 1.7;
+            padding: 20px 24px;
+            tab-size: 2;
+        }
+
+        #editor-textarea::placeholder {
+            color: #3d4260;
+        }
+
+        #editor-textarea:focus {
+            background: #1c1f2e;
+        }
+
+        /* ─── PREVIEW ─── */
+        .preview-frame {
+            flex: 1;
+            background: var(--preview-bg);
+            overflow-y: auto;
+            padding: 32px 40px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Preview typography */
+        .preview-frame h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #111;
+            border-bottom: 3px solid #ad4b43;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            margin-top: 0;
+        }
+
+        .preview-frame h2 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #ad4b43;
+            margin-top: 28px;
+            margin-bottom: 10px;
+        }
+
+        .preview-frame h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #222;
+            margin-top: 18px;
+            margin-bottom: 8px;
+        }
+
+        .preview-frame p {
+            margin-bottom: 12px;
+            line-height: 1.65;
+            color: #333;
+        }
+
+        .preview-frame ul,
+        .preview-frame ol {
+            padding-left: 22px;
+            margin-bottom: 12px;
+        }
+
+        .preview-frame li {
+            margin-bottom: 6px;
+            color: #333;
+            line-height: 1.55;
+        }
+
+        .preview-frame hr {
+            border: none;
+            border-top: 1px solid #e5e7eb;
+            margin: 20px 0;
+        }
+
+        .preview-frame strong {
+            color: #111;
+            font-weight: 700;
+        }
+
+        .preview-frame blockquote {
+            border-left: 4px solid #ad4b43;
+            background: #fdf8f8;
+            padding: 12px 18px;
+            margin: 16px 0;
+            color: #555;
+        }
+
+        .preview-frame table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 0.9rem;
+        }
+
+        .preview-frame th {
+            background: #f8f8f8;
+            color: #ad4b43;
+            text-align: left;
+            padding: 8px 12px;
+            border: 1px solid #e5e7eb;
+            font-weight: 600;
+        }
+
+        .preview-frame td {
+            padding: 8px 12px;
+            border: 1px solid #e5e7eb;
+            color: #333;
+        }
+
+        .preview-frame tr:nth-child(even) td {
+            background: #fafafa;
+        }
+
+        .preview-frame code {
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85em;
+            color: #c7254e;
+        }
+
+        /* ─── HIDDEN FORM ─── */
+        #render-form {
+            display: none;
+        }
+
+        /* ─── SAVE INDICATOR ─── */
+        .save-indicator {
+            font-size: 0.75rem;
+            color: var(--green);
+            opacity: 0;
+            transition: opacity 0.4s;
+        }
+
+        .save-indicator.show {
+            opacity: 1;
+        }
+
+        /* ─── RESIZE HANDLE ─── */
+        .resize-handle {
+            width: 4px;
+            background: var(--border);
+            cursor: col-resize;
+            flex-shrink: 0;
+            transition: background 0.15s;
+        }
+
+        .resize-handle:hover {
+            background: #ad4b43;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- TOP BAR -->
+    <div class="topbar">
+        <div class="topbar-left">
+            <a href="/" class="back-btn">← Back</a>
+            <div>
+                <div class="doc-title">{{ title }}</div>
+                {% if subtitle %}
+                <div class="doc-subtitle">{{ subtitle }}</div>
+                {% endif %}
+            </div>
+            <span class="tag">AI Draft</span>
+        </div>
+
+        <div class="topbar-right">
+            <span class="save-indicator" id="saveIndicator">✓ Saved</span>
+            <button class="btn btn-ghost" onclick="copyMarkdown()" id="copyBtn">📋 Copy Markdown</button>
+            <button class="btn btn-ghost" onclick="resetToOriginal()">↺ Reset to AI Draft</button>
+            <button class="btn btn-primary" onclick="submitForRender()">✨ Render Document →</button>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="pane-container" id="paneContainer">
+
+        <!-- LEFT: MARKDOWN EDITOR -->
+        <div class="pane" id="editorPane">
+            <div class="pane-header">
+                <span class="pane-label">✏️ Markdown Editor</span>
+                <span class="word-count" id="wordCount">0 words</span>
+            </div>
+            <textarea id="editor-textarea" spellcheck="true"
+                placeholder="Your AI-generated markdown will appear here for editing...">{{ raw_markdown }}</textarea>
+        </div>
+
+        <!-- DRAG HANDLE -->
+        <div class="resize-handle" id="resizeHandle"></div>
+
+        <!-- RIGHT: LIVE PREVIEW -->
+        <div class="pane" id="previewPane">
+            <div class="pane-header">
+                <span class="pane-label">👁 Live Preview</span>
+                <span style="font-size:0.75rem; color: var(--text-muted);">Updates as you type</span>
+            </div>
+            <div class="preview-frame" id="previewFrame"></div>
+        </div>
+
+    </div>
+
+    <!-- Hidden form to POST to render endpoint -->
+    <form id="render-form" method="POST" action="/render_document">
+        <input type="hidden" name="title" value="{{ title }}">
+        <input type="hidden" name="subtitle" value="{{ subtitle }}">
+        <input type="hidden" name="markdown_content" id="render-markdown-input">
+    </form>
+
+    <!-- marked.js for live preview rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked@9/marked.min.js"></script>
+    <script>
+        const editor = document.getElementById('editor-textarea');
+        const preview = document.getElementById('previewFrame');
+        const wordCountEl = document.getElementById('wordCount');
+        const saveIndicator = document.getElementById('saveIndicator');
+
+        // Store original AI draft for reset
+        const originalMarkdown = editor.value;
+
+        // ─── MARKED CONFIG ───
+        marked.setOptions({
+            breaks: true,
+            gfm: true
+        });
+
+        // ─── LIVE PREVIEW ───
+        let debounceTimer;
+        function normaliseBullets(md) {
+            // Convert non-standard bullet chars to standard markdown '- '
+            // so marked.js renders them as <ul><li> items
+            return md
+                .replace(/^([ \t]*)▸\s*/gm, '$1- ')
+                .replace(/^([ \t]*)•\s*/gm, '$1- ');
+        }
+
+        function updatePreview() {
+            const md = normaliseBullets(editor.value);
+            preview.innerHTML = marked.parse(md);
+
+            // Word count
+            const words = md.trim().split(/\s+/).filter(w => w.length > 0).length;
+            wordCountEl.textContent = `${words} word${words !== 1 ? 's' : ''}`;
+
+            // Auto-save to sessionStorage
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                sessionStorage.setItem('c1_draft_{{ title | replace(" ","_") }}', md);
+                showSaved();
+            }, 800);
+        }
+
+        function showSaved() {
+            saveIndicator.classList.add('show');
+            setTimeout(() => saveIndicator.classList.remove('show'), 1500);
+        }
+
+        editor.addEventListener('input', updatePreview);
+
+        // Tab key inserts spaces instead of losing focus
+        editor.addEventListener('keydown', function (e) {
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                const start = this.selectionStart;
+                const end = this.selectionEnd;
+                this.value = this.value.substring(0, start) + '  ' + this.value.substring(end);
+                this.selectionStart = this.selectionEnd = start + 2;
+                updatePreview();
+            }
+        });
+
+        // ─── INITIAL RENDER ───
+        updatePreview();
+
+        // ─── COPY MARKDOWN ───
+        function copyMarkdown() {
+            navigator.clipboard.writeText(editor.value).then(() => {
+                const btn = document.getElementById('copyBtn');
+                btn.textContent = '✅ Copied!';
+                setTimeout(() => btn.textContent = '📋 Copy Markdown', 2000);
+            });
+        }
+
+        // ─── RESET ───
+        function resetToOriginal() {
+            if (confirm('Reset to the original AI-generated draft? Your edits will be lost.')) {
+                editor.value = originalMarkdown;
+                updatePreview();
+            }
+        }
+
+        // ─── SUBMIT FOR RENDER ───
+        function submitForRender() {
+            document.getElementById('render-markdown-input').value = editor.value;
+            document.getElementById('render-form').submit();
+        }
+
+        // ─── DRAG TO RESIZE PANES ───
+        const handle = document.getElementById('resizeHandle');
+        const container = document.getElementById('paneContainer');
+        const editorPane = document.getElementById('editorPane');
+        const previewPane = document.getElementById('previewPane');
+
+        let isResizing = false;
+
+        handle.addEventListener('mousedown', (e) => {
+            isResizing = true;
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isResizing) return;
+            const containerRect = container.getBoundingClientRect();
+            const offset = e.clientX - containerRect.left;
+            const total = containerRect.width;
+            const leftPct = Math.min(Math.max((offset / total) * 100, 20), 80);
+            editorPane.style.flex = 'none';
+            editorPane.style.width = leftPct + '%';
+            previewPane.style.flex = '1';
+        });
+
+        document.addEventListener('mouseup', () => {
+            isResizing = false;
+            document.body.style.cursor = '';
+            document.body.style.userSelect = '';
+        });
+
+        // ─── KEYBOARD SHORTCUT: Ctrl+Enter to render ───
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                submitForRender();
+            }
+        });
+    </script>
+
+</body>
+
+</html>
