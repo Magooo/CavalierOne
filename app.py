@@ -1,11 +1,33 @@
 import os
-from flask import Flask, render_template, request, jsonify, send_from_directory
+from flask import Flask, render_template, request, jsonify, send_from_directory, Response
 from dotenv import load_dotenv
 import markdown
 
 load_dotenv() # Load environment variables from .env
 
 app = Flask(__name__)
+
+# --- Simple Password Protection Middleware ---
+def check_auth(username, password):
+    expected_user = os.environ.get('APP_USERNAME', 'admin')
+    expected_pass = os.environ.get('APP_PASSWORD')
+    if not expected_pass:
+        return True # if no password set, skip protection
+    return username == expected_user and password == expected_pass
+
+def authenticate():
+    return Response(
+        'Please sign in to access CavalierOne.', 401,
+        {'WWW-Authenticate': 'Basic realm="Login Required"'})
+
+@app.before_request
+def require_auth():
+    if not os.environ.get('APP_PASSWORD'):
+        return
+    auth = request.authorization
+    if not auth or not check_auth(auth.username, auth.password):
+        return authenticate()
+# ---------------------------------------------
 
 # Configuration
 from config import Config
