@@ -1,32 +1,44 @@
 import os
-from flask import Flask, render_template, request, jsonify, send_from_directory, Response
+from flask import Flask, render_template, request, jsonify, send_from_directory, session, redirect, url_for
 from dotenv import load_dotenv
 import markdown
+from functools import wraps
 
 load_dotenv() # Load environment variables from .env
 
 app = Flask(__name__)
+app.secret_key = os.environ.get('FLASK_SECRET', os.urandom(24))
 
-# --- Simple Password Protection Middleware ---
-def check_auth(username, password):
-    expected_user = os.environ.get('APP_USERNAME', 'admin')
-    expected_pass = os.environ.get('APP_PASSWORD')
-    if not expected_pass:
-        return True # if no password set, skip protection
-    return username == expected_user and password == expected_pass
+# --- Supabase Role-Based Auth Middleware ---
+AUTH_ENABLED = os.environ.get('SUPABASE_AUTH_ENABLED', 'false').lower() == 'true'
 
-def authenticate():
-    return Response(
-        'Please sign in to access CavalierOne.', 401,
-        {'WWW-Authenticate': 'Basic realm="Login Required"'})
+def require_role(roles):
+    """Decorator to restrict access based on user role."""
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if not AUTH_ENABLED:
+                return f(*args, **kwargs)
+            user_role = session.get('role', 'guest')
+            if user_role == 'admin':
+                return f(*args, **kwargs)
+            if isinstance(roles, list) and user_role not in roles:
+                return "Access Denied: Insufficient permissions.", 403
+            elif not isinstance(roles, list) and user_role != roles:
+                return "Access Denied: Insufficient permissions.", 403
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator
 
 @app.before_request
-def require_auth():
-    if not os.environ.get('APP_PASSWORD'):
+def global_auth_check():
+    if not AUTH_ENABLED:
         return
-    auth = request.authorization
-    if not auth or not check_auth(auth.username, auth.password):
-        return authenticate()
+    # Exclude login and all static paths
+    if request.path.startswith('/login') or request.path.startswith('/static') or request.path.startswith('/resources') or request.path.startswith('/api/'):
+        return
+    if 'user_id' not in session:
+        return redirect(url_for('login', next=request.url))
 # ---------------------------------------------
 
 # Configuration
@@ -56,6 +68,41 @@ if supabase_url and supabase_key:
 # Initialize Clients
 notebook_client = NotebookLMClient()
 fireflies_client = FirefliesClient()
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if not AUTH_ENABLED:
+        return redirect(url_for('index'))
+    
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+        try:
+            res = supabase.auth.sign_in_with_password({"email": email, "password": password})
+            session['user_id'] = res.user.id
+            
+            # Fetch user role
+            try:
+                roles = supabase.table('user_roles').select('*').eq('user_id', res.user.id).execute()
+                session['role'] = roles.data[0]['role'] if roles.data else 'guest'
+            except Exception as e:
+                session['role'] = 'guest'
+                print(f"Role fetch error: {e}")
+                
+            return redirect(request.args.get('next') or url_for('index'))
+        except Exception as e:
+            # The exception string often contains JSON from the GoTrue client
+            error_msg = str(e)
+            if "Invalid login credentials" in error_msg:
+                error_msg = "Invalid email or password."
+            return render_template('login.html', error=error_msg)
+            
+    return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('login'))
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
