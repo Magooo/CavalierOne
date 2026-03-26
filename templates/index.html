@@ -1001,10 +1001,21 @@
                     return;
                 }
 
-                // Populate the textarea
+                // Populate the textarea (Append instead of overwrite to support multi-part meetings)
                 const textarea = document.getElementById('raw_doc_content');
-                textarea.value = data.text;
-                status.textContent = '✅ Transcript loaded! Review the text below then click Format Document.';
+                const previousText = textarea.value.trim();
+                
+                // Fetch the meeting title so we can cleanly separate them
+                const selectedText = select.options[select.selectedIndex].text;
+                
+                if (previousText) {
+                    textarea.value = previousText + "\n\n" + "=".repeat(40) + "\n" + "MEETING PART: " + selectedText + "\n" + "=".repeat(40) + "\n\n" + data.text;
+                    status.textContent = '✅ Transcript appended! Select another meeting to combine them, or review the text below.';
+                } else {
+                    textarea.value = data.text;
+                    status.textContent = '✅ Transcript loaded! You can select another meeting to append it, or review the text below.';
+                }
+                
                 textarea.focus();
 
             } catch (err) {
