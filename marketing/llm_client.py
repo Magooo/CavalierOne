@@ -5,19 +5,31 @@ class LLMClient:
     def __init__(self, provider="openai"):
         self.provider = provider.lower()
         self.api_key = self._get_api_key()
+        
+    def _get_env_override(self, key):
+        try:
+            from flask import has_request_context, session
+            if has_request_context() and 'user_env' in session:
+                val = session['user_env'].get(key)
+                if val:
+                    return val
+        except ImportError:
+            pass
+        return os.environ.get(key)
 
     def _get_api_key(self):
         """Retrieves API key from environment variables based on provider."""
         if self.provider == "gemini":
-            return os.environ.get("GEMINI_API_KEY")
+            return self._get_env_override("GEMINI_API_KEY")
         elif self.provider == "openai":
-            return os.environ.get("OPENAI_API_KEY")
+            return self._get_env_override("OPENAI_API_KEY")
         return None
 
-    def generate_text(self, prompt, image_path=None):
+    def generate_text(self, prompt, image_path=None, max_tokens=None):
         """
         Generates text based on the prompt. 
         If no API key is set, returns a simulated response for testing.
+        max_tokens: optional ceiling for response length (defaults to provider default if None)
         """
         if not self.api_key:
             print(f"[{self.provider.upper()}] No API Key found. Returning mock response.")
@@ -25,9 +37,9 @@ class LLMClient:
 
         try:
             if self.provider == "gemini":
-                return self._call_gemini(prompt, image_path)
+                return self._call_gemini(prompt, image_path, max_tokens=max_tokens)
             elif self.provider == "openai":
-                return self._call_openai(prompt, image_path)
+                return self._call_openai(prompt, image_path, max_tokens=max_tokens)
             else:
                 return "Error: Unsupported provider."
         except Exception as e:
@@ -67,10 +79,10 @@ Perfect for modern families, featuring open-plan living and luxury inclusions.
                 
                 # Check for OpenAI Key explicitly if current provider is not OpenAI
                 if self.provider != "openai":
-                    if os.environ.get("OPENAI_API_KEY"):
+                    if self._get_env_override("OPENAI_API_KEY"):
                         # Switch to OpenAI context just for this call
                         from openai import OpenAI
-                        client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+                        client = OpenAI(api_key=self._get_env_override("OPENAI_API_KEY"))
                     else:
                         return "Error: Image generation requires OPENAI_API_KEY (DALL-E 3)."
                 else:
@@ -103,7 +115,7 @@ Perfect for modern families, featuring open-plan living and luxury inclusions.
              # Ensure we use an OpenAI client found from environment
              # (Self-repairing logic from generate_image)
              from openai import OpenAI
-             api_key = os.environ.get("OPENAI_API_KEY") or self.api_key
+             api_key = self._get_env_override("OPENAI_API_KEY") or self.api_key
              client = OpenAI(api_key=api_key)
              
              # Image must be a valid PNG, 4MB max, square.
@@ -120,7 +132,7 @@ Perfect for modern families, featuring open-plan living and luxury inclusions.
         except Exception as e:
              return f"Variation Error: {str(e)}"
 
-    def _call_gemini(self, prompt, image_path=None):
+    def _call_gemini(self, prompt, image_path=None, max_tokens=None):
         """Real call to Google Gemini API."""
         # Requires: pip install google-generativeai
         try:
@@ -129,7 +141,10 @@ Perfect for modern families, featuring open-plan living and luxury inclusions.
             
             genai.configure(api_key=self.api_key)
             # Use 'models/gemini-2.0-flash' as it is a confirmed available model
-            model = genai.GenerativeModel('models/gemini-2.0-flash')
+            generation_config = {}
+            if max_tokens:
+                generation_config['max_output_tokens'] = max_tokens
+            model = genai.GenerativeModel('models/gemini-2.0-flash', generation_config=generation_config if generation_config else None)
             
             content = [prompt]
             if image_path and os.path.exists(image_path):
@@ -144,7 +159,7 @@ Perfect for modern families, featuring open-plan living and luxury inclusions.
         except Exception as e:
             return f"Gemini API Error: {str(e)}"
 
-    def _call_openai(self, prompt, image_path=None):
+    def _call_openai(self, prompt, image_path=None, max_tokens=None):
         """Real call to OpenAI API (supports Vision)."""
         # Requires: pip install openai
         try:
@@ -169,10 +184,14 @@ Perfect for modern families, featuring open-plan living and luxury inclusions.
             else:
                  messages.append({"role": "user", "content": prompt})
 
-            response = client.chat.completions.create(
-                model="gpt-4o", # Use GPT-4o for best vision/text performance
-                messages=messages
-            )
+            api_kwargs = {
+                "model": "gpt-4o",  # Use GPT-4o for best vision/text performance
+                "messages": messages,
+            }
+            if max_tokens:
+                api_kwargs["max_tokens"] = max_tokens
+
+            response = client.chat.completions.create(**api_kwargs)
             return response.choices[0].message.content
         except ImportError:
             return "Error: `openai` library not installed. Run `pip install openai`."

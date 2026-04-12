@@ -9,8 +9,27 @@ load_dotenv() # Load environment variables from .env
 app = Flask(__name__)
 app.secret_key = os.environ.get('FLASK_SECRET', os.urandom(24))
 
+import io
+
 # --- Supabase Role-Based Auth Middleware ---
 AUTH_ENABLED = os.environ.get('SUPABASE_AUTH_ENABLED', 'true').lower() == 'true'
+
+# --- Permissions Mapping ---
+ROLE_PERMISSIONS = {
+    'admin': ['all'],
+    'sales': ['house_land', 'sales_estimate', 'rendering'],
+    'marketing': ['social_media', 'youtube_miner', 'doc_formatter', 'rendering', 'house_land']
+}
+
+def user_can_access(tool_id):
+    role = session.get('role', 'guest')
+    if role == 'admin': return True
+    return tool_id in ROLE_PERMISSIONS.get(role, [])
+
+@app.context_processor
+def inject_permissions():
+    """Makes user_can_access available in all jinja templates via Jinja."""
+    return dict(user_can_access=user_can_access, session=session)
 
 def require_role(roles):
     """Decorator to restrict access based on user role."""
@@ -106,6 +125,28 @@ def login():
             
     return render_template('login.html')
 
+@app.route('/settings', methods=['GET', 'POST'])
+def user_settings():
+    if not AUTH_ENABLED:
+        return redirect(url_for('index'))
+        
+    success = None
+    if request.method == 'POST':
+        env_text = request.form.get('env_text', '')
+        if 'env_file' in request.files and request.files['env_file'].filename:
+            env_text = request.files['env_file'].read().decode('utf-8')
+        
+        if env_text:
+            import dotenv
+            parsed_env = dotenv.dotenv_values(stream=io.StringIO(env_text))
+            current_env = session.get('user_env', {})
+            current_env.update(parsed_env)
+            session['user_env'] = current_env
+            session.modified = True
+            success = "Environment configured successfully."
+            
+    return render_template('settings.html', user_env=session.get('user_env', {}), success=success)
+
 @app.route('/logout')
 def logout():
     session.clear()
@@ -176,6 +217,10 @@ def index():
     
     if request.method == 'POST':
         form_type = request.form.get('form_type', 'house_land')
+        
+        # Enforce Backend RBAC
+        if not user_can_access(form_type):
+            return render_template('output.html', prompt=None, content=f"<div class='error-box'>Access Denied: You do not have permission to execute the {form_type} tool.</div>", data={'media_type': 'Error', 'home_name': 'Permission Denied'})
         
         final_prompt = ""
         user_data = {}
@@ -367,7 +412,12 @@ Tone: {tone}
                     print(f"WARNING: Could not find {prompt_path}. Using inline fallback prompt.")
                     prompt = f"""You are an executive operations strategist. Convert the following meeting notes into a structured, implementation-ready process document using standard Markdown.
 
-Attendees: {meeting_attendees if meeting_attendees else 'Not specified'}
+CRITICAL RULES:
+1. Preserve EVERY piece of information — do NOT summarise or shorten. If the meeting was long, the output will be long.
+2. Only assign task owners if they were EXPLICITLY named in the meeting notes. If no owner was mentioned, write [UNASSIGNED]. Never guess.
+
+Attendees (present only — do NOT assign tasks to them unless the notes explicitly say so):
+{meeting_attendees if meeting_attendees else 'Not specified'}
 
 Additional Instructions: {additional_instructions if additional_instructions else 'None'}
 
@@ -376,13 +426,14 @@ Produce these sections in order using standard Markdown (- for bullets, numbered
 ## Key Decisions
 ## Strategic Outcome
 ## Process Flow (Step-by-Step Execution Plan)
-## Roles & Responsibilities
-## Immediate Action Items (Next 7 Days)
-## 30-60 Day Actions
+## Roles & Responsibilities (table: Role | Owner | Deliverable — use [UNASSIGNED] where no owner was named)
+## Immediate Action Items (Next 7 Days) — format: - [Action] — [Owner or UNASSIGNED] — [Due]
+## 30-60 Day Actions — format: - [Action] — [Owner or UNASSIGNED] — [Target Date]
 ## Risks / Gaps
 ## Metrics for Success
+## Full Meeting Notes Summary (comprehensive restatement of all topics discussed)
 
-Keep language direct, operational, leadership-level. No fluff.
+Language: direct, operational, leadership-level. No fluff. No preamble.
 
 ## MEETING NOTES:
 {raw_content if raw_content else 'No meeting notes provided.'}
@@ -410,7 +461,11 @@ Output ONLY the formatted document. Let the user's "Extra Notes" guide WHAT you 
 """
             
             
-            generated_text = client.generate_text(prompt)
+            # For meeting notes, use a higher token limit so long meetings aren't truncated
+            if style == 'Meeting Notes Processor':
+                generated_text = client.generate_text(prompt, max_tokens=8000)
+            else:
+                generated_text = client.generate_text(prompt)
             
             # Send to EDIT page first — user edits markdown before final render
             return render_template(
@@ -481,6 +536,8 @@ def sales_training():
 
 @app.route('/sales-estimate')
 def sales_estimate():
+    if not user_can_access('sales_estimate'):
+        return "Access Denied: Insufficient permissions for Sales Estimates.", 403
     """Sales Estimate Builder — interactive client-facing quote tool."""
     return render_template('sales_estimate.html')
 
@@ -1158,6 +1215,7 @@ def generate_rendering():
         return f"System Error: {str(e)}", 500
 
 @app.route('/brain')
+@require_role(['admin'])
 def brain_dashboard():
     # 1. Fetch Notebooks
     notebooks = []
@@ -1418,7 +1476,7 @@ def parse_staff_from_md():
     section = team_match.group(1)
     current_category = 'Staff'
     # Categories where bold=Name and value=Role (standard format)
-    name_first_categories = {'Directors', 'Additional Staff'}
+    name_first_categories = {'Directors', 'Additional Staff', 'Sales Team'}
 
     for line in section.splitlines():
         stripped = line.strip()   # strip() removes \r on Windows CRLF files
@@ -1456,6 +1514,7 @@ def append_staff_to_md(name, role):
     """
     Appends a new staff member to the Team Structure section of company_info.md.
     Inserts under a '**Additional Staff:**' sub-heading (creates it if needed).
+    Handles both LF and CRLF line endings (Windows-safe).
     """
     if not os.path.exists(COMPANY_INFO_PATH):
         return False
@@ -1463,29 +1522,36 @@ def append_staff_to_md(name, role):
     with open(COMPANY_INFO_PATH, 'r', encoding='utf-8') as f:
         content = f.read()
 
+    # Normalise to LF internally so string operations work reliably
+    crlf = '\r\n' in content
+    content_lf = content.replace('\r\n', '\n')
+
     new_entry = f'- **{name}:** {role}\n'
 
     # Try to insert under existing 'Additional Staff' heading inside Team Structure
-    if '**Additional Staff:**' in content:
-        # Insert after that heading line
-        content = content.replace(
+    if '**Additional Staff:**' in content_lf:
+        content_lf = content_lf.replace(
             '**Additional Staff:**\n',
-            f'**Additional Staff:**\n{new_entry}'
+            f'**Additional Staff:**\n{new_entry}',
+            1  # only replace the first occurrence
         )
     else:
         # Find end of Team Structure section and append a new sub-heading + entry
         import re
-        team_match = re.search(r'(## Team Structure.*?)(?=^## |\Z)', content, re.DOTALL | re.MULTILINE)
+        team_match = re.search(r'(## Team Structure.*?)(?=^## |\Z)', content_lf, re.DOTALL | re.MULTILINE)
         if team_match:
             insert_pos = team_match.start() + len(team_match.group(1))
             addition = f'\n**Additional Staff:**\n{new_entry}'
-            content = content[:insert_pos] + addition + content[insert_pos:]
+            content_lf = content_lf[:insert_pos] + addition + content_lf[insert_pos:]
         else:
             # Fallback: just append to file
-            content += f'\n**Additional Staff:**\n{new_entry}'
+            content_lf += f'\n**Additional Staff:**\n{new_entry}'
+
+    # Restore original line endings
+    final_content = content_lf.replace('\n', '\r\n') if crlf else content_lf
 
     with open(COMPANY_INFO_PATH, 'w', encoding='utf-8') as f:
-        f.write(content)
+        f.write(final_content)
 
     return True
 

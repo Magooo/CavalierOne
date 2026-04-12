@@ -348,6 +348,43 @@
             opacity: 1;
         }
 
+        /* ─── UNASSIGNED DROPDOWN ─── */
+        .unassigned-wrap {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            vertical-align: middle;
+        }
+
+        .unassigned-select {
+            display: inline-block;
+            padding: 2px 8px;
+            border: 1.5px dashed #f59e0b;
+            border-radius: 6px;
+            background: #fffbeb;
+            color: #92400e;
+            font-size: 0.78rem;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            outline: none;
+            transition: border-color 0.15s, background 0.15s;
+            max-width: 200px;
+        }
+
+        .unassigned-select:hover,
+        .unassigned-select:focus {
+            border-color: #d97706;
+            background: #fef3c7;
+        }
+
+        .unassigned-select.assigned {
+            border-color: #10b981;
+            background: #ecfdf5;
+            color: #065f46;
+            border-style: solid;
+        }
+
         /* ─── RESIZE HANDLE ─── */
         .resize-handle {
             width: 4px;
@@ -411,6 +448,11 @@
             <div class="preview-frame" id="previewFrame"></div>
         </div>
 
+        <!-- ASSIGN OWNERS BANNER (shown when [UNASSIGNED] tokens exist) -->
+        <div id="assign-banner" style="display:none; background: #fffbeb; border-bottom: 2px solid #f59e0b; padding: 8px 20px; font-size: 0.82rem; color: #78350f; flex-shrink:0; display:flex; align-items:center; gap:10px;">
+            <span>⚠️ <strong>Action items below have no assigned owner.</strong> Use the dropdowns in the preview to assign them — the document will update automatically.</span>
+        </div>
+
     </div>
 
     <!-- Hidden form to POST to render endpoint -->
@@ -454,6 +496,10 @@
             // Word count
             const words = md.trim().split(/\s+/).filter(w => w.length > 0).length;
             wordCountEl.textContent = `${words} word${words !== 1 ? 's' : ''}`;
+
+            // Inject [UNASSIGNED] owner dropdowns after a short delay
+            // (allows DOM to settle before we manipulate innerHTML)
+            setTimeout(injectUnassignedDropdowns, 50);
 
             // Auto-save to sessionStorage
             clearTimeout(debounceTimer);
@@ -506,6 +552,81 @@
         function submitForRender() {
             document.getElementById('render-markdown-input').value = editor.value;
             document.getElementById('render-form').submit();
+        }
+
+        // ─── [UNASSIGNED] OWNER DROPDOWN SYSTEM ───
+        let staffListCache = null;
+
+        async function fetchStaffList() {
+            if (staffListCache) return staffListCache;
+            try {
+                const res = await fetch('/api/staff');
+                const data = await res.json();
+                staffListCache = Array.isArray(data) ? data : [];
+            } catch (e) {
+                staffListCache = [];
+            }
+            return staffListCache;
+        }
+
+        async function injectUnassignedDropdowns() {
+            // Find all text nodes in preview containing [UNASSIGNED]
+            const previewEl = document.getElementById('previewFrame');
+            const hasUnassigned = previewEl.innerHTML.includes('[UNASSIGNED]');
+            const banner = document.getElementById('assign-banner');
+
+            if (!hasUnassigned) {
+                banner.style.display = 'none';
+                return;
+            }
+
+            banner.style.display = 'flex';
+            const staff = await fetchStaffList();
+
+            // Build option HTML
+            const optionsHtml = `<option value="">👤 Assign owner...</option>` +
+                staff.map(s => `<option value="${escHtml(s.name)}">${escHtml(s.name)} — ${escHtml(s.role)}</option>`).join('');
+
+            // Replace every [UNASSIGNED] in innerHTML with a select widget
+            // We use a unique counter so each select has a unique id
+            let counter = 0;
+            previewEl.innerHTML = previewEl.innerHTML.replace(/\[UNASSIGNED\]/g, () => {
+                const uid = `unassigned-${counter++}`;
+                return `<span class="unassigned-wrap"><select class="unassigned-select" id="${uid}" onchange="ownerSelected(this)">${optionsHtml}</select></span>`;
+            });
+        }
+
+        function escHtml(str) {
+            return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
+        function ownerSelected(selectEl) {
+            const chosen = selectEl.value;
+            if (!chosen) return;
+
+            // Mark the select as assigned
+            selectEl.classList.add('assigned');
+            selectEl.options[0].text = chosen; // update placeholder text
+            selectEl.blur();
+
+            // Sync back to the markdown editor — replace the FIRST remaining [UNASSIGNED]
+            // We find which slot this dropdown corresponds to by counting selects before it
+            const allSelects = document.querySelectorAll('.unassigned-select');
+            let idx = 0;
+            allSelects.forEach((s, i) => { if (s === selectEl) idx = i; });
+
+            // Replace the (idx+1)th occurrence of [UNASSIGNED] in the editor
+            let editorText = editor.value;
+            let count = 0;
+            editorText = editorText.replace(/\[UNASSIGNED\]/g, (match) => {
+                if (count === idx) { count++; return chosen; }
+                count++;
+                return match;
+            });
+            editor.value = editorText;
+
+            // Flash save indicator
+            showSaved();
         }
 
         // ─── DRAG TO RESIZE PANES ───
