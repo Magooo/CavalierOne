@@ -407,62 +407,35 @@ Tone: {tone}
                     context_string = f"Error loading Master Prompt: {e}"
 
             if style == 'Meeting Notes Processor':
-                # Load the master prompt template from the external MD file
-                prompt_path = os.path.join('resources', 'prompts', 'EXECUTIVE_PROCESS_GENERATOR.md')
+                # Fireflies already produces a perfect summary — no AI reprocessing needed.
+                # Just add the Cavalier One header and send straight to the edit page.
                 meeting_attendees = request.form.get('meeting_attendees', '').strip()
                 additional_instructions = request.form.get('meeting_extra_instructions', '').strip()
 
-                try:
-                    with open(prompt_path, 'r', encoding='utf-8') as f:
-                        prompt_template = f.read()
+                header_lines = [
+                    f"# {title}",
+                    "",
+                    "**Cavalier One | Meeting Notes**",
+                    "",
+                ]
+                if meeting_attendees:
+                    header_lines += ["## Attendees", meeting_attendees, ""]
+                if additional_instructions:
+                    header_lines += [f"> **Note:** {additional_instructions}", ""]
 
-                    # Inject dynamic values into template placeholders
-                    prompt = prompt_template.replace(
-                        '{{MEETING_NOTES}}',
-                        raw_content if raw_content else 'No meeting notes provided. Please paste meeting notes into the content field.'
-                    ).replace(
-                        '{{ATTENDEES}}',
-                        meeting_attendees if meeting_attendees else 'Not specified — infer roles from context where possible.'
-                    ).replace(
-                        '{{ADDITIONAL_INSTRUCTIONS}}',
-                        additional_instructions if additional_instructions else 'None — follow the standard format exactly.'
-                    )
+                header_lines.append("---")
+                header_lines.append("")
 
-                    # Append optional internal context if selected
-                    if context_string:
-                        prompt += f"\n\n---\n\n## INTERNAL COMPANY CONTEXT\n{context_string}"
+                content_body = raw_content if raw_content else "_No meeting notes provided._"
+                generated_text = "\n".join(header_lines) + "\n" + content_body
 
-                except FileNotFoundError:
-                    # Graceful fallback if MD file is missing
-                    print(f"WARNING: Could not find {prompt_path}. Using inline fallback prompt.")
-                    prompt = f"""You are an executive operations strategist. Convert the following meeting notes into a structured, implementation-ready process document using standard Markdown.
+                return render_template(
+                    'edit_draft.html',
+                    title=title,
+                    subtitle=subtitle,
+                    raw_markdown=generated_text
+                )
 
-CRITICAL RULES:
-1. Preserve EVERY piece of information — do NOT summarise or shorten. If the meeting was long, the output will be long.
-2. Only assign task owners if they were EXPLICITLY named in the meeting notes. If no owner was mentioned, write [UNASSIGNED]. Never guess.
-
-Attendees (present only — do NOT assign tasks to them unless the notes explicitly say so):
-{meeting_attendees if meeting_attendees else 'Not specified'}
-
-Additional Instructions: {additional_instructions if additional_instructions else 'None'}
-
-Produce these sections in order using standard Markdown (- for bullets, numbered lists, tables):
-# Meeting Objective
-## Key Decisions
-## Strategic Outcome
-## Process Flow (Step-by-Step Execution Plan)
-## Roles & Responsibilities (table: Role | Owner | Deliverable — use [UNASSIGNED] where no owner was named)
-## Immediate Action Items (Next 7 Days) — format: - [Action] — [Owner or UNASSIGNED] — [Due]
-## 30-60 Day Actions — format: - [Action] — [Owner or UNASSIGNED] — [Target Date]
-## Risks / Gaps
-## Metrics for Success
-## Full Meeting Notes Summary (comprehensive restatement of all topics discussed)
-
-Language: direct, operational, leadership-level. No fluff. No preamble.
-
-## MEETING NOTES:
-{raw_content if raw_content else 'No meeting notes provided.'}
-"""
             else:
                 prompt = f"""
 ---
@@ -484,14 +457,9 @@ Output ONLY the formatted document. Let the user's "Extra Notes" guide WHAT you 
 ## EXTRA NOTES / INSTRUCTIONS (RAW DATA)
 {raw_content if raw_content else "No extra instructions. Summarize the internal context above into a useful document based on the requested Format Style."}
 """
-            
-            
-            # For meeting notes, use a higher token limit so long meetings aren't truncated
-            if style == 'Meeting Notes Processor':
-                generated_text = client.generate_text(prompt, max_tokens=8000)
-            else:
-                generated_text = client.generate_text(prompt)
-            
+
+            generated_text = client.generate_text(prompt)
+
             # Send to EDIT page first — user edits markdown before final render
             return render_template(
                 'edit_draft.html',
