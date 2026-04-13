@@ -83,12 +83,37 @@ class FirefliesClient:
         Formats the Fireflies transcript object into a clean text block.
         Handles Fireflies returning summary fields as either strings or lists.
         """
-        def to_str(val):
-            """Convert a Fireflies field to a plain string regardless of type."""
+        import re
+
+        def to_bullet_list(val):
+            """
+            Convert a Fireflies field to a markdown bullet list.
+            Handles lists, and also detects concatenated strings where each
+            topic starts with an emoji — splits them into separate bullets.
+            """
             if not val:
                 return ""
             if isinstance(val, list):
-                return "\n".join(str(item).strip() for item in val if item)
+                return "\n".join(f"- {str(item).strip()}" for item in val if item)
+            text = str(val).strip()
+            # Fireflies often returns highlights as one long string like:
+            # "📊 **Topic A** text. 🤝 **Topic B** text."
+            # Split at sentence-end followed by whitespace + emoji
+            parts = re.split(r'(?<=[.!?])\s+(?=\S*[\U0001F100-\U0001FFFF])', text)
+            if len(parts) > 1:
+                return "\n".join(f"- {p.strip()}" for p in parts if p.strip())
+            # Might also be newline-separated already
+            lines = [l.strip() for l in text.splitlines() if l.strip()]
+            if len(lines) > 1:
+                return "\n".join(f"- {l}" if not l.startswith("-") else l for l in lines)
+            return text  # single block — return as-is
+
+        def to_str(val):
+            """Plain string conversion for non-list fields like overview."""
+            if not val:
+                return ""
+            if isinstance(val, list):
+                return "\n\n".join(str(item).strip() for item in val if item)
             return str(val).strip()
 
         title = t.get("title", "Untitled Meeting")
@@ -110,15 +135,15 @@ class FirefliesClient:
                 lines.append(f"- {name}")
             lines.append("")
 
-        # Bullet highlights
-        highlights = to_str(summary.get("shorthand_bullet") or summary.get("bullet_gist"))
+        # Bullet highlights — split into individual bullets by emoji boundary
+        highlights = to_bullet_list(summary.get("shorthand_bullet") or summary.get("bullet_gist"))
         if highlights:
             lines.append("## Meeting Highlights")
             lines.append(highlights)
             lines.append("")
 
-        # Keywords
-        keywords = to_str(summary.get("keywords"))
+        # Keywords — format as bullet list
+        keywords = to_bullet_list(summary.get("keywords"))
         if keywords:
             lines.append("## Key Topics")
             lines.append(keywords)
@@ -131,12 +156,13 @@ class FirefliesClient:
             lines.append(overview)
             lines.append("")
 
-        # Action items
-        action_items = to_str(summary.get("action_items"))
+        # Action items — format as bullet list
+        action_items = to_bullet_list(summary.get("action_items"))
         if action_items:
             lines.append("## Action Items")
             lines.append(action_items)
             lines.append("")
+
 
         if len(lines) <= 4:
             lines.append("_Fireflies has not yet generated a summary for this meeting._")
