@@ -1451,14 +1451,32 @@ def api_doc_fetch_transcript():
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 COMPANY_INFO_PATH = os.path.join(BASE_DIR, 'resources', 'company_info.md')
 
+# ---------------------------------------------------------------------------
+# STAFF LIST — Supabase-backed (Vercel filesystem is read-only at runtime)
+# The company_staff table is the source of truth for all staff operations.
+# company_info.md is only used as a read-only fallback if Supabase is down.
+# ---------------------------------------------------------------------------
+
+def get_staff_from_supabase():
+    """
+    Returns staff list from the Supabase company_staff table.
+    Returns a list of dicts: [{name, role, category}]
+    """
+    if not supabase:
+        return None  # Supabase not configured — caller will fall back to MD
+    try:
+        res = supabase.table('company_staff').select('name, role, category').order('category').order('name').execute()
+        return res.data if res.data else []
+    except Exception as e:
+        print(f"[staff] Supabase read error: {e}")
+        return None
+
+
 def parse_staff_from_md():
     """
-    Parses the Team Structure section of company_info.md.
+    Fallback: Parses the Team Structure section of company_info.md.
+    Only used when Supabase is unavailable.
     Returns a list of dicts: [{name, role, category}]
-
-    Handles two formats in company_info.md:
-      Directors section:      - **Scott McHugh:** Director (...)   → name=Scott McHugh, role=Director
-      Key Management section: - **Sales Manager:** Charley Daldy    → name=Charley Daldy, role=Sales Manager
     """
     import re
     staff = []
@@ -1468,99 +1486,53 @@ def parse_staff_from_md():
     with open(COMPANY_INFO_PATH, 'r', encoding='utf-8') as f:
         content = f.read()
 
-    # Find the Team Structure section
     team_match = re.search(r'## Team Structure(.*?)(?=^## |\Z)', content, re.DOTALL | re.MULTILINE)
     if not team_match:
         return staff
 
     section = team_match.group(1)
     current_category = 'Staff'
-    # Categories where bold=Name and value=Role (standard format)
     name_first_categories = {'Directors', 'Additional Staff', 'Sales Team'}
 
     for line in section.splitlines():
-        stripped = line.strip()   # strip() removes \r on Windows CRLF files
+        stripped = line.strip()
         if not stripped:
             continue
-
-        # Detect sub-headings: **Directors:** or **Key Management:** (colon inside bold)
         heading = re.match(r'^\*\*(.+?):\*\*\s*$', stripped)
         if heading:
             current_category = heading.group(1).strip()
             continue
-
-        # Match bullet lines: - **Name:** Value  (colon is inside the bold markers)
         bullet = re.match(r'^[-*]\s+\*\*(.+?):\*\*\s*(.+)', stripped)
         if bullet:
             bold_text = bullet.group(1).strip()
             value_text = bullet.group(2).strip().rstrip('.')
-
             if current_category in name_first_categories:
-                # **Name:** Role description
-                name = bold_text
-                role = value_text
+                name, role = bold_text, value_text
             else:
-                # **Role Title:** Person Name  (Key Management style)
-                role = bold_text
-                name = value_text
-
+                role, name = bold_text, value_text
             if name and role:
                 staff.append({'name': name, 'role': role, 'category': current_category})
 
     return staff
 
 
-def append_staff_to_md(name, role):
+def get_all_staff():
     """
-    Appends a new staff member to the Team Structure section of company_info.md.
-    Inserts under a '**Additional Staff:**' sub-heading (creates it if needed).
-    Handles both LF and CRLF line endings (Windows-safe).
+    Primary entrypoint for reading the staff list.
+    Uses Supabase if available, falls back to company_info.md.
     """
-    if not os.path.exists(COMPANY_INFO_PATH):
-        return False
-
-    with open(COMPANY_INFO_PATH, 'r', encoding='utf-8') as f:
-        content = f.read()
-
-    # Normalise to LF internally so string operations work reliably
-    crlf = '\r\n' in content
-    content_lf = content.replace('\r\n', '\n')
-
-    new_entry = f'- **{name}:** {role}\n'
-
-    # Try to insert under existing 'Additional Staff' heading inside Team Structure
-    if '**Additional Staff:**' in content_lf:
-        content_lf = content_lf.replace(
-            '**Additional Staff:**\n',
-            f'**Additional Staff:**\n{new_entry}',
-            1  # only replace the first occurrence
-        )
-    else:
-        # Find end of Team Structure section and append a new sub-heading + entry
-        import re
-        team_match = re.search(r'(## Team Structure.*?)(?=^## |\Z)', content_lf, re.DOTALL | re.MULTILINE)
-        if team_match:
-            insert_pos = team_match.start() + len(team_match.group(1))
-            addition = f'\n**Additional Staff:**\n{new_entry}'
-            content_lf = content_lf[:insert_pos] + addition + content_lf[insert_pos:]
-        else:
-            # Fallback: just append to file
-            content_lf += f'\n**Additional Staff:**\n{new_entry}'
-
-    # Restore original line endings
-    final_content = content_lf.replace('\n', '\r\n') if crlf else content_lf
-
-    with open(COMPANY_INFO_PATH, 'w', encoding='utf-8') as f:
-        f.write(final_content)
-
-    return True
+    staff = get_staff_from_supabase()
+    if staff is not None:
+        return staff
+    # Supabase unavailable — use local file (will work locally, not on Vercel)
+    return parse_staff_from_md()
 
 
 @app.route('/api/staff')
 def api_get_staff():
-    """Returns the parsed staff list from company_info.md."""
+    """Returns the full staff list (Supabase → company_info.md fallback)."""
     try:
-        staff = parse_staff_from_md()
+        staff = get_all_staff()
         return jsonify(staff)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -1569,7 +1541,7 @@ def api_get_staff():
 @app.route('/api/staff/add', methods=['POST'])
 def api_add_staff():
     """
-    Adds a new staff member to company_info.md if they don't already exist.
+    Adds a new staff member to the company_staff Supabase table.
     Body: { name, role }
     """
     data = request.get_json()
@@ -1584,19 +1556,31 @@ def api_add_staff():
     if not role:
         role = 'Staff Member'
 
-    # Check if already exists (case-insensitive)
-    existing = parse_staff_from_md()
-    for s in existing:
-        if s['name'].lower() == name.lower():
-            return jsonify({'already_exists': True, 'staff': existing})
+    if not supabase:
+        return jsonify({'error': 'Database not configured — cannot save new staff on this deployment.'}), 500
 
-    success = append_staff_to_md(name, role)
-    if not success:
-        return jsonify({'error': 'Could not write to company_info.md'}), 500
+    try:
+        # Check if already exists (case-insensitive)
+        existing_res = supabase.table('company_staff').select('name').ilike('name', name).execute()
+        if existing_res.data:
+            all_staff = get_all_staff()
+            return jsonify({'already_exists': True, 'staff': all_staff})
 
-    updated = parse_staff_from_md()
-    return jsonify({'added': True, 'staff': updated})
+        # Insert new staff member
+        supabase.table('company_staff').insert({
+            'name': name,
+            'role': role,
+            'category': 'Additional Staff'
+        }).execute()
+
+        updated = get_all_staff()
+        return jsonify({'added': True, 'staff': updated})
+
+    except Exception as e:
+        print(f"[staff/add] Error: {e}")
+        return jsonify({'error': f'Could not save staff member: {str(e)}'}), 500
 
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
+
