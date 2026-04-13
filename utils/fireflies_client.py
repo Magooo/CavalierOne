@@ -80,9 +80,17 @@ class FirefliesClient:
 
     def _format_summary(self, t):
         """
-        Formats the Fireflies transcript object into a clean text block
-        that preserves Fireflies' own summarisation exactly.
+        Formats the Fireflies transcript object into a clean text block.
+        Handles Fireflies returning summary fields as either strings or lists.
         """
+        def to_str(val):
+            """Convert a Fireflies field to a plain string regardless of type."""
+            if not val:
+                return ""
+            if isinstance(val, list):
+                return "\n".join(str(item).strip() for item in val if item)
+            return str(val).strip()
+
         title = t.get("title", "Untitled Meeting")
         date = t.get("dateString", "")
         summary = t.get("summary") or {}
@@ -102,38 +110,38 @@ class FirefliesClient:
                 lines.append(f"- {name}")
             lines.append("")
 
-        # Bullet highlights (shorthand_bullet or bullet_gist)
-        highlights = summary.get("shorthand_bullet") or summary.get("bullet_gist") or ""
+        # Bullet highlights
+        highlights = to_str(summary.get("shorthand_bullet") or summary.get("bullet_gist"))
         if highlights:
             lines.append("## Meeting Highlights")
-            lines.append(highlights.strip())
+            lines.append(highlights)
             lines.append("")
 
         # Keywords
-        keywords = summary.get("keywords") or ""
+        keywords = to_str(summary.get("keywords"))
         if keywords:
             lines.append("## Key Topics")
-            lines.append(keywords.strip())
+            lines.append(keywords)
             lines.append("")
 
         # Detailed overview / meeting notes
-        overview = summary.get("overview") or ""
+        overview = to_str(summary.get("overview"))
         if overview:
             lines.append("## Meeting Notes")
-            lines.append(overview.strip())
+            lines.append(overview)
             lines.append("")
 
         # Action items
-        action_items = summary.get("action_items") or ""
+        action_items = to_str(summary.get("action_items"))
         if action_items:
             lines.append("## Action Items")
-            lines.append(action_items.strip())
+            lines.append(action_items)
             lines.append("")
 
         if len(lines) <= 4:
-            # Summary fields were all empty — this meeting may not have been processed by Fireflies yet
             lines.append("_Fireflies has not yet generated a summary for this meeting._")
             lines.append("_The AI summary is usually ready 10–15 minutes after the meeting ends._")
 
         return "\n".join(lines)
+
 
