@@ -212,7 +212,11 @@
         <div style="text-align: right; margin-bottom: 15px; font-family: 'Outfit', sans-serif;">
             {% if session.get('role') == 'admin' %}
             <a href="/admin" style="color: var(--accent); font-weight: 600; text-decoration: none; margin-right: 20px;">⚙️ Admin Panel</a>
+            <span style="color: #64748b; margin-right: 10px; font-size: 0.9em;">(Logged in as Admin)</span>
+            {% else %}
+            <span style="color: #64748b; margin-right: 20px; font-weight: 600;">Role: {{ session.get('role')|title }}</span>
             {% endif %}
+            <a href="/settings" style="color: #64748b; font-weight: 600; text-decoration: none; margin-right: 20px;">🔑 Settings (.env)</a>
             <a href="/logout" style="color: var(--secondary); font-weight: 600; text-decoration: none;">🚪 Logout</a>
         </div>
         <div class="header">
@@ -223,17 +227,32 @@
         </div>
 
         <div class="tabs">
+            {% if user_can_access('house_land') %}
             <button class="tab-btn active" onclick="openTab(event, 'tab-house-land')">House & Land</button>
-            <button class="tab-btn" onclick="openTab(event, 'tab-social-media')">Social Media</button>
+            {% endif %}
+            {% if user_can_access('social_media') %}
+            <button class="tab-btn {% if not user_can_access('house_land') %}active{% endif %}" onclick="openTab(event, 'tab-social-media')">Social Media</button>
+            {% endif %}
+            {% if user_can_access('youtube_miner') %}
             <button class="tab-btn" onclick="openTab(event, 'tab-youtube-miner')">🎥 YouTube Miner</button>
+            {% endif %}
+            {% if user_can_access('rendering') %}
             <button class="tab-btn" onclick="openTab(event, 'tab-rendering')">🏠 Rendering</button>
+            {% endif %}
+            {% if user_can_access('doc_formatter') %}
             <button class="tab-btn" onclick="openTab(event, 'tab-doc-formatter')">📝 Doc Formatter</button>
+            {% endif %}
+            {% if user_can_access('sales_estimate') %}
             <button class="tab-btn" onclick="window.location.href='/sales-estimate'" style="background: #ad4b43; color: white; border-radius: 12px 12px 0 0;">💲 Sales Estimate</button>
+            {% endif %}
+            {% if user_can_access('brain') %}
             <button class="tab-btn" onclick="window.location.href='/brain'">🧠 Brain</button>
+            {% endif %}
         </div>
 
         <div class="card">
             <!-- TAB 1: HOUSE & LAND (Legacy) -->
+            {% if user_can_access('house_land') %}
             <div id="tab-house-land" class="tab-content active">
                 <form method="POST" action="/">
                     <input type="hidden" name="form_type" value="house_land">
@@ -328,9 +347,11 @@
                     <button type="submit">Generate Content Draft</button>
                 </form>
             </div>
+            {% endif %}
 
             <!-- TAB 2: SOCIAL MEDIA (New) -->
-            <div id="tab-social-media" class="tab-content">
+            {% if user_can_access('social_media') %}
+            <div id="tab-social-media" class="tab-content {% if not user_can_access('house_land') %}active{% endif %}">
                 <!-- (Existing content preserved) -->
                 <form method="POST" action="/" enctype="multipart/form-data">
                     <input type="hidden" name="form_type" value="social_media">
@@ -382,8 +403,10 @@
                     <button type="submit">Generate Social Post</button>
                 </form>
             </div>
+            {% endif %}
 
             <!-- TAB 3: YOUTUBE MINER (New) -->
+            {% if user_can_access('youtube_miner') %}
             <div id="tab-youtube-miner" class="tab-content" style="display: none;">
                 <div class="header-small" style="margin-bottom: 20px;">
                     <h2 style="margin-top:0;">Turn Videos into Posts</h2>
@@ -436,8 +459,10 @@
                     <button type="submit" style="background-color: #ef4444;">⛏️ Mine Content</button>
                 </form>
             </div>
+            {% endif %}
 
             <!-- TAB 5: DOC FORMATTER (New) -->
+            {% if user_can_access('doc_formatter') %}
             <div id="tab-doc-formatter" class="tab-content" style="display: none;">
                 <div class="header-small" style="margin-bottom: 20px;">
                     <h2 style="margin-top:0;">📝 AI Document Formatter</h2>
@@ -495,16 +520,16 @@
                         <div id="meeting-notes-hint"
                             style="display:none; background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 14px; margin-bottom: 10px; font-size: 0.9rem; color: #92400e;">
                             <div style="margin-bottom: 10px;">
-                                📋 <strong>Meeting Notes Processor:</strong> Paste raw meeting notes below, or pull a
-                                transcript directly from Fireflies.
+                                📋 <strong>Meeting Notes Processor:</strong> Paste raw meeting notes below, or pull
+                                transcripts directly from Fireflies. <strong>You can add multiple meetings</strong> — they will be combined into one document.
                             </div>
                             <!-- Fireflies Picker -->
                             <div
                                 style="background: rgba(255,255,255,0.6); border-radius: 6px; padding: 10px; border: 1px solid #f59e0b;">
+                                <div style="font-weight:600; font-size:0.8rem; color:#78350f; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.04em;">
+                                    🎙️ Import from Fireflies
+                                </div>
                                 <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                                    <div
-                                        style="font-weight: 600; font-size: 0.85rem; color: #78350f; white-space: nowrap;">
-                                        🎙️ Fireflies:</div>
                                     <select id="fireflies-meeting-select"
                                         style="flex: 1; min-width: 180px; padding: 6px 10px; border-radius: 6px; border: 1px solid #d97706; font-size: 0.85rem; background: white; color: #333;"
                                         onchange="onFirefliesMeetingChange()">
@@ -516,9 +541,22 @@
                                     </button>
                                     <button type="button" id="ff-use-btn" onclick="useFirefliesTranscript()" disabled
                                         style="width: auto; padding: 6px 14px; font-size: 0.85rem; background: #92400e; color: white; border-radius: 6px; border: none; cursor: pointer; opacity: 0.5; white-space: nowrap;">
-                                        ✅ Use Transcript
+                                        ➕ Add to Notes
                                     </button>
                                 </div>
+
+                                <!-- Added meetings chips -->
+                                <div id="ff-added-meetings" style="display:none; margin-top:10px;">
+                                    <div style="font-size:0.78rem; font-weight:600; color:#78350f; margin-bottom:5px;">
+                                        📎 Added meetings (combined into one document):
+                                    </div>
+                                    <div id="ff-chips-list" style="display:flex; flex-wrap:wrap; gap:5px; margin-bottom:6px;"></div>
+                                    <button type="button" onclick="clearAllTranscripts()"
+                                        style="width:auto; padding:3px 10px; font-size:0.78rem; background:white; color:#92400e; border:1px solid #d97706; border-radius:4px; cursor:pointer;">
+                                        🗑 Clear All
+                                    </button>
+                                </div>
+
                                 <div id="ff-status"
                                     style="margin-top: 6px; font-size: 0.8rem; color: #78350f; display: none;"></div>
                             </div>
@@ -632,8 +670,10 @@
                     <button type="submit" style="background-color: #f59e0b;">✨ Format Document</button>
                 </form>
             </div>
+            {% endif %}
 
             <!-- TAB 4: RENDERING (New) -->
+            {% if user_can_access('rendering') %}
             <div id="tab-rendering" class="tab-content" style="display: none;">
                 <div class="header-small" style="margin-bottom: 20px;">
                     <h2 style="margin-top:0;">Architectural Rendering</h2>
@@ -689,6 +729,7 @@
                     <button type="submit" style="background-color: #0ea5e9;">✨ Generate Rendering</button>
                 </form>
             </div>
+            {% endif %}
         </div>
     </div>
 
@@ -926,6 +967,8 @@
         }
 
         // --- FIREFLIES MEETING PICKER ---
+        let addedMeetings = []; // Tracks names of meetings already added
+
         async function loadFirefliesMeetings() {
             const btn = document.getElementById('ff-load-btn');
             const select = document.getElementById('fireflies-meeting-select');
@@ -958,7 +1001,10 @@
                     select.appendChild(opt);
                 });
 
-                status.textContent = `✅ ${meetings.length} meeting(s) loaded. Select one and click Use Transcript.`;
+                const hint = addedMeetings.length > 0
+                    ? `✅ ${meetings.length} meeting(s) loaded. Pick another to add.`
+                    : `✅ ${meetings.length} meeting(s) loaded. Select one and click ➕ Add to Notes.`;
+                status.textContent = hint;
             } catch (err) {
                 status.textContent = '❌ Network error: ' + err.message;
             } finally {
@@ -984,6 +1030,7 @@
             const status = document.getElementById('ff-status');
             const useBtn = document.getElementById('ff-use-btn');
             const meetingId = select.value;
+            const meetingTitle = select.options[select.selectedIndex].text;
 
             if (!meetingId) return;
 
@@ -1001,29 +1048,71 @@
                     return;
                 }
 
-                // Populate the textarea (Append instead of overwrite to support multi-part meetings)
                 const textarea = document.getElementById('raw_doc_content');
                 const previousText = textarea.value.trim();
-                
-                // Fetch the meeting title so we can cleanly separate them
-                const selectedText = select.options[select.selectedIndex].text;
-                
+
                 if (previousText) {
-                    textarea.value = previousText + "\n\n" + "=".repeat(40) + "\n" + "MEETING PART: " + selectedText + "\n" + "=".repeat(40) + "\n\n" + data.text;
-                    status.textContent = '✅ Transcript appended! Select another meeting to combine them, or review the text below.';
+                    textarea.value = previousText + "\n\n" + "=".repeat(40) + "\nMEETING: " + meetingTitle + "\n" + "=".repeat(40) + "\n\n" + data.text;
                 } else {
                     textarea.value = data.text;
-                    status.textContent = '✅ Transcript loaded! You can select another meeting to append it, or review the text below.';
                 }
-                
+
+                // Track and show added meeting chip
+                addedMeetings.push(meetingTitle);
+                renderMeetingChips();
+
+                // Reset dropdown for next selection
+                select.value = '';
+                useBtn.disabled = true;
+                useBtn.style.opacity = '0.5';
+
+                status.textContent = addedMeetings.length === 1
+                    ? `✅ "${meetingTitle}" added. Select another meeting and click ➕ Add to Notes to combine, or scroll down to process.`
+                    : `✅ ${addedMeetings.length} meetings combined. Add more or scroll down to process.`;
+
                 textarea.focus();
 
             } catch (err) {
                 status.textContent = '❌ Network error: ' + err.message;
             } finally {
-                useBtn.textContent = '✅ Use Transcript';
-                useBtn.disabled = false;
+                useBtn.textContent = '➕ Add to Notes';
             }
+        }
+
+        function renderMeetingChips() {
+            const container = document.getElementById('ff-added-meetings');
+            const chipsList = document.getElementById('ff-chips-list');
+            chipsList.innerHTML = '';
+
+            if (addedMeetings.length === 0) {
+                container.style.display = 'none';
+                return;
+            }
+
+            container.style.display = 'block';
+            addedMeetings.forEach((title, idx) => {
+                const chip = document.createElement('span');
+                chip.style.cssText = 'display:inline-flex;align-items:center;gap:4px;padding:3px 9px;background:#fef3c7;border:1px solid #d97706;border-radius:12px;font-size:0.78rem;color:#78350f;font-weight:500;';
+                chip.innerHTML = `📄 ${title} <button type="button" onclick="removeMeeting(${idx})" style="background:none;border:none;cursor:pointer;color:#92400e;font-size:0.85rem;line-height:1;padding:0;" title="Remove">×</button>`;
+                chipsList.appendChild(chip);
+            });
+        }
+
+        function removeMeeting(idx) {
+            // Removing a mid-stack meeting is complex — just clear all and let user re-add
+            if (addedMeetings.length > 1) {
+                if (!confirm('Removing a single meeting from the stack requires clearing all transcripts and re-adding. Clear all and start again?')) return;
+            }
+            clearAllTranscripts();
+        }
+
+        function clearAllTranscripts() {
+            document.getElementById('raw_doc_content').value = '';
+            addedMeetings = [];
+            renderMeetingChips();
+            const status = document.getElementById('ff-status');
+            status.style.display = 'block';
+            status.textContent = '🗑 Cleared. Select a meeting to start again.';
         }
 
         // ===== STAFF CHIP PICKER =====
