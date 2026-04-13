@@ -1,6 +1,7 @@
 import os
 from datetime import timedelta
-from flask import Flask, render_template, request, jsonify, send_from_directory, session, redirect, url_for
+from flask import Flask, render_template, request, jsonify, send_from_directory, session, redirect, url_for, Response
+from werkzeug.middleware.proxy_fix import ProxyFix
 from dotenv import load_dotenv
 import markdown
 from functools import wraps
@@ -8,13 +9,23 @@ from functools import wraps
 load_dotenv() # Load environment variables from .env
 
 app = Flask(__name__)
+
+# Vercel terminates SSL at the edge and forwards requests to Flask over HTTP.
+# ProxyFix tells Flask to trust the X-Forwarded-Proto header so that
+# request.url, url_for(), and session cookies all use https:// correctly.
+# Without this, post-login redirects go to http:// and browsers drop cookies.
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
+
 # IMPORTANT: FLASK_SECRET must be set as a stable env var in Vercel.
 # If missing, os.urandom(24) generates a NEW key on every cold-start,
-# instantly invalidating all user sessions (forces re-login).
+# instantly invalidating all user sessions.
 app.secret_key = os.environ.get('FLASK_SECRET', os.urandom(24))
 
-# Keep users logged in for 30 days — session survives tab closes and restarts
+# Keep users logged in for 30 days
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config['SESSION_COOKIE_SECURE'] = False  # Vercel handles HTTPS at the edge
+app.config['SESSION_COOKIE_HTTPONLY'] = True
 
 import io
 
