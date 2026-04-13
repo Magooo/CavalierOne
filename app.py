@@ -1,4 +1,5 @@
 import os
+from datetime import timedelta
 from flask import Flask, render_template, request, jsonify, send_from_directory, session, redirect, url_for
 from dotenv import load_dotenv
 import markdown
@@ -7,7 +8,13 @@ from functools import wraps
 load_dotenv() # Load environment variables from .env
 
 app = Flask(__name__)
+# IMPORTANT: FLASK_SECRET must be set as a stable env var in Vercel.
+# If missing, os.urandom(24) generates a NEW key on every cold-start,
+# instantly invalidating all user sessions (forces re-login).
 app.secret_key = os.environ.get('FLASK_SECRET', os.urandom(24))
+
+# Keep users logged in for 30 days — session survives tab closes and restarts
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
 
 import io
 
@@ -50,11 +57,18 @@ def require_role(roles):
     return decorator
 
 @app.before_request
+def make_session_permanent():
+    """Mark every session as permanent so the 30-day lifetime applies."""
+    session.permanent = True
+
+@app.before_request
 def global_auth_check():
     if not AUTH_ENABLED:
         return
-    # Exclude login and all static paths
-    if request.path.startswith('/login') or request.path.startswith('/static') or request.path.startswith('/resources') or request.path.startswith('/api/'):
+    # Exclude login, static assets, API routes, and the render endpoint
+    # (/render_document just converts markdown POSTed in the body — no protected data)
+    excluded = ('/login', '/static', '/resources', '/api/', '/render_document')
+    if any(request.path.startswith(p) for p in excluded):
         return
     if 'user_id' not in session:
         return redirect(url_for('login', next=request.url))
