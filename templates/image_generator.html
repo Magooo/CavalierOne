@@ -305,6 +305,37 @@
       .topbar { padding: 12px 16px; }
       .canvas__compare.active { flex-direction: column; }
     }
+
+    /* ─── Fine-Tune Render Panel ─────────────────────────────────── */
+    .finetune-panel { background: var(--white); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); overflow: hidden; margin-top: 0; }
+    .finetune-panel.hidden { display: none; }
+    .finetune-panel__header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; cursor: pointer; background: #f8f5f0; border-bottom: 1px solid var(--border); user-select: none; }
+    .finetune-panel__title { font-family: var(--font-display); font-size: 14px; font-weight: 400; color: var(--text-dark); letter-spacing: 0.05em; display: flex; align-items: center; gap: 8px; }
+    .finetune-panel__chevron { font-size: 11px; color: var(--text-muted); transition: transform 0.2s; }
+    .finetune-panel__chevron.open { transform: rotate(180deg); }
+    .finetune-panel__body { padding: 0 20px 20px; display: none; }
+    .finetune-panel__body.open { display: block; }
+    /* Tabs */
+    .ft-tabs { display: flex; gap: 4px; padding: 14px 0 10px; border-bottom: 1px solid var(--border); margin-bottom: 14px; }
+    .ft-tab { background: none; border: 1px solid var(--border); border-radius: var(--radius); padding: 6px 14px; font-size: 12px; font-family: var(--font-body); color: var(--text-muted); cursor: pointer; transition: all 0.15s; }
+    .ft-tab:hover { border-color: var(--brand-dark); color: var(--brand-dark); }
+    .ft-tab.active { background: var(--brand-dark); color: #fff; border-color: var(--brand-dark); }
+    .ft-tab-panel { display: none; }
+    .ft-tab-panel.active { display: block; }
+    /* Controls */
+    .ft-group { margin-bottom: 14px; }
+    .ft-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; }
+    .ft-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+    .ft-pill { background: none; border: 1px solid var(--border); border-radius: 20px; padding: 5px 12px; font-size: 12px; font-family: var(--font-body); color: var(--text-dark); cursor: pointer; transition: all 0.15s; }
+    .ft-pill:hover { border-color: var(--brand-dark); color: var(--brand-dark); }
+    .ft-pill.selected { background: var(--brand-dark); color: #fff; border-color: var(--brand-dark); }
+    .ft-colours { display: flex; gap: 8px; flex-wrap: wrap; }
+    .ft-colour { width: 30px; height: 30px; border-radius: 50%; border: 3px solid transparent; cursor: pointer; transition: border-color 0.15s; outline: 2px solid transparent; }
+    .ft-colour:hover { outline-color: var(--brand-dark); outline-offset: 2px; }
+    .ft-colour.selected { border-color: var(--brand-dark); outline-color: var(--brand-dark); outline-offset: 2px; }
+    .ft-apply { width: 100%; margin-top: 16px; padding: 11px; background: var(--brand-dark); color: #fff; border: none; border-radius: var(--radius); font-family: var(--font-body); font-size: 13px; cursor: pointer; transition: background 0.15s; }
+    .ft-apply:hover { background: #7a0a0a; }
+    .ft-apply:disabled { background: #ccc; cursor: not-allowed; }
   </style>
 </head>
 <body>
@@ -885,6 +916,109 @@
         </button>
       </div>
 
+      <!-- ─── Fine-Tune Render Panel ─────────────────────────────────── -->
+      <div class="finetune-panel hidden" id="finetune-panel">
+        <div class="finetune-panel__header" onclick="toggleFinetunePanel()">
+          <span class="finetune-panel__title">🎨 Fine-Tune This Render</span>
+          <span class="finetune-panel__chevron" id="ft-chevron">▼</span>
+        </div>
+        <div class="finetune-panel__body" id="ft-body">
+          <!-- Tabs -->
+          <div class="ft-tabs">
+            <button class="ft-tab active" onclick="switchFtTab('facade',this)">🏠 Façade</button>
+            <button class="ft-tab" onclick="switchFtTab('landscape',this)">🌿 Landscaping</button>
+            <button class="ft-tab" onclick="switchFtTab('atmosphere',this)">☀️ Atmosphere</button>
+          </div>
+
+          <!-- ── FAÇADE TAB ── -->
+          <div class="ft-tab-panel active" id="ft-tab-facade">
+            <div class="ft-group">
+              <div class="ft-label">Window Frame Colour</div>
+              <div class="ft-colours" id="ft-window-colours">
+                <div class="ft-colour selected" data-group="window" data-value="pearl white aluminium window frames" style="background:#f5f5f0;border-color:#ccc" title="Pearl White"></div>
+                <div class="ft-colour" data-group="window" data-value="matt black aluminium window frames" style="background:#1a1a1a" title="Matt Black"></div>
+                <div class="ft-colour" data-group="window" data-value="Colorbond Ironstone charcoal window frames" style="background:#4a4a4a" title="Ironstone"></div>
+                <div class="ft-colour" data-group="window" data-value="Colorbond Surfmist light grey window frames" style="background:#d6d6cc" title="Surfmist"></div>
+                <div class="ft-colour" data-group="window" data-value="bronze anodised aluminium window frames" style="background:#7a5c3a" title="Bronze"></div>
+                <div class="ft-colour" data-group="window" data-value="Colorbond Dune sandy beige window frames" style="background:#c8b89a" title="Dune"></div>
+              </div>
+            </div>
+
+            <div class="ft-group">
+              <div class="ft-label">Front Door Colour</div>
+              <div class="ft-colours" id="ft-door-colours">
+                <div class="ft-colour selected" data-group="door" data-value="warm sand painted front entry door" style="background:#c8b089" title="Sand"></div>
+                <div class="ft-colour" data-group="door" data-value="matt black painted front entry door" style="background:#1a1a1a" title="Black"></div>
+                <div class="ft-colour" data-group="door" data-value="deep charcoal grey painted front entry door" style="background:#3a3a3a" title="Charcoal"></div>
+                <div class="ft-colour" data-group="door" data-value="crisp white painted front entry door" style="background:#f5f5f5;border-color:#ccc" title="White"></div>
+                <div class="ft-colour" data-group="door" data-value="rich navy blue painted front entry door" style="background:#1a2e4a" title="Navy"></div>
+                <div class="ft-colour" data-group="door" data-value="deep forest green painted front entry door" style="background:#2d4a2d" title="Forest Green"></div>
+                <div class="ft-colour" data-group="door" data-value="warm terracotta red painted front entry door" style="background:#8b3a2a" title="Terracotta"></div>
+              </div>
+            </div>
+
+            <div class="ft-group">
+              <div class="ft-label">Garage Door</div>
+              <div class="ft-pills" id="ft-garage-pills">
+                <button class="ft-pill selected" data-group="garage" data-value="panel lift garage door matching the wall colour">Match Wall</button>
+                <button class="ft-pill" data-group="garage" data-value="crisp white sectional panel lift garage door">White</button>
+                <button class="ft-pill" data-group="garage" data-value="dark charcoal grey sectional panel lift garage door">Charcoal</button>
+                <button class="ft-pill" data-group="garage" data-value="timber-look woodgrain sectional garage door">Timber Look</button>
+                <button class="ft-pill" data-group="garage" data-value="glass and aluminium frameless garage door">Glass Panel</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── LANDSCAPING TAB ── -->
+          <div class="ft-tab-panel" id="ft-tab-landscape">
+            <div class="ft-group">
+              <div class="ft-label">Garden Style</div>
+              <div class="ft-pills" id="ft-garden-pills">
+                <button class="ft-pill selected" data-group="garden" data-value="manicured Australian native garden with ornamental grasses, lomandra, callistemon and established garden beds with bark mulch">Native Australian</button>
+                <button class="ft-pill" data-group="garden" data-value="lush tropical garden with large-leaf plants, palms, birds of paradise and tropical foliage around the entry">Tropical</button>
+                <button class="ft-pill" data-group="garden" data-value="formal garden with neatly clipped hedges, symmetrical plantings, box hedging and standard rose bushes">Formal Hedged</button>
+                <button class="ft-pill" data-group="garden" data-value="modern minimalist garden with architectural succulents, ornamental grasses, decomposed granite ground cover and sculptural plants">Modern Minimal</button>
+                <button class="ft-pill" data-group="garden" data-value="cottage garden with flowering perennials, lavender, roses, agapanthus and colourful mixed border plantings">Cottage</button>
+                <button class="ft-pill" data-group="garden" data-value="coastal garden with salt-tolerant plants, coastal rosemary, pigface, sea lavender and sandy gravel ground cover">Coastal</button>
+              </div>
+            </div>
+            <div class="ft-group">
+              <div class="ft-label">Lawn</div>
+              <div class="ft-pills" id="ft-lawn-pills">
+                <button class="ft-pill selected" data-group="lawn" data-value="lush emerald green lawn">Lush Green</button>
+                <button class="ft-pill" data-group="lawn" data-value="neat couch grass lawn slightly dry and golden">Summer Dry</button>
+                <button class="ft-pill" data-group="lawn" data-value="no lawn, decorative gravel and stepping stones driveway surround">No Lawn / Gravel</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── ATMOSPHERE TAB ── -->
+          <div class="ft-tab-panel" id="ft-tab-atmosphere">
+            <div class="ft-group">
+              <div class="ft-label">Time of Day</div>
+              <div class="ft-pills" id="ft-time-pills">
+                <button class="ft-pill" data-group="time" data-value="soft morning light, low sun from the right, gentle warm rays, dew on the grass, pale blue sky">🌅 Morning</button>
+                <button class="ft-pill selected" data-group="time" data-value="bright midday sunlight, high sun, crisp shadows, vivid blue sky with white clouds">☀️ Midday</button>
+                <button class="ft-pill" data-group="time" data-value="warm golden hour afternoon light, long shadows, rich amber glow across the facade, golden sky">🌇 Golden Hour</button>
+                <button class="ft-pill" data-group="time" data-value="blue hour at dusk, soft purple-blue sky gradient, interior lights just turning on glowing warmly through windows">🌆 Dusk / Blue Hour</button>
+                <button class="ft-pill" data-group="time" data-value="dramatic overcast sky with volumetric clouds, cool even light, no hard shadows">⛅ Overcast</button>
+              </div>
+            </div>
+            <div class="ft-group">
+              <div class="ft-label">Driveway</div>
+              <div class="ft-pills" id="ft-driveway-pills">
+                <button class="ft-pill selected" data-group="driveway" data-value="clean broomed concrete driveway">Concrete</button>
+                <button class="ft-pill" data-group="driveway" data-value="charcoal exposed aggregate concrete driveway">Exposed Aggregate</button>
+                <button class="ft-pill" data-group="driveway" data-value="clay brick paved driveway in a herringbone pattern">Brick Paving</button>
+                <button class="ft-pill" data-group="driveway" data-value="asphalt sealed black driveway">Asphalt</button>
+              </div>
+            </div>
+          </div>
+
+          <button class="ft-apply" id="ft-apply-btn" onclick="applyStyleChanges()">✨ Apply Style Changes</button>
+        </div>
+      </div>
+
       <!-- Prompt Inspector -->
       <div class="prompt-card">
         <div class="prompt-card__header">
@@ -1102,7 +1236,13 @@
         disableActions(false);
         addToHistory(data.image_url, '📐');
         document.getElementById('add-design-banner').classList.remove('hidden');
-        showToast('Render generated from elevation!', 'success');
+        // Show Fine-Tune panel and auto-open it
+        const ftPanel = document.getElementById('finetune-panel');
+        ftPanel.classList.remove('hidden');
+        document.getElementById('ft-body').classList.add('open');
+        document.getElementById('ft-chevron').classList.add('open');
+        showToast('Render generated — fine-tune it below! 🎨', 'success');
+
 
       } catch (err) {
         setState('error');
@@ -1735,6 +1875,119 @@
       el.style.display = '';
       el.classList.add('active');
       if (state === 'empty') el.style.display = 'block';
+    }
+
+    /* =============================================
+       FINE-TUNE RENDER PANEL
+    ============================================= */
+    function toggleFinetunePanel() {
+      const body    = document.getElementById('ft-body');
+      const chevron = document.getElementById('ft-chevron');
+      body.classList.toggle('open');
+      chevron.classList.toggle('open');
+    }
+
+    function switchFtTab(tab, btn) {
+      document.querySelectorAll('.ft-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.ft-tab-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('ft-tab-' + tab).classList.add('active');
+    }
+
+    // Wire up pill and colour swatch clicks (delegated)
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('finetune-panel').addEventListener('click', e => {
+        // Pills
+        const pill = e.target.closest('.ft-pill');
+        if (pill && pill.dataset.group) {
+          document.querySelectorAll(`.ft-pill[data-group="${pill.dataset.group}"]`)
+            .forEach(p => p.classList.remove('selected'));
+          pill.classList.add('selected');
+        }
+        // Colour swatches
+        const swatch = e.target.closest('.ft-colour');
+        if (swatch && swatch.dataset.group) {
+          document.querySelectorAll(`.ft-colour[data-group="${swatch.dataset.group}"]`)
+            .forEach(s => s.classList.remove('selected'));
+          swatch.classList.add('selected');
+        }
+      });
+    });
+
+    function getFtSelection(group) {
+      const el = document.querySelector(
+        `.ft-pill[data-group="${group}"].selected, .ft-colour[data-group="${group}"].selected`
+      );
+      return el ? el.dataset.value : null;
+    }
+
+    async function applyStyleChanges() {
+      if (!currentImageUrl) { showToast('No render to refine.', 'error'); return; }
+
+      const btn = document.getElementById('ft-apply-btn');
+      btn.disabled = true; btn.textContent = '\u23f3 Applying\u2026';
+      setState('loading');
+      disableActions(true);
+      document.getElementById('loading-title').textContent = 'Applying style changes\u2026';
+      document.getElementById('loading-sub').textContent = 'Adjusting products, landscaping and atmosphere \u2014 20\u201340 seconds';
+
+      const originalUrl = currentImageUrl;
+
+      // Read all selections
+      const window_   = getFtSelection('window')   || 'white aluminium window frames';
+      const door      = getFtSelection('door')      || 'sand coloured front entry door';
+      const garage    = getFtSelection('garage')    || 'garage door matching wall colour';
+      const garden    = getFtSelection('garden')    || 'manicured Australian native garden';
+      const lawn      = getFtSelection('lawn')      || 'lush emerald green lawn';
+      const time      = getFtSelection('time')      || 'bright midday sunlight, blue sky';
+      const driveway  = getFtSelection('driveway')  || 'clean concrete driveway';
+
+      const stylePrompt = (
+        'Maintain the exact same house structure, facade composition and proportions. '
+        + 'Same camera position and angle. '
+        + `Window frames: ${window_}. `
+        + `Front entry door: ${door}. `
+        + `Garage: ${garage}. `
+        + `Garden: ${garden}. `
+        + `Lawn: ${lawn}. `
+        + `Driveway: ${driveway}. `
+        + `Lighting and atmosphere: ${time}. `
+        + 'Photorealistic real estate photography quality. No text, no annotations, no watermarks.'
+      );
+
+      try {
+        const { resp, data } = await safeJsonFetch('/api/enhance-image', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            image_url:    originalUrl,
+            style:        'cavalier_brand',
+            prompt:       stylePrompt,
+            strength:     0.48,
+            model:        'flux-2/flex-image-to-image',
+            aspect_ratio: '16:9',
+          }),
+        });
+        if (!resp.ok || data.error) throw new Error(data.error || 'Style change failed');
+        if (!data.image_url) throw new Error('No image returned.');
+
+        document.getElementById('compare-before').src = originalUrl;
+        document.getElementById('compare-after').src   = data.image_url;
+        currentImageUrl = data.image_url;
+        setState('compare');
+        disableActions(false);
+        addToHistory(data.image_url, '\ud83c\udfa8');
+        showToast('Style applied!', 'success');
+
+      } catch (err) {
+        setState('error');
+        document.getElementById('error-msg').textContent = err.message;
+        showToast('Style change failed.', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '\u2728 Apply Style Changes';
+        disableActions(false);
+      }
     }
 
     /* =============================================
