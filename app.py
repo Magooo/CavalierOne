@@ -798,9 +798,13 @@ def api_generate_from_plans():
         if ext not in allowed_ext:
             return jsonify({'error': f'Unsupported file type .{ext}. Use PNG, JPG, or WebP.'}), 400
 
-        style       = request.form.get('style', 'Modern Australian Contemporary')
-        notes       = request.form.get('notes', '')
+        style         = request.form.get('style', 'Modern Australian Contemporary')
+        notes         = request.form.get('notes', '')
         material_prompt = request.form.get('material_prompt', '')
+        # Painted zones: comma-separated list of zone labels the user painted on the elevation
+        # e.g. "Roof,Brick,Render" — used to tell GPT-4 Vision which zones were colour-coded
+        painted_zones_raw = request.form.get('painted_zones', '')
+        painted_zones = [z.strip() for z in painted_zones_raw.split(',') if z.strip()]
 
         # Save to system temp dir — Vercel serverless only allows writes to /tmp
         # resources/uploads/ is in the read-only task bundle on Vercel (Errno 30)
@@ -813,6 +817,27 @@ def api_generate_from_plans():
         # ── Step 1: GPT-4 Vision reads the elevation ───────────────────────────
         from marketing.llm_client import LLMClient
         client = LLMClient(provider="openai")
+
+        # Build zone colour key to help Vision read painted zones
+        zone_colour_map = {
+            'Roof':    'dark charcoal/grey zones',
+            'Brick':   'red-brown/terracotta zones',
+            'Render':  'warm cream/beige zones',
+            'Feature': 'steel blue zones',
+            'Windows': 'near-black zones',
+            'Garage':  'sandy beige zones',
+        }
+        zone_context = ''
+        if painted_zones:
+            zone_lines = []
+            for z in painted_zones:
+                colour_hint = zone_colour_map.get(z, f'{z} zones')
+                zone_lines.append(f"- {colour_hint} on the drawing = {z} surface area")
+            zone_context = (
+                "\n\nIMPORTANT — the user has colour-coded specific zones on this elevation drawing:\n"
+                + "\n".join(zone_lines)
+                + "\nUse these coloured zones to understand WHICH PART of the facade each material should be applied to."
+            )
 
         vision_prompt = f"""You are a professional architectural renderer. 
 I will show you an architectural elevation drawing of a house. Your job is to write a detailed, vivid description of what the FINISHED, BUILT house would look like in real life — suitable as a prompt for an AI image generator like Stable Diffusion or Flux.
@@ -827,9 +852,10 @@ Analyse the elevation drawing and describe:
 
 Target style: {style}
 {f"Extra notes: {notes}" if notes else ""}
-{f"Materials specified: {material_prompt}" if material_prompt else "Default materials: contemporary face brick walls, Colorbond roof, rendered feature panels."}
+{f"Materials specified: {material_prompt}" if material_prompt else "Default materials: contemporary face brick walls, Colorbond steel sheet roof (NOT tiles), rendered feature panels."}
+{zone_context}
 
-Output ONLY a single vivid descriptive paragraph (3–5 sentences) describing the finished house exterior for an AI image generator. Do NOT list bullet points. Do NOT mention the drawing, dimensions, or annotations. Write as if describing a real photograph."""
+Output ONLY a single vivid descriptive paragraph (3–5 sentences) describing the finished house exterior for an AI image generator. Do NOT list bullet points. Do NOT mention the drawing, dimensions, annotations, or colour zones. Write as if describing a real photograph."""
 
         vision_analysis = client.generate_text(vision_prompt, image_path=file_path)
         print(f"[Plans] Vision: {vision_analysis[:250]}...")

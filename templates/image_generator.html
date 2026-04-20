@@ -330,9 +330,10 @@
     .ft-pill:hover { border-color: var(--brand-dark); color: var(--brand-dark); }
     .ft-pill.selected { background: var(--brand-dark); color: #fff; border-color: var(--brand-dark); }
     .ft-colours { display: flex; gap: 8px; flex-wrap: wrap; }
-    .ft-colour { width: 30px; height: 30px; border-radius: 50%; border: 3px solid transparent; cursor: pointer; transition: border-color 0.15s; outline: 2px solid transparent; }
+    .ft-colour { width: 32px; height: 32px; border-radius: 50%; border: 3px solid transparent; cursor: pointer; transition: all 0.15s; outline: 2px solid transparent; position: relative; }
     .ft-colour:hover { outline-color: var(--brand-dark); outline-offset: 2px; }
-    .ft-colour.selected { border-color: var(--brand-dark); outline-color: var(--brand-dark); outline-offset: 2px; }
+    .ft-colour.selected { border-color: var(--brand-dark); outline: 3px solid var(--brand-dark); outline-offset: 2px; }
+    .ft-colour.selected::after { content: '\2713'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: var(--brand-dark); text-shadow: 0 0 3px #fff, 0 0 3px #fff; }
     .ft-apply { width: 100%; margin-top: 16px; padding: 11px; background: var(--brand-dark); color: #fff; border: none; border-radius: var(--radius); font-family: var(--font-body); font-size: 13px; cursor: pointer; transition: background 0.15s; }
     .ft-apply:hover { background: #7a0a0a; }
     .ft-apply:disabled { background: #ccc; cursor: not-allowed; }
@@ -1545,6 +1546,10 @@
         formData.append('style', document.getElementById('plans-style').value);
         formData.append('notes', document.getElementById('plans-notes').value.trim());
         formData.append('material_prompt', materialPrompt);
+        // Send painted zone labels so GPT-4 Vision knows which zones were colour-coded
+        if (paintedZones.length) {
+          formData.append('painted_zones', paintedZones.join(','));
+        }
 
         const elevationPreviewSrc = document.getElementById('plans-preview').src;
 
