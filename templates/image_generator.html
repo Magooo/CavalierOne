@@ -336,16 +336,41 @@
     .ft-apply { width: 100%; margin-top: 16px; padding: 11px; background: var(--brand-dark); color: #fff; border: none; border-radius: var(--radius); font-family: var(--font-body); font-size: 13px; cursor: pointer; transition: background 0.15s; }
     .ft-apply:hover { background: #7a0a0a; }
     .ft-apply:disabled { background: #ccc; cursor: not-allowed; }
-    /* ─── Elevation Eraser Canvas ───────────────────────────── */
-    .eraser-wrap { position: relative; width: 100%; background: #f0f0ed; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); display: none; }
+    /* ─── Elevation Canvas Editor (Eraser + Product Painter) ──────── */
+    .eraser-wrap { position: relative; width: 100%; background: #e8e8e5; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); display: none; }
     .eraser-wrap.visible { display: block; }
-    .eraser-canvas { display: block; width: 100%; cursor: crosshair; touch-action: none; }
-    .eraser-toolbar { display: flex; align-items: center; gap: 10px; padding: 8px 10px; background: #fff; border-top: 1px solid var(--border); flex-wrap: wrap; }
-    .eraser-toolbar-label { font-size: 11px; color: var(--text-muted); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
-    .eraser-size { width: 80px; accent-color: var(--brand-dark); }
-    .eraser-btn { background: none; border: 1px solid var(--border); border-radius: var(--radius); padding: 4px 10px; font-size: 11px; font-family: var(--font-body); color: var(--text-dark); cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+    .eraser-scroller { overflow: auto; max-height: 340px; position: relative; }
+    .eraser-canvas { display: block; transform-origin: top left; cursor: none; touch-action: none; }
+    /* Floating cursor */
+    #eraser-cursor { position: fixed; pointer-events: none; z-index: 9999; display: none;
+      border: 2.5px solid rgba(0,0,0,0.7); box-shadow: 0 0 0 1px rgba(255,255,255,0.8);
+      transform: translate(-50%,-50%); transition: width 0.05s, height 0.05s; }
+    #eraser-cursor.mode-erase { background: rgba(255,255,255,0.55); border-radius: 50%; }
+    #eraser-cursor.mode-paint { border-radius: 3px; }
+    /* Toolbar */
+    .eraser-toolbar { display: flex; align-items: center; gap: 6px; padding: 6px 8px; background: #fff; border-top: 1px solid var(--border); flex-wrap: wrap; }
+    .eraser-mode-group { display: flex; gap: 3px; margin-right: 4px; }
+    .eraser-mode-btn { background: none; border: 1px solid var(--border); border-radius: var(--radius); padding: 4px 10px; font-size: 11px; font-family: var(--font-body); color: var(--text-muted); cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+    .eraser-mode-btn:hover { border-color: var(--brand-dark); color: var(--brand-dark); }
+    .eraser-mode-btn.active { background: var(--brand-dark); color: #fff; border-color: var(--brand-dark); }
+    .eraser-sep { width: 1px; background: var(--border); height: 20px; margin: 0 2px; }
+    .eraser-label { font-size: 10px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; }
+    .eraser-size { width: 70px; accent-color: var(--brand-dark); }
+    .eraser-zoom-btn { background: none; border: 1px solid var(--border); border-radius: var(--radius); width: 26px; height: 26px; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-dark); transition: all 0.15s; }
+    .eraser-zoom-btn:hover { border-color: var(--brand-dark); color: var(--brand-dark); }
+    .eraser-btn { background: none; border: 1px solid var(--border); border-radius: var(--radius); padding: 4px 9px; font-size: 11px; font-family: var(--font-body); color: var(--text-dark); cursor: pointer; transition: all 0.15s; white-space: nowrap; }
     .eraser-btn:hover { border-color: var(--brand-dark); color: var(--brand-dark); }
-    .eraser-hint { font-size: 10px; color: var(--text-muted); padding: 5px 10px 7px; background:#fff; border-top: 1px solid var(--border); }
+    /* Paint palette */
+    .eraser-palette { display: none; align-items: center; gap: 6px; padding: 6px 8px 8px; background: #fafafa; border-top: 1px solid var(--border); flex-wrap: wrap; }
+    .eraser-palette.visible { display: flex; }
+    .palette-label { font-size: 10px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+    .paint-swatch { width: 26px; height: 26px; border-radius: 4px; border: 3px solid transparent; cursor: pointer; outline: 2px solid transparent; transition: all 0.15s; position: relative; }
+    .paint-swatch:hover { outline-color: var(--brand-dark); outline-offset: 2px; }
+    .paint-swatch.active { border-color: var(--brand-dark); outline-color: var(--brand-dark); outline-offset: 2px; }
+    .paint-swatch-name { font-size: 9px; color: var(--text-muted); text-align: center; margin-top: 2px; max-width: 44px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .paint-swatch-wrap { display: flex; flex-direction: column; align-items: center; }
+    .eraser-hint { font-size: 10px; color: var(--text-muted); padding: 4px 8px 6px; background: #fff; border-top: 1px solid var(--border); }
+
   </style>
 </head>
 <body>
@@ -730,17 +755,69 @@
           <div class="form-section">
             <label class="form-section__label">Elevation Drawing</label>
 
-            <!-- Canvas eraser editor - shows after upload -->
+            <!-- Canvas editor: Eraser + Product Painter -->
             <div class="eraser-wrap" id="eraser-wrap">
-              <canvas id="eraser-canvas" class="eraser-canvas"></canvas>
-              <div class="eraser-toolbar">
-                <span class="eraser-toolbar-label">🧹 Eraser</span>
-                <input type="range" class="eraser-size" id="eraser-size" min="8" max="80" value="24" title="Eraser size">
-                <span id="eraser-size-label" style="font-size:11px;color:var(--text-muted);min-width:28px">24px</span>
-                <button class="eraser-btn" onclick="eraserUndo()" title="Undo last stroke">↩ Undo</button>
-                <button class="eraser-btn" onclick="eraserReset()" title="Restore original">↺ Reset</button>
+              <!-- Floating cursor indicator -->
+              <div id="eraser-cursor" class="mode-erase"></div>
+
+              <!-- Scrollable zoom viewport -->
+              <div class="eraser-scroller" id="eraser-scroller">
+                <canvas id="eraser-canvas" class="eraser-canvas"></canvas>
               </div>
-              <div class="eraser-hint">Paint white over dimension lines and annotation text before generating. Hold drag to erase.</div>
+
+              <!-- Toolbar -->
+              <div class="eraser-toolbar">
+                <!-- Mode toggle -->
+                <div class="eraser-mode-group">
+                  <button class="eraser-mode-btn active" id="mode-btn-erase" onclick="setCanvasMode('erase')">🧹 Erase</button>
+                  <button class="eraser-mode-btn" id="mode-btn-paint" onclick="setCanvasMode('paint')">🎨 Paint Product</button>
+                </div>
+                <div class="eraser-sep"></div>
+                <!-- Brush size -->
+                <span class="eraser-label">Size</span>
+                <input type="range" class="eraser-size" id="eraser-size" min="4" max="80" value="20">
+                <span id="eraser-size-label" style="font-size:11px;color:var(--text-muted);min-width:26px">20px</span>
+                <div class="eraser-sep"></div>
+                <!-- Zoom -->
+                <button class="eraser-zoom-btn" onclick="canvasZoom(1.4)" title="Zoom in">🔍</button>
+                <button class="eraser-zoom-btn" onclick="canvasZoom(0.7)" title="Zoom out">🔍</button>
+                <button class="eraser-btn" onclick="canvasZoomFit()" title="Fit to panel">Fit</button>
+                <div class="eraser-sep"></div>
+                <!-- Undo / Reset -->
+                <button class="eraser-btn" onclick="eraserUndo()">↩ Undo</button>
+                <button class="eraser-btn" onclick="eraserReset()">↺ Reset</button>
+              </div>
+
+              <!-- Paint palette (shown in Paint mode) -->
+              <div class="eraser-palette" id="eraser-palette">
+                <span class="palette-label">💡 Paint zones:</span>
+                <div class="paint-swatch-wrap">
+                  <div class="paint-swatch active" id="ps-roof" data-colour="rgba(60,60,60,0.55)" data-label="Roof" onclick="selectPaintSwatch(this)" style="background:#3c3c3c" title="Roof / Colorbond"></div>
+                  <div class="paint-swatch-name">Roof</div>
+                </div>
+                <div class="paint-swatch-wrap">
+                  <div class="paint-swatch" id="ps-brick" data-colour="rgba(160,80,40,0.55)" data-label="Brick" onclick="selectPaintSwatch(this)" style="background:#a05028" title="Brick / Cladding"></div>
+                  <div class="paint-swatch-name">Brick</div>
+                </div>
+                <div class="paint-swatch-wrap">
+                  <div class="paint-swatch" id="ps-render" data-colour="rgba(200,185,155,0.6)" data-label="Render" onclick="selectPaintSwatch(this)" style="background:#c8b99b" title="Render / Paint"></div>
+                  <div class="paint-swatch-name">Render</div>
+                </div>
+                <div class="paint-swatch-wrap">
+                  <div class="paint-swatch" id="ps-feature" data-colour="rgba(50,80,120,0.55)" data-label="Feature" onclick="selectPaintSwatch(this)" style="background:#325078" title="Feature panel / Accent"></div>
+                  <div class="paint-swatch-name">Feature</div>
+                </div>
+                <div class="paint-swatch-wrap">
+                  <div class="paint-swatch" id="ps-window" data-colour="rgba(30,30,30,0.7)" data-label="Windows" onclick="selectPaintSwatch(this)" style="background:#1e1e1e" title="Window frames"></div>
+                  <div class="paint-swatch-name">Windows</div>
+                </div>
+                <div class="paint-swatch-wrap">
+                  <div class="paint-swatch" id="ps-garage" data-colour="rgba(210,200,180,0.65)" data-label="Garage" onclick="selectPaintSwatch(this)" style="background:#d2c8b4" title="Garage door"></div>
+                  <div class="paint-swatch-name">Garage</div>
+                </div>
+              </div>
+
+              <div class="eraser-hint" id="eraser-hint">Drag to erase annotation text and dimension lines. Switch to 🎨 Paint Product to colour-code zones for the AI.</div>
             </div>
 
             <!-- Fallback static preview (used as Before image) -->
@@ -1190,53 +1267,114 @@
     }
 
     /* =============================================
-       ELEVATION ERASER CANVAS
+       ELEVATION CANVAS EDITOR — Eraser + Product Painter
     ============================================= */
-    let eraserCtx        = null;
-    let eraserDrawing    = false;
-    let eraserSnapshots  = [];        // undo stack (ImageData)
-    let eraserOriginalSrc = null;     // data-URL of the raw uploaded file
+    let eraserCtx         = null;
+    let eraserDrawing     = false;
+    let eraserSnapshots   = [];         // undo stack (ImageData)
+    let eraserOriginalSrc = null;       // data-URL of raw uploaded image
+    let canvasMode        = 'erase';    // 'erase' | 'paint'
+    let paintColour       = 'rgba(60,60,60,0.55)'; // default = Roof
+    let canvasZoomLevel   = 1.0;
+    let paintedZones      = [];         // labels of zones painted (for vision prompt)
 
+    /* — Init — */
     function initEraserCanvas(src) {
       const wrap   = document.getElementById('eraser-wrap');
       const canvas = document.getElementById('eraser-canvas');
       const img    = new Image();
       img.onload = () => {
-        // Size canvas to image native resolution
         canvas.width  = img.naturalWidth;
         canvas.height = img.naturalHeight;
+        // CSS width = 100% of scroller; zoom will scale from there
+        canvas.style.width  = '100%';
+        canvas.style.height = 'auto';
+        canvasZoomLevel = 1.0;
         eraserCtx = canvas.getContext('2d');
         eraserCtx.drawImage(img, 0, 0);
-        eraserSnapshots = [];          // clear undo stack
+        eraserSnapshots = [];
+        paintedZones    = [];
         wrap.classList.add('visible');
       };
       img.src = src;
     }
 
+    /* — Coordinate mapping (handles CSS zoom transform) — */
     function eraserGetPos(e) {
       const canvas = document.getElementById('eraser-canvas');
-      const rect   = canvas.getBoundingClientRect();
-      const scaleX = canvas.width  / rect.width;
-      const scaleY = canvas.height / rect.height;
+      const rect   = canvas.getBoundingClientRect();  // actual rendered size
       const src    = e.touches ? e.touches[0] : e;
+      // rect accounts for CSS transform scale, so this always gives correct canvas coords
       return {
-        x: (src.clientX - rect.left)  * scaleX,
-        y: (src.clientY - rect.top)   * scaleY,
+        x: (src.clientX - rect.left) * (canvas.width  / rect.width),
+        y: (src.clientY - rect.top)  * (canvas.height / rect.height),
       };
     }
 
+    /* — Floating cursor — */
+    function updateCursor(e) {
+      const cur  = document.getElementById('eraser-cursor');
+      const size = parseInt(document.getElementById('eraser-size').value);
+      const canvas = document.getElementById('eraser-canvas');
+      const rect   = canvas.getBoundingClientRect();
+      // Scale cursor px to match the visual zoom
+      const displayRadius = size * (rect.width / canvas.width) / 2;
+      const px = displayRadius * 2;
+      cur.style.width  = px + 'px';
+      cur.style.height = px + 'px';
+      cur.style.left   = e.clientX + 'px';
+      cur.style.top    = e.clientY  + 'px';
+      cur.style.backgroundColor = canvasMode === 'erase'
+        ? 'rgba(255,255,255,0.6)'
+        : paintColour.replace('rgba', 'rgba').replace(/,[^,]+\)$/, ',0.35)');
+    }
+
+    /* — Zoom — */
+    function canvasZoom(factor) {
+      const canvas = document.getElementById('eraser-canvas');
+      canvasZoomLevel = Math.max(0.5, Math.min(6, canvasZoomLevel * factor));
+      // Scale CSS width; height follows automatically (auto)
+      canvas.style.width = (canvasZoomLevel * 100) + '%';
+    }
+    function canvasZoomFit() {
+      const canvas = document.getElementById('eraser-canvas');
+      canvasZoomLevel = 1.0;
+      canvas.style.width = '100%';
+    }
+
+    /* — Mode toggle — */
+    function setCanvasMode(mode) {
+      canvasMode = mode;
+      document.getElementById('mode-btn-erase').classList.toggle('active', mode === 'erase');
+      document.getElementById('mode-btn-paint').classList.toggle('active', mode === 'paint');
+      const cursor = document.getElementById('eraser-cursor');
+      cursor.className = 'mode-' + mode;
+      const palette = document.getElementById('eraser-palette');
+      palette.classList.toggle('visible', mode === 'paint');
+      const hint = document.getElementById('eraser-hint');
+      hint.textContent = mode === 'erase'
+        ? 'Drag to erase annotation text and dimension lines. Switch to 🎨 Paint Product to colour-code zones for the AI.'
+        : 'Paint coloured zones: Roof (dark) • Brick (red-brown) • Render (cream) • Feature (blue) • Windows • Garage. AI uses these zones spatially.';
+    }
+
+    /* — Paint swatch selection — */
+    function selectPaintSwatch(el) {
+      document.querySelectorAll('.paint-swatch').forEach(s => s.classList.remove('active'));
+      el.classList.add('active');
+      paintColour = el.dataset.colour;
+    }
+
+    /* — Undo / Reset — */
     function eraserSaveSnapshot() {
       const canvas = document.getElementById('eraser-canvas');
       eraserSnapshots.push(eraserCtx.getImageData(0, 0, canvas.width, canvas.height));
-      if (eraserSnapshots.length > 30) eraserSnapshots.shift(); // keep last 30
+      if (eraserSnapshots.length > 30) eraserSnapshots.shift();
     }
-
     function eraserUndo() {
-      if (!eraserSnapshots.length) return;
+      if (!eraserSnapshots.length || !eraserCtx) return;
       const canvas = document.getElementById('eraser-canvas');
       eraserCtx.putImageData(eraserSnapshots.pop(), 0, 0);
     }
-
     function eraserReset() {
       if (!eraserOriginalSrc || !eraserCtx) return;
       const canvas = document.getElementById('eraser-canvas');
@@ -1245,48 +1383,64 @@
         eraserCtx.clearRect(0, 0, canvas.width, canvas.height);
         eraserCtx.drawImage(img, 0, 0);
         eraserSnapshots = [];
+        paintedZones    = [];
       };
       img.src = eraserOriginalSrc;
     }
 
-    // Wire eraser events once DOM is ready
+    /* — Wire up events after DOM ready — */
     document.addEventListener('DOMContentLoaded', () => {
-      const canvas = document.getElementById('eraser-canvas');
+      const canvas    = document.getElementById('eraser-canvas');
+      const scroller  = document.getElementById('eraser-scroller');
+      const cursor    = document.getElementById('eraser-cursor');
       const sizeSlider = document.getElementById('eraser-size');
+
       sizeSlider.addEventListener('input', () => {
         document.getElementById('eraser-size-label').textContent = sizeSlider.value + 'px';
       });
 
-      function startErase(e) {
+      // Show/hide/update floating cursor
+      canvas.addEventListener('mouseenter', () => cursor.style.display = 'block');
+      canvas.addEventListener('mouseleave', () => { cursor.style.display = 'none'; eraserDrawing = false; });
+      canvas.addEventListener('mousemove', e => updateCursor(e));
+
+      function startDraw(e) {
         if (!eraserCtx) return;
         e.preventDefault();
         eraserSaveSnapshot();
         eraserDrawing = true;
-        const {x, y} = eraserGetPos(e);
-        eraserCtx.beginPath();
-        eraserCtx.moveTo(x, y);
       }
-      function doErase(e) {
+      function doDraw(e) {
         if (!eraserDrawing || !eraserCtx) return;
         e.preventDefault();
-        const size = parseInt(document.getElementById('eraser-size').value);
-        const {x, y} = eraserGetPos(e);
+        const size     = parseInt(sizeSlider.value);
+        const {x, y}   = eraserGetPos(e);
+        const radius   = size / 2;
         eraserCtx.globalCompositeOperation = 'source-over';
-        eraserCtx.fillStyle = '#ffffff';
+        if (canvasMode === 'erase') {
+          eraserCtx.fillStyle = '#ffffff';
+        } else {
+          // Paint mode — semi-transparent product colour
+          eraserCtx.fillStyle = paintColour;
+          const activeEl = document.querySelector('.paint-swatch.active');
+          const label = activeEl ? activeEl.dataset.label : '';
+          if (label && !paintedZones.includes(label)) paintedZones.push(label);
+        }
         eraserCtx.beginPath();
-        eraserCtx.arc(x, y, size / 2, 0, Math.PI * 2);
+        eraserCtx.arc(x, y, radius, 0, Math.PI * 2);
         eraserCtx.fill();
+        if (e.type === 'mousemove') updateCursor(e);
       }
-      function stopErase() { eraserDrawing = false; }
+      function stopDraw() { eraserDrawing = false; }
 
-      canvas.addEventListener('mousedown',  startErase);
-      canvas.addEventListener('mousemove',  doErase);
-      canvas.addEventListener('mouseup',    stopErase);
-      canvas.addEventListener('mouseleave', stopErase);
-      canvas.addEventListener('touchstart', startErase, { passive: false });
-      canvas.addEventListener('touchmove',  doErase,    { passive: false });
-      canvas.addEventListener('touchend',   stopErase);
+      canvas.addEventListener('mousedown',  startDraw);
+      canvas.addEventListener('mousemove',  doDraw);
+      canvas.addEventListener('mouseup',    stopDraw);
+      canvas.addEventListener('touchstart', startDraw, { passive: false });
+      canvas.addEventListener('touchmove',  doDraw,    { passive: false });
+      canvas.addEventListener('touchend',   stopDraw);
     });
+
 
     function handlePlansFile(input) {
       const file = input.files[0];
