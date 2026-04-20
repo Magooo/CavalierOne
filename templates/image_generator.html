@@ -597,7 +597,7 @@
 
             <!-- Render -->
             <div class="material-section">
-              <div class="material-label"><span class="material-icon">🎨</span> Render / Feature Cladding</div>
+              <div class="material-label"><span class="material-icon">🎨</span> Render / Paint</div>
               <div class="swatch-grid" id="swatches-render" data-material="render">
                 <div class="swatch-none selected" data-colour="" data-prompt="" title="No change — keep original render" onclick="selectSwatch(this,'render')">–</div>
               </div>
@@ -616,6 +616,14 @@
               <div class="material-label"><span class="material-icon">🚗</span> Garage Door</div>
               <div class="swatch-grid" id="swatches-garage" data-material="garage">
                 <div class="swatch-none selected" data-colour="" data-prompt="" title="No change — keep original garage door" onclick="selectSwatch(this,'garage')">–</div>
+              </div>
+            </div>
+
+            <!-- Feature Cladding (James Hardie) -->
+            <div class="material-section">
+              <div class="material-label"><span class="material-icon">🏗️</span> Feature Cladding (James Hardie)</div>
+              <div class="swatch-grid" id="swatches-cladding" data-material="cladding">
+                <div class="swatch-none selected" data-colour="" data-prompt="" title="No change — keep original cladding" onclick="selectSwatch(this,'cladding')">–</div>
               </div>
             </div>
 
@@ -1338,10 +1346,10 @@
     const SWATCHES = {{ swatches_json | safe }};
 
     // Stores { colour: "PGH Urban Gull", prompt: "PGH Urban Gull — a warm mid-grey..." }
-    const recolourSelections = { brick: null, roof: null, render: null, trim: null, garage: null };
+    const recolourSelections = { brick: null, roof: null, render: null, trim: null, garage: null, cladding: null };
 
     function initSwatches() {
-      const MATERIALS = ['brick', 'roof', 'render', 'trim', 'garage'];
+      const MATERIALS = ['brick', 'roof', 'render', 'trim', 'garage', 'cladding'];
       MATERIALS.forEach(mat => {
         const grid = document.getElementById('swatches-' + mat);
         if (!grid || !SWATCHES[mat]) return;
@@ -1411,11 +1419,12 @@
 
     function buildRecolourPrompt() {
       const materialLabels = {
-        brick:  'the brick and cladding',
-        roof:   'the roof iron',
-        render: 'the render and feature cladding',
-        trim:   'the fascia, gutters, trim and window frames',
-        garage: 'the garage door',
+        brick:    'the brick and cladding',
+        roof:     'the roof iron',
+        render:   'the render and painted walls',
+        trim:     'the fascia, gutters, trim and window frames',
+        garage:   'the garage door',
+        cladding: 'the feature cladding panels',
       };
       const parts = [];
       for (const [mat, sel] of Object.entries(recolourSelections)) {
