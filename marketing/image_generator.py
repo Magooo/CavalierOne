@@ -177,26 +177,26 @@ def build_brochure_section_prompt(section_title: str = "", extras: str = "") -> 
 
 def generate_cavalier_image(
     image_type: str,
-    model: str = "flux-2-flex-text-to-image",
-    width: int = 1024,
-    height: int = 768,
+    model: str = "flux-2/flex-text-to-image",
+    aspect_ratio: str = "16:9",
+    resolution: str = "1K",
     **kwargs
 ) -> dict:
     """
     High-level function: build a Cavalier-branded prompt and generate via kie.ai.
 
     Args:
-        image_type: One of 'listing_hero', 'interior', 'social_feed', 'brochure'
-        model:      kie.ai model slug (default: Flux-2 Flex)
-        width, height: Image dimensions
-        **kwargs:   Passed to the corresponding prompt builder
+        image_type:   One of 'listing_hero', 'interior', 'social_feed', 'brochure'
+        model:        kie.ai model slug in slash format (default: flux-2/flex-text-to-image)
+        aspect_ratio: e.g. '16:9', '1:1', '9:16', '4:3'
+        resolution:   '1K' | '2K' | '4K'
+        **kwargs:     Passed to the corresponding prompt builder
 
     Returns:
-        dict with keys: image_urls, prompt, model, image_type
+        dict with keys: image_urls, image_url, prompt, model, image_type
     """
     from utils.kie_client import generate_image
 
-    # Build the appropriate prompt
     prompt_builders = {
         "listing_hero": build_listing_hero_prompt,
         "interior": build_interior_lifestyle_prompt,
@@ -215,8 +215,8 @@ def generate_cavalier_image(
     image_urls = generate_image(
         prompt=prompt,
         model=model,
-        width=width,
-        height=height,
+        aspect_ratio=aspect_ratio,
+        resolution=resolution,
     )
 
     return {
@@ -226,3 +226,5 @@ def generate_cavalier_image(
         "model": model,
         "image_type": image_type,
     }
+
+

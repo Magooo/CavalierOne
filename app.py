@@ -547,9 +547,9 @@ def api_generate_image():
         data = request.get_json(force=True, silent=True) or {}
 
         image_type = data.get('image_type', 'listing_hero')
-        model = data.get('model', 'flux-2-flex-text-to-image')
-        width = int(data.get('width', 1024))
-        height = int(data.get('height', 768))
+        model = data.get('model', 'flux-2/flex-text-to-image')
+        aspect_ratio = data.get('aspect_ratio', '16:9')
+        resolution = data.get('resolution', '1K')
         prompt_override = data.get('prompt_override', '').strip()
 
         if prompt_override:
@@ -557,8 +557,8 @@ def api_generate_image():
             image_urls = kie_generate(
                 prompt=prompt_override,
                 model=model,
-                width=width,
-                height=height,
+                aspect_ratio=aspect_ratio,
+                resolution=resolution,
             )
             result = {
                 'image_url': image_urls[0] if image_urls else None,
@@ -596,10 +596,11 @@ def api_generate_image():
             result = generate_cavalier_image(
                 image_type=image_type,
                 model=model,
-                width=width,
-                height=height,
+                aspect_ratio=aspect_ratio,
+                resolution=resolution,
                 **kwargs
             )
+
 
         return jsonify(result)
 
