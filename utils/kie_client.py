@@ -6,8 +6,9 @@ Auth: Bearer token (KIE_API_KEY from .env)
 
 All generation calls are asynchronous (task-based):
   1. POST https://api.kie.ai/api/v1/jobs/createTask  → get taskId
-  2. GET  https://api.kie.ai/api/v1/jobs/taskDetail?taskId=<id>
-         → poll until status == "succeed" / "success" / "completed"
+  2. GET  https://api.kie.ai/api/v1/jobs/recordInfo?taskId=<id>
+         → poll until state == "success"
+         → resultJson contains {"resultUrls": [...]}
 
 The model slug format is e.g. "flux-2/flex-text-to-image" (slash, not dash).
 """
@@ -42,12 +43,16 @@ def _headers() -> dict:
 
 def _poll_task(task_id: str, max_wait: int = MAX_WAIT_SECONDS) -> dict:
     """
-    Poll GET /api/v1/jobs/taskDetail?taskId=<id> until done or timeout.
+    Poll GET /api/v1/jobs/recordInfo?taskId=<id> until done or timeout.
+
+    New KIE.ai response shape:
+      { "code": 200, "data": { "taskId": "...", "state": "success",
+                               "resultJson": "{\"resultUrls\":[...]}" } }
 
     Returns the full response dict on success.
     Raises RuntimeError on failure or TimeoutError on timeout.
     """
-    url = f"{KIE_BASE_URL}/jobs/taskDetail"
+    url = f"{KIE_BASE_URL}/jobs/recordInfo"
     elapsed = 0
 
     while elapsed < max_wait:
@@ -62,8 +67,11 @@ def _poll_task(task_id: str, max_wait: int = MAX_WAIT_SECONDS) -> dict:
 
         # KIE.ai wraps everything in {"code": 200, "data": {...}}
         inner = data.get("data") or {}
+
+        # New API uses 'state'; fall back to legacy field names just in case
         status = (
-            inner.get("status")
+            inner.get("state")
+            or inner.get("status")
             or inner.get("taskStatus")
             or data.get("status", "")
         )
@@ -73,7 +81,8 @@ def _poll_task(task_id: str, max_wait: int = MAX_WAIT_SECONDS) -> dict:
 
         if str(status).lower() in ("failed", "error", "fail"):
             err = (
-                inner.get("errorMessage")
+                inner.get("failMsg")
+                or inner.get("errorMessage")
                 or inner.get("error_message")
                 or data.get("msg", "Unknown error")
             )
@@ -88,10 +97,33 @@ def _poll_task(task_id: str, max_wait: int = MAX_WAIT_SECONDS) -> dict:
 def _extract_image_urls(result: dict) -> list[str]:
     """
     Extract image URLs from a completed task result.
-    KIE.ai nests output differently per model — try all known paths.
-    """
-    inner = result.get("data") or {}
 
+    New KIE.ai API (recordInfo) stores results in a JSON string:
+      inner["resultJson"] = '{"resultUrls":["https://...","https://..."]}'
+
+    Falls back to legacy field names for backwards compatibility.
+    """
+    import json as _json
+
+    inner = result.get("data") or {}
+    urls = []
+
+    # --- New API path: resultJson string containing resultUrls ---
+    result_json_str = inner.get("resultJson")
+    if result_json_str:
+        try:
+            result_json = _json.loads(result_json_str)
+            result_urls = result_json.get("resultUrls") or []
+            for u in result_urls:
+                if isinstance(u, str) and u.startswith("http"):
+                    urls.append(u)
+        except (_json.JSONDecodeError, TypeError):
+            pass
+
+    if urls:
+        return urls
+
+    # --- Legacy fallback paths ---
     candidates = [
         inner.get("output"),           # may be a list of URLs or a dict
         inner.get("images"),
@@ -99,7 +131,6 @@ def _extract_image_urls(result: dict) -> list[str]:
         inner.get("image_urls"),
     ]
 
-    urls = []
     for candidate in candidates:
         if candidate is None:
             continue
@@ -288,13 +319,15 @@ def enhance_image(
     Returns:
         List of enhanced image URLs.
     """
+    # KIE.ai Flux-2 img2img requires input_urls as an array, not image_url as a string.
+    # See: https://docs.kie.ai/market/flux2/flex-image-to-image
     payload = {
         "model": model,
         "input": {
-            "image_url": image_url,
+            "input_urls": [image_url],
             "prompt": prompt,
-            "strength": strength,
             "aspect_ratio": aspect_ratio,
+            "resolution": "1K",
             "nsfw_checker": False,
         },
     }

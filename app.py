@@ -74,8 +74,13 @@ def require_role(roles):
             if user_role == 'admin':
                 return f(*args, **kwargs)
             if isinstance(roles, list) and user_role not in roles:
+                # Return JSON for API routes so frontend can parse the error
+                if request.path.startswith('/api/'):
+                    return jsonify({'error': 'Access Denied: Insufficient permissions.'}), 403
                 return "Access Denied: Insufficient permissions.", 403
             elif not isinstance(roles, list) and user_role != roles:
+                if request.path.startswith('/api/'):
+                    return jsonify({'error': 'Access Denied: Insufficient permissions.'}), 403
                 return "Access Denied: Insufficient permissions.", 403
             return f(*args, **kwargs)
         return decorated_function
@@ -656,10 +661,17 @@ def api_upload_image():
             )
             public_url = supabase.storage.from_("cavalierone_uploads").get_public_url(unique_name)
         else:
-            # Fallback: encode as data URL (local dev without Supabase)
-            import base64
-            encoded = base64.b64encode(file_bytes).decode()
-            public_url = f"data:image/{ext};base64,{encoded}"
+            # Fallback for local dev: save to disk and serve via Flask
+            # KIE.ai requires a real https:// or http:// URL — data URIs are rejected
+            upload_dir = os.path.join(os.getcwd(), 'resources', 'uploads')
+            os.makedirs(upload_dir, exist_ok=True)
+            local_filename = f"{uuid.uuid4().hex}.{ext}"
+            local_path = os.path.join(upload_dir, local_filename)
+            with open(local_path, 'wb') as f_out:
+                f_out.write(file_bytes)
+            # Build absolute URL so KIE.ai can fetch it
+            public_url = request.host_url.rstrip('/') + f'/uploads/{local_filename}'
+            unique_name = local_filename
 
         return jsonify({'url': public_url, 'filename': unique_name})
 
