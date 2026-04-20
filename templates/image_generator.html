@@ -104,10 +104,26 @@
     .upload-zone__icon { font-size: 32px; margin-bottom: 10px; }
     .upload-zone__title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
     .upload-zone__sub { font-size: 12px; color: var(--text-muted); }
-    .upload-preview { display: none; width: 100%; height: 180px; object-fit: cover; border-radius: var(--radius-md); margin-bottom: 12px; border: 1px solid var(--border); }
+    /* Zone picker container */
+    .zone-picker-wrap { position: relative; display: none; margin-bottom: 12px; border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--border); }
+    .zone-picker-wrap.visible { display: block; }
+    .upload-preview { display: block; width: 100%; height: auto; max-height: 260px; object-fit: cover; border-radius: 0; margin: 0; border: none; }
     .upload-preview.visible { display: block; }
+    #zone-canvas { position: absolute; inset: 0; width: 100%; height: 100%; cursor: crosshair; display: none; }
+    #zone-canvas.active { display: block; }
+    .zone-picker-hint { background: rgba(15,15,25,0.82); color: #fff; font-size: 11px; font-weight: 500; padding: 7px 12px; text-align: center; letter-spacing: 0.2px; line-height: 1.4; display: none; }
+    .zone-picker-hint.visible { display: block; }
+    .zone-picker-hint strong { color: #7dd3a8; }
+
     .upload-clear { font-size: 12px; color: var(--accent); cursor: pointer; font-weight: 600; text-align: center; display: none; margin-bottom: 16px; background: none; border: none; width: 100%; }
     .upload-clear.visible { display: block; }
+
+    /* Zone assignment badge pills shown below the image */
+    .zone-assignments { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+    .zone-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 600; padding: 4px 8px; border-radius: 12px; background: var(--bg-muted); border: 1px solid var(--border); color: var(--text); cursor: pointer; }
+    .zone-badge__dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .zone-badge__remove { opacity: 0.5; margin-left: 3px; }
+    .zone-badge__remove:hover { opacity: 1; color: #fc8181; }
 
     /* Strength slider */
     .slider-row { display: flex; align-items: center; gap: 12px; }
@@ -499,8 +515,18 @@
           <!-- Shared upload zone (used by both sub-modes) -->
           <div class="form-section">
             <label class="form-section__label">Upload Your Photo or Render</label>
-            <img id="enhance-preview" class="upload-preview" src="" alt="Upload preview">
+            <!-- Zone picker container: canvas overlays the photo -->
+            <div class="zone-picker-wrap" id="zone-picker-wrap">
+              <img id="enhance-preview" class="upload-preview" src="" alt="Upload preview">
+              <canvas id="zone-canvas"></canvas>
+              <!-- Zone picker instruction bar -->
+              <div class="zone-picker-hint" id="zone-picker-hint">
+                <span id="zone-hint-text">Select a product swatch below, then click the photo to mark where it goes.</span>
+              </div>
+            </div>
             <button class="upload-clear" id="enhance-clear" onclick="clearEnhanceUpload()" type="button">✕ Remove photo</button>
+            <!-- Zone assignment badges -->
+            <div class="zone-assignments" id="zone-assignments"></div>
             <div class="upload-zone" id="enhance-dropzone">
               <input type="file" id="enhance-file" accept="image/*" onchange="handleEnhanceFile(this)">
               <div class="upload-zone__icon">📷</div>
@@ -956,6 +982,195 @@
     }
 
     /* =============================================
+       ZONE PICKER ENGINE
+    ============================================= */
+
+    // Semantic zone layout — divides the image into named regions
+    // Zones are defined as proportion of image [x0, y0, x1, y1]
+    const ZONES = [
+      { id: 'roof',         label: 'Roof Area',        x0: 0,    y0: 0,    x1: 1,    y1: 0.28, colour: '#4a90d9' },
+      { id: 'upper-left',   label: 'Upper Left Wall',  x0: 0,    y0: 0.28, x1: 0.38, y1: 0.58, colour: '#e67e47' },
+      { id: 'upper-center', label: 'Upper Front Wall', x0: 0.38, y0: 0.28, x1: 0.72, y1: 0.58, colour: '#48bb78' },
+      { id: 'upper-right',  label: 'Upper Right Wall', x0: 0.72, y0: 0.28, x1: 1,    y1: 0.58, colour: '#9f7aea' },
+      { id: 'lower-left',   label: 'Lower Left Wall',  x0: 0,    y0: 0.58, x1: 0.38, y1: 1,    colour: '#fc8181' },
+      { id: 'garage',       label: 'Garage Door',      x0: 0.38, y0: 0.58, x1: 0.72, y1: 1,    colour: '#f6ad55' },
+      { id: 'lower-right',  label: 'Lower Right Wall', x0: 0.72, y0: 0.58, x1: 1,    y1: 1,    colour: '#76e4f7' },
+    ];
+
+    // zoneAssignments: [{zoneId, zoneName, material, colour, hex, x, y}, ...]
+    let zoneAssignments = [];
+    let hoveredZone = null;
+    let pickerMaterial = null;   // which material is queued for zone click
+    let pickerSwatch = null;     // swatch object for that material
+    let zonePickerActive = false;
+
+    function getZoneAt(rx, ry) {
+      return ZONES.find(z => rx >= z.x0 && rx < z.x1 && ry >= z.y0 && ry < z.y1) || null;
+    }
+
+    function getMatColour(mat) {
+      const cols = { brick:'#e67e47', roof:'#4a90d9', render:'#9f7aea',
+                     trim:'#48bb78', garage:'#f6ad55', cladding:'#76e4f7' };
+      return cols[mat] || '#aaa';
+    }
+
+    function activateZonePicker(material, swatch) {
+      const img = document.getElementById('enhance-preview');
+      if (!img.src || !img.classList.contains('visible')) {
+        showToast('Upload a photo first, then select a swatch.', 'error'); return;
+      }
+      pickerMaterial = material;
+      pickerSwatch = swatch;
+      zonePickerActive = true;
+      const canvas = document.getElementById('zone-canvas');
+      canvas.classList.add('active');
+      const hint = document.getElementById('zone-picker-hint');
+      hint.classList.add('visible');
+      document.getElementById('zone-hint-text').innerHTML =
+        `<strong>${swatch.name}</strong> selected — click the photo to mark where it is. Click multiple zones if needed.`;
+      syncCanvasSize();
+      renderZoneCanvas();
+    }
+
+    function deactivateZonePicker() {
+      pickerMaterial = null; pickerSwatch = null; zonePickerActive = false;
+      document.getElementById('zone-canvas').classList.remove('active');
+      document.getElementById('zone-picker-hint').classList.remove('visible');
+    }
+
+    function syncCanvasSize() {
+      const img = document.getElementById('enhance-preview');
+      const canvas = document.getElementById('zone-canvas');
+      canvas.width = img.offsetWidth;
+      canvas.height = img.offsetHeight;
+    }
+
+    function renderZoneCanvas() {
+      const canvas = document.getElementById('zone-canvas');
+      if (!canvas.classList.contains('active')) return;
+      const ctx = canvas.getContext('2d');
+      const W = canvas.width, H = canvas.height;
+      ctx.clearRect(0, 0, W, H);
+
+      // Draw subtle zone grid lines
+      ZONES.forEach(z => {
+        const x = z.x0 * W, y = z.y0 * H, w2 = (z.x1 - z.x0) * W, h2 = (z.y1 - z.y0) * H;
+        ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x, y, w2, h2);
+
+        // Hover highlight
+        if (hoveredZone && hoveredZone.id === z.id) {
+          ctx.fillStyle = 'rgba(255,255,255,0.12)';
+          ctx.fillRect(x, y, w2, h2);
+          ctx.fillStyle = 'rgba(255,255,255,0.9)';
+          ctx.font = '600 11px Inter, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(z.label, x + w2/2, y + h2/2);
+        }
+      });
+
+      // Draw zone assignment dots
+      zoneAssignments.forEach(a => {
+        const z = ZONES.find(z => z.id === a.zoneId);
+        if (!z) return;
+        const cx = (a.dotX || (z.x0 + (z.x1 - z.x0) * 0.5)) * W;
+        const cy = (a.dotY || (z.y0 + (z.y1 - z.y0) * 0.5)) * H;
+        const matCol = getMatColour(a.material);
+        // Glow ring
+        ctx.beginPath();
+        ctx.arc(cx, cy, 14, 0, Math.PI * 2);
+        ctx.fillStyle = matCol + '55';
+        ctx.fill();
+        // Solid dot
+        ctx.beginPath();
+        ctx.arc(cx, cy, 9, 0, Math.PI * 2);
+        ctx.fillStyle = matCol;
+        ctx.fill();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        // Label
+        ctx.font = '600 9px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+        ctx.fillStyle = '#fff';
+        ctx.fillText(a.colour.split(' ').slice(-1)[0], cx, cy + 13);
+      });
+    }
+
+    function assignZone(zone, rx, ry) {
+      // Remove existing assignment for same material+zone (replace it)
+      zoneAssignments = zoneAssignments.filter(
+        a => !(a.zoneId === zone.id && a.material === pickerMaterial)
+      );
+      zoneAssignments.push({
+        zoneId: zone.id,
+        zoneName: zone.label,
+        material: pickerMaterial,
+        colour: pickerSwatch.name,
+        supplier: pickerSwatch.supplier,
+        prompt: pickerSwatch.prompt,
+        hex: pickerSwatch.hex || '#888',
+        dotX: rx, dotY: ry,
+      });
+      renderZoneCanvas();
+      renderZoneBadges();
+      updateRecolourPromptPreview();
+    }
+
+    function removeZoneAssignment(idx) {
+      zoneAssignments.splice(idx, 1);
+      renderZoneCanvas();
+      renderZoneBadges();
+      updateRecolourPromptPreview();
+    }
+
+    function renderZoneBadges() {
+      const el = document.getElementById('zone-assignments');
+      if (!el) return;
+      if (zoneAssignments.length === 0) { el.innerHTML = ''; return; }
+      el.innerHTML = zoneAssignments.map((a, i) => `
+        <div class="zone-badge" title="Click × to remove">
+          <div class="zone-badge__dot" style="background:${getMatColour(a.material)};"></div>
+          <span>${a.zoneName}: <strong>${a.colour}</strong></span>
+          <span class="zone-badge__remove" onclick="removeZoneAssignment(${i})" title="Remove">✕</span>
+        </div>
+      `).join('');
+    }
+
+    // Wire canvas events
+    document.addEventListener('DOMContentLoaded', () => {
+      const canvas = document.getElementById('zone-canvas');
+
+      canvas.addEventListener('mousemove', e => {
+        const r = canvas.getBoundingClientRect();
+        const rx = (e.clientX - r.left) / r.width;
+        const ry = (e.clientY - r.top) / r.height;
+        const z = getZoneAt(rx, ry);
+        if (z?.id !== hoveredZone?.id) { hoveredZone = z; renderZoneCanvas(); }
+      });
+
+      canvas.addEventListener('mouseleave', () => {
+        hoveredZone = null; renderZoneCanvas();
+      });
+
+      canvas.addEventListener('click', e => {
+        if (!zonePickerActive || !pickerSwatch) return;
+        const r = canvas.getBoundingClientRect();
+        const rx = (e.clientX - r.left) / r.width;
+        const ry = (e.clientY - r.top) / r.height;
+        const zone = getZoneAt(rx, ry);
+        if (!zone) return;
+        assignZone(zone, rx, ry);
+        showToast(`${pickerSwatch.name} → ${zone.label}`, 'success');
+      });
+
+      window.addEventListener('resize', () => { syncCanvasSize(); renderZoneCanvas(); });
+    });
+
+    /* =============================================
        ENHANCE MODE
     ============================================= */
     function handleEnhanceFile(input) {
@@ -964,22 +1179,39 @@
       if (!validateUploadFile(file)) { input.value = ''; return; }
       const reader = new FileReader();
       reader.onload = e => {
-        document.getElementById('enhance-preview').src = e.target.result;
-        document.getElementById('enhance-preview').classList.add('visible');
+        const img = document.getElementById('enhance-preview');
+        img.src = e.target.result;
+        img.classList.add('visible');
         document.getElementById('enhance-dropzone').style.display = 'none';
         document.getElementById('enhance-clear').classList.add('visible');
+        document.getElementById('zone-picker-wrap').classList.add('visible');
+        // Show picker hint if in recolour mode
+        const isRecolour = document.querySelector('.sub-tab[data-sub="recolour"]')?.classList.contains('active');
+        if (isRecolour) {
+          document.getElementById('zone-picker-hint').classList.add('visible');
+          img.onload = () => { syncCanvasSize(); };
+        }
       };
       reader.readAsDataURL(file);
     }
 
     function clearEnhanceUpload() {
       document.getElementById('enhance-file').value = '';
-      document.getElementById('enhance-preview').src = '';
-      document.getElementById('enhance-preview').classList.remove('visible');
+      const img = document.getElementById('enhance-preview');
+      img.src = ''; img.classList.remove('visible');
       document.getElementById('enhance-dropzone').style.display = '';
       document.getElementById('enhance-clear').classList.remove('visible');
+      document.getElementById('zone-picker-wrap').classList.remove('visible');
+      document.getElementById('zone-picker-hint').classList.remove('visible');
+      document.getElementById('zone-canvas').classList.remove('active');
+      document.getElementById('zone-assignments').innerHTML = '';
+      zoneAssignments = [];
+      deactivateZonePicker();
       enhanceSourceUrl = null;
+      renderZoneCanvas();
     }
+
+
 
     function updateStyleHint() {
       const style = document.getElementById('enhance-style').value;
@@ -1400,36 +1632,62 @@
       el.classList.add('selected');
       const colour = el.dataset.colour || '';
       const prompt = el.dataset.prompt || '';
-      recolourSelections[material] = colour ? { colour, prompt } : null;
+      const supplier = el.dataset.supplier || '';
+      recolourSelections[material] = colour ? { colour, prompt, supplier } : null;
       updateRecolourPromptPreview();
+
+      // Activate zone picker so user can click where this product goes
+      if (colour) {
+        activateZonePicker(material, { name: colour, prompt, supplier, hex: el.style.backgroundColor });
+      } else {
+        deactivateZonePicker();
+      }
     }
 
     function updateRecolourPromptPreview() {
-      const changes = [];
-      for (const [mat, sel] of Object.entries(recolourSelections)) {
-        if (sel) changes.push(`<strong>${sel.colour}</strong>`);
-      }
       const preview = document.getElementById('recolour-prompt-preview');
-      if (!changes.length) {
-        preview.innerHTML = 'Pick products above — the AI prompt will appear here.';
+      if (zoneAssignments.length > 0) {
+        const parts = zoneAssignments.map(a =>
+          `<strong>${a.colour}</strong> in ${a.zoneName}`
+        );
+        preview.innerHTML = `Applying: ${parts.join(', ')} — photorealistic, same composition.`;
       } else {
-        preview.innerHTML = `Applying: ${changes.join(', ')} — same house, same composition, photorealistic.`;
+        const changes = [];
+        for (const [mat, sel] of Object.entries(recolourSelections)) {
+          if (sel) changes.push(`<strong>${sel.colour}</strong>`);
+        }
+        if (!changes.length) {
+          preview.innerHTML = 'Pick products above, then click the photo to mark where they go.';
+        } else {
+          preview.innerHTML = `Selected: ${changes.join(', ')} — click the photo above to place them.`;
+        }
       }
     }
 
     function buildRecolourPrompt() {
       const materialLabels = {
-        brick:    'the brick and cladding',
+        brick:    'the brick',
         roof:     'the roof iron',
         render:   'the render and painted walls',
         trim:     'the fascia, gutters, trim and window frames',
         garage:   'the garage door',
         cladding: 'the feature cladding panels',
       };
-      const parts = [];
-      for (const [mat, sel] of Object.entries(recolourSelections)) {
-        if (sel) parts.push(`change ${materialLabels[mat]} to ${sel.prompt}`);
+
+      let parts = [];
+
+      if (zoneAssignments.length > 0) {
+        // ZONE-AWARE MODE: use exact spatial instructions from picker
+        parts = zoneAssignments.map(a =>
+          `change the ${materialLabels[a.material] || a.material} in the ${a.zoneName.toLowerCase()} to ${a.prompt}`
+        );
+      } else {
+        // FALLBACK: generic per-material instructions without zones
+        for (const [mat, sel] of Object.entries(recolourSelections)) {
+          if (sel) parts.push(`change ${materialLabels[mat]} to ${sel.prompt}`);
+        }
       }
+
       const extras = document.getElementById('recolour-extras').value.trim();
       const base = 'Photorealistic Australian house facade. Same architecture, same composition, same landscaping, same camera angle, same lighting.';
       const changes = parts.length ? ' ' + parts.join('. ') + '.' : ' Subtle overall enhancement.';
@@ -1441,7 +1699,7 @@
       if (!fileInput.files[0] && !enhanceSourceUrl) {
         showToast('Please upload a photo or render first.', 'error'); return;
       }
-      const hasChanges = Object.values(recolourSelections).some(v => v !== null);
+      const hasChanges = Object.values(recolourSelections).some(v => v !== null) || zoneAssignments.length > 0;
       if (!hasChanges) {
         showToast('Select at least one product to change.', 'error'); return;
       }
