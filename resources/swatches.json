@@ -1,0 +1,63 @@
+{
+  "roof": [
+    { "id": "cb-surfmist",    "name": "Surfmist",      "supplier": "Colorbond", "hex": "#E8E2D5", "prompt": "Colorbond Surfmist — a soft warm white with subtle grey undertone" },
+    { "id": "cb-shale-grey",  "name": "Shale Grey",    "supplier": "Colorbond", "hex": "#C2BBAE", "prompt": "Colorbond Shale Grey — a light warm grey, one of Australia's most popular roof colours" },
+    { "id": "cb-dune",        "name": "Dune",          "supplier": "Colorbond", "hex": "#B5A898", "prompt": "Colorbond Dune — a mid warm sandy beige-grey" },
+    { "id": "cb-paperbark",   "name": "Paperbark",     "supplier": "Colorbond", "hex": "#C8B99A", "prompt": "Colorbond Paperbark — a warm tan/khaki earthy tone" },
+    { "id": "cb-evening-haze","name": "Evening Haze",  "supplier": "Colorbond", "hex": "#B8B3AD", "prompt": "Colorbond Evening Haze — a cool light blue-grey" },
+    { "id": "cb-windspray",   "name": "Windspray",     "supplier": "Colorbond", "hex": "#96989A", "prompt": "Colorbond Windspray — a cool medium grey with a coastal blue tone" },
+    { "id": "cb-woodland-grey","name": "Woodland Grey", "supplier": "Colorbond", "hex": "#6E6E6A", "prompt": "Colorbond Woodland Grey — a popular dark grey-green, very contemporary" },
+    { "id": "cb-basalt",      "name": "Basalt",        "supplier": "Colorbond", "hex": "#5C5E5A", "prompt": "Colorbond Basalt — a dark charcoal grey with a warm undertone" },
+    { "id": "cb-ironstone",   "name": "Ironstone",     "supplier": "Colorbond", "hex": "#3E3E3C", "prompt": "Colorbond Ironstone — a near-black dark charcoal, modern and bold" },
+    { "id": "cb-monument",    "name": "Monument",      "supplier": "Colorbond", "hex": "#2F2F2D", "prompt": "Colorbond Monument — a very dark near-black grey, sleek and contemporary" },
+    { "id": "cb-manor-red",   "name": "Manor Red",     "supplier": "Colorbond", "hex": "#7C3228", "prompt": "Colorbond Manor Red — a classic deep terracotta-red roof colour" },
+    { "id": "cb-jasper",      "name": "Jasper",        "supplier": "Colorbond", "hex": "#5A4033", "prompt": "Colorbond Jasper — a rich earthy dark brown" },
+    { "id": "cb-terrain",     "name": "Terrain",       "supplier": "Colorbond", "hex": "#7A7260", "prompt": "Colorbond Terrain — a warm olive-grey earthy mid-tone" },
+    { "id": "cb-pale-eucalypt","name": "Pale Eucalypt","supplier": "Colorbond", "hex": "#8F9279", "prompt": "Colorbond Pale Eucalypt — a soft muted sage green, distinctly Australian" },
+    { "id": "cb-wallaby",     "name": "Wallaby",       "supplier": "Colorbond", "hex": "#9C8C76", "prompt": "Colorbond Wallaby — a warm dusty taupe" },
+    { "id": "cb-cove",        "name": "Cove",          "supplier": "Colorbond", "hex": "#7C8E96", "prompt": "Colorbond Cove — a muted coastal teal-grey" },
+    { "id": "cb-blue-ridge",  "name": "Blue Ridge",    "supplier": "Colorbond", "hex": "#4A6070", "prompt": "Colorbond Blue Ridge — a deep slate blue-grey, coastal character" },
+    { "id": "cb-classic-cream","name": "Classic Cream","supplier": "Colorbond", "hex": "#E0D4B8", "prompt": "Colorbond Classic Cream — a warm pale cream/off-white" }
+  ],
+  "brick": [
+    { "id": "pgh-urban-gull",   "name": "Urban Gull",   "supplier": "PGH",        "hex": "#9E9289", "prompt": "PGH Urban Gull brick — a warm mid-grey contemporary brick with subtle sand-and-charcoal flecking" },
+    { "id": "pgh-urban-graphite","name": "Urban Graphite","supplier": "PGH",       "hex": "#6B6560", "prompt": "PGH Urban Graphite brick — a dark charcoal grey brick with a smooth contemporary face" },
+    { "id": "pgh-urban-almond", "name": "Urban Almond", "supplier": "PGH",        "hex": "#C4B49A", "prompt": "PGH Urban Almond brick — a warm sandy cream brick, clean and classic" },
+    { "id": "pgh-urban-buff",   "name": "Urban Buff",   "supplier": "PGH",        "hex": "#C8A87A", "prompt": "PGH Urban Buff brick — a golden-honey buff brick, warm and inviting" },
+    { "id": "pgh-urban-sienna", "name": "Urban Sienna", "supplier": "PGH",        "hex": "#A0614A", "prompt": "PGH Urban Sienna brick — a warm red-brown terracotta brick" },
+    { "id": "pgh-urban-slate",  "name": "Urban Slate",  "supplier": "PGH",        "hex": "#7A8082", "prompt": "PGH Urban Slate brick — a cool blue-grey brick, sleek and modern" },
+    { "id": "pgh-urban-white",  "name": "Urban White",  "supplier": "PGH",        "hex": "#E8E4DC", "prompt": "PGH Urban White brick — a crisp off-white brick for a fresh modern look" },
+    { "id": "bw-bowral-dark",   "name": "Bowral Dark",  "supplier": "Brickworks", "hex": "#4A3C35", "prompt": "Brickworks Bowral Dark brick — a very dark espresso brown handmade-look brick" },
+    { "id": "bw-hawthorn",      "name": "Hawthorn",     "supplier": "Brickworks", "hex": "#8C6348", "prompt": "Brickworks Hawthorn brick — a warm rustic orange-brown classic brick" },
+    { "id": "bw-concrete-grey", "name": "Concrete Grey","supplier": "Brickworks", "hex": "#9CA0A0", "prompt": "Brickworks Concrete Grey brick — a smooth cool grey brick, industrial-modern" },
+    { "id": "aus-limestone",    "name": "Limestone",    "supplier": "Austral",    "hex": "#D6CCBA", "prompt": "Austral Limestone brick — a pale warm cream brick with natural variation" },
+    { "id": "aus-savannah",     "name": "Savannah",     "supplier": "Austral",    "hex": "#B8A888", "prompt": "Austral Savannah brick — a mid warm beige brick with earthy tones" }
+  ],
+  "render": [
+    { "id": "render-white",         "name": "Render White",       "supplier": "Dulux AcraTex", "hex": "#F2F0EC", "prompt": "smooth cement render painted Dulux AcraTex White — a crisp clean rendered wall finish" },
+    { "id": "render-warm-white",    "name": "Warm White",         "supplier": "Dulux AcraTex", "hex": "#EDE8DC", "prompt": "smooth render in Dulux AcraTex Warm White — a soft off-white with cream undertone" },
+    { "id": "render-grey",          "name": "Mid Grey",           "supplier": "Dulux AcraTex", "hex": "#ADADAD", "prompt": "smooth render in Dulux AcraTex mid grey — a neutral contemporary grey rendered finish" },
+    { "id": "render-charcoal",      "name": "Charcoal",           "supplier": "Dulux AcraTex", "hex": "#555550", "prompt": "dark charcoal smooth render — a bold contemporary dark rendered facade" },
+    { "id": "render-sand",          "name": "Sand",               "supplier": "Rockcote",      "hex": "#C8B898", "prompt": "Rockcote render in warm sand — a textured sandy beige rendered wall finish" },
+    { "id": "render-stone",         "name": "Stone",              "supplier": "Rockcote",      "hex": "#A89880", "prompt": "Rockcote render in stone — a natural warm stone-grey rendered surface" },
+    { "id": "render-coastal-white", "name": "Coastal White",      "supplier": "Rockcote",      "hex": "#F0EDE8", "prompt": "Rockcote coastal white textured render — a fresh white with slight texture, relaxed coastal feel" }
+  ],
+  "trim": [
+    { "id": "trim-surfmist",   "name": "Surfmist",   "supplier": "Colorbond", "hex": "#E8E2D5", "prompt": "Colorbond Surfmist fascia, gutters and trim — warm white" },
+    { "id": "trim-monument",   "name": "Monument",   "supplier": "Colorbond", "hex": "#2F2F2D", "prompt": "Colorbond Monument fascia, gutters and trim — near-black charcoal" },
+    { "id": "trim-basalt",     "name": "Basalt",     "supplier": "Colorbond", "hex": "#5C5E5A", "prompt": "Colorbond Basalt fascia and trim — dark charcoal grey" },
+    { "id": "trim-shale-grey", "name": "Shale Grey", "supplier": "Colorbond", "hex": "#C2BBAE", "prompt": "Colorbond Shale Grey fascia and gutters — a soft warm grey" },
+    { "id": "trim-woodland",   "name": "Woodland Grey","supplier": "Colorbond","hex": "#6E6E6A", "prompt": "Colorbond Woodland Grey fascia and trim — dark grey-green" },
+    { "id": "trim-white",      "name": "White",       "supplier": "Dulux",    "hex": "#F5F5F5", "prompt": "crisp white painted timber or aluminium trim and fascia" },
+    { "id": "trim-black",      "name": "Black",       "supplier": "Dulux",    "hex": "#1A1A1A", "prompt": "matte black painted window frames, fascia and trim — bold contemporary contrast" }
+  ],
+  "garage": [
+    { "id": "gd-surfmist",  "name": "Surfmist",    "supplier": "Colorbond", "hex": "#E8E2D5", "prompt": "Colorbond Surfmist garage door — a warm soft white panel-lift door" },
+    { "id": "gd-monument",  "name": "Monument",    "supplier": "Colorbond", "hex": "#2F2F2D", "prompt": "Colorbond Monument garage door — a sleek near-black panel door" },
+    { "id": "gd-basalt",    "name": "Basalt",      "supplier": "Colorbond", "hex": "#5C5E5A", "prompt": "Colorbond Basalt garage door — a dark charcoal panel-lift door" },
+    { "id": "gd-shale",     "name": "Shale Grey",  "supplier": "Colorbond", "hex": "#C2BBAE", "prompt": "Colorbond Shale Grey garage door — a popular light grey panel door" },
+    { "id": "gd-woodland",  "name": "Woodland Grey","supplier": "Colorbond", "hex": "#6E6E6A", "prompt": "Colorbond Woodland Grey garage door — a contemporary dark grey-green" },
+    { "id": "gd-timber",    "name": "Timber Look",  "supplier": "B&D Doors", "hex": "#8B6840", "prompt": "B&D timber-look garage door — a warm wood-grain finish panel-lift door" },
+    { "id": "gd-white",     "name": "White",        "supplier": "B&D Doors", "hex": "#F0EDE8", "prompt": "B&D white panel-lift garage door — classic clean white finish" }
+  ]
+}

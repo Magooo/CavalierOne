@@ -234,6 +234,15 @@
     .swatch-none { width: 32px; height: 32px; border-radius: 50%; cursor: pointer; border: 2px dashed var(--border); background: var(--bg-muted); display: flex; align-items: center; justify-content: center; font-size: 14px; transition: var(--transition); flex-shrink: 0; }
     .swatch-none:hover { border-color: var(--accent); }
     .swatch-none.selected { border: 2.5px solid var(--text); box-shadow: 0 0 0 2px white, 0 0 0 4px var(--text); }
+
+    /* Supplier product swatches — rectangular chips with tooltip */
+    .supplier-swatch { width: 36px; height: 28px; border-radius: 5px; cursor: pointer; border: 2px solid transparent; transition: var(--transition); position: relative; flex-shrink: 0; overflow: visible; }
+    .supplier-swatch:hover { transform: scale(1.12); border-color: var(--text-muted) !important; z-index: 5; }
+    .supplier-swatch.selected { border-color: var(--accent) !important; box-shadow: 0 0 0 2px white, 0 0 0 4px var(--accent); }
+    .swatch-tooltip { display: none; position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); background: #1a1a2e; color: #fff; font-size: 10px; line-height: 1.4; font-weight: 500; padding: 5px 8px; border-radius: 5px; white-space: nowrap; pointer-events: none; z-index: 20; box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
+    .swatch-tooltip em { color: #aaa; font-style: normal; font-size: 9px; }
+    .supplier-swatch:hover .swatch-tooltip { display: block; }
+
     .recolour-preview-prompt { background: var(--bg-muted); border-radius: var(--radius-md); padding: 12px 14px; font-size: 12px; color: var(--text-muted); font-style: italic; line-height: 1.5; margin-bottom: 16px; min-height: 48px; border: 1px solid var(--border); }
     .recolour-preview-prompt strong { font-style: normal; color: var(--accent); }
 
@@ -537,108 +546,64 @@
           <div class="sub-panel" id="sub-recolour">
 
             <p style="font-size:12px; color:var(--text-muted); margin-bottom:16px; line-height:1.6;">
-              Choose which materials to recolour. Leave any as <strong>No change</strong> to keep the original.
+              Choose products to apply. Leave any as <strong>No change</strong> to keep the original.
+              Swatches are real products from Australian suppliers.
             </p>
 
-            <!-- Brick -->
+            <!-- Brick / Cladding -->
             <div class="material-section">
               <div class="material-label"><span class="material-icon">🧱</span> Brick / Cladding</div>
-              <div class="swatch-grid" data-material="brick">
-                <div class="swatch-none selected" data-colour="" title="No change" onclick="selectSwatch(this,'brick')">–</div>
-                <div class="swatch" style="background:#c8b8a8" data-colour="Sandstone" title="Sandstone" onclick="selectSwatch(this,'brick')"></div>
-                <div class="swatch" style="background:#b5876b" data-colour="Terracotta" title="Terracotta" onclick="selectSwatch(this,'brick')"></div>
-                <div class="swatch" style="background:#8b6c5c" data-colour="Heritage Red" title="Heritage Red" onclick="selectSwatch(this,'brick')"></div>
-                <div class="swatch" style="background:#a89880" data-colour="Paperbark" title="Paperbark" onclick="selectSwatch(this,'brick')"></div>
-                <div class="swatch" style="background:#7a7062" data-colour="Basalt" title="Basalt" onclick="selectSwatch(this,'brick')"></div>
-                <div class="swatch" style="background:#4a4540" data-colour="Charcoal" title="Charcoal" onclick="selectSwatch(this,'brick')"></div>
-                <div class="swatch" style="background:#2e2b28" data-colour="Ebony" title="Ebony" onclick="selectSwatch(this,'brick')"></div>
-                <div class="swatch" style="background:#e8e0d5" data-colour="Limestone" title="Limestone" onclick="selectSwatch(this,'brick')"></div>
-                <div class="swatch" style="background:#ffffff; border:1px solid #ddd" data-colour="White" title="White" onclick="selectSwatch(this,'brick')"></div>
-                <div class="swatch" style="background:#d4c5a9" data-colour="Wheat" title="Wheat" onclick="selectSwatch(this,'brick')"></div>
-                <div class="swatch" style="background:#9cac8b" data-colour="Sage" title="Sage" onclick="selectSwatch(this,'brick')"></div>
-                <div class="swatch" style="background:#6b7a5a" data-colour="Olive" title="Olive" onclick="selectSwatch(this,'brick')"></div>
+              <div class="swatch-grid" id="swatches-brick" data-material="brick">
+                <div class="swatch-none selected" data-colour="" data-prompt="" title="No change — keep original brick" onclick="selectSwatch(this,'brick')">–</div>
               </div>
             </div>
 
             <!-- Roof -->
             <div class="material-section">
-              <div class="material-label"><span class="material-icon">🏠</span> Roof Iron / Tiles</div>
-              <div class="swatch-grid" data-material="roof">
-                <div class="swatch-none selected" data-colour="" title="No change" onclick="selectSwatch(this,'roof')">–</div>
-                <div class="swatch" style="background:#2b2b2b" data-colour="Monument" title="Monument" onclick="selectSwatch(this,'roof')"></div>
-                <div class="swatch" style="background:#4a4a4a" data-colour="Ironstone" title="Ironstone" onclick="selectSwatch(this,'roof')"></div>
-                <div class="swatch" style="background:#6e6e6e" data-colour="Windspray" title="Windspray" onclick="selectSwatch(this,'roof')"></div>
-                <div class="swatch" style="background:#8a7c6e" data-colour="Jasper" title="Jasper" onclick="selectSwatch(this,'roof')"></div>
-                <div class="swatch" style="background:#c0b49a" data-colour="Paperbark" title="Paperbark" onclick="selectSwatch(this,'roof')"></div>
-                <div class="swatch" style="background:#b5372a" data-colour="Headland Red" title="Headland Red" onclick="selectSwatch(this,'roof')"></div>
-                <div class="swatch" style="background:#4d6a3a" data-colour="Cottage Green" title="Cottage Green" onclick="selectSwatch(this,'roof')"></div>
-                <div class="swatch" style="background:#1a2e4a" data-colour="Deep Ocean" title="Deep Ocean" onclick="selectSwatch(this,'roof')"></div>
-                <div class="swatch" style="background:#3c5a7a" data-colour="Night Sky" title="Night Sky" onclick="selectSwatch(this,'roof')"></div>
-                <div class="swatch" style="background:#e0d8cc; border:1px solid #ccc" data-colour="Surfmist" title="Surfmist" onclick="selectSwatch(this,'roof')"></div>
-                <div class="swatch" style="background:#c87941" data-colour="Copper" title="Copper" onclick="selectSwatch(this,'roof')"></div>
+              <div class="material-label"><span class="material-icon">🏠</span> Roof Iron (Colorbond)</div>
+              <div class="swatch-grid" id="swatches-roof" data-material="roof">
+                <div class="swatch-none selected" data-colour="" data-prompt="" title="No change — keep original roof" onclick="selectSwatch(this,'roof')">–</div>
               </div>
             </div>
 
-            <!-- Render / Cladding -->
+            <!-- Render -->
             <div class="material-section">
               <div class="material-label"><span class="material-icon">🎨</span> Render / Feature Cladding</div>
-              <div class="swatch-grid" data-material="render">
-                <div class="swatch-none selected" data-colour="" title="No change" onclick="selectSwatch(this,'render')">–</div>
-                <div class="swatch" style="background:#ffffff; border:1px solid #ddd" data-colour="Vivid White" title="Vivid White" onclick="selectSwatch(this,'render')"></div>
-                <div class="swatch" style="background:#f2ede6" data-colour="Off White" title="Off White" onclick="selectSwatch(this,'render')"></div>
-                <div class="swatch" style="background:#e8e0d0" data-colour="Antique White" title="Antique White" onclick="selectSwatch(this,'render')"></div>
-                <div class="swatch" style="background:#d4c9b0" data-colour="Desert Sand" title="Desert Sand" onclick="selectSwatch(this,'render')"></div>
-                <div class="swatch" style="background:#b0a898" data-colour="Pebble" title="Pebble" onclick="selectSwatch(this,'render')"></div>
-                <div class="swatch" style="background:#888080" data-colour="Shale Grey" title="Shale Grey" onclick="selectSwatch(this,'render')"></div>
-                <div class="swatch" style="background:#5a5650" data-colour="Dune" title="Dune" onclick="selectSwatch(this,'render')"></div>
-                <div class="swatch" style="background:#2f2b27" data-colour="Domino" title="Domino" onclick="selectSwatch(this,'render')"></div>
-                <div class="swatch" style="background:#8ea68a" data-colour="Sage Green" title="Sage Green" onclick="selectSwatch(this,'render')"></div>
-                <div class="swatch" style="background:#6b8ca0" data-colour="Blue Grey" title="Blue Grey" onclick="selectSwatch(this,'render')"></div>
+              <div class="swatch-grid" id="swatches-render" data-material="render">
+                <div class="swatch-none selected" data-colour="" data-prompt="" title="No change — keep original render" onclick="selectSwatch(this,'render')">–</div>
               </div>
             </div>
 
             <!-- Trim -->
             <div class="material-section">
-              <div class="material-label"><span class="material-icon">🪟</span> Fascia / Trim / Window Frames</div>
-              <div class="swatch-grid" data-material="trim">
-                <div class="swatch-none selected" data-colour="" title="No change" onclick="selectSwatch(this,'trim')">–</div>
-                <div class="swatch" style="background:#ffffff; border:1px solid #ddd" data-colour="White" title="White" onclick="selectSwatch(this,'trim')"></div>
-                <div class="swatch" style="background:#1a1a1a" data-colour="Black" title="Black" onclick="selectSwatch(this,'trim')"></div>
-                <div class="swatch" style="background:#4a4a4a" data-colour="Dark Grey" title="Dark Grey" onclick="selectSwatch(this,'trim')"></div>
-                <div class="swatch" style="background:#8a8a8a" data-colour="Mid Grey" title="Mid Grey" onclick="selectSwatch(this,'trim')"></div>
-                <div class="swatch" style="background:#c8b49a" data-colour="Cream" title="Cream" onclick="selectSwatch(this,'trim')"></div>
-                <div class="swatch" style="background:#5a3e28" data-colour="Timber" title="Timber" onclick="selectSwatch(this,'trim')"></div>
+              <div class="material-label"><span class="material-icon">🪟</span> Fascia / Trim / Frames</div>
+              <div class="swatch-grid" id="swatches-trim" data-material="trim">
+                <div class="swatch-none selected" data-colour="" data-prompt="" title="No change — keep original trim" onclick="selectSwatch(this,'trim')">–</div>
               </div>
             </div>
 
-            <!-- Garage Door -->
+            <!-- Garage -->
             <div class="material-section">
               <div class="material-label"><span class="material-icon">🚗</span> Garage Door</div>
-              <div class="swatch-grid" data-material="garage">
-                <div class="swatch-none selected" data-colour="" title="No change" onclick="selectSwatch(this,'garage')">–</div>
-                <div class="swatch" style="background:#ffffff; border:1px solid #ddd" data-colour="White" title="White" onclick="selectSwatch(this,'garage')"></div>
-                <div class="swatch" style="background:#1a1a1a" data-colour="Black" title="Black" onclick="selectSwatch(this,'garage')"></div>
-                <div class="swatch" style="background:#4a4a4a" data-colour="Charcoal" title="Charcoal" onclick="selectSwatch(this,'garage')"></div>
-                <div class="swatch" style="background:#c0b49a" data-colour="Paperbark" title="Paperbark" onclick="selectSwatch(this,'garage')"></div>
-                <div class="swatch" style="background:#7a6040" data-colour="Timber" title="Timber" onclick="selectSwatch(this,'garage')"></div>
-                <div class="swatch" style="background:#a8a8a8" data-colour="Surfmist" title="Surfmist" onclick="selectSwatch(this,'garage')"></div>
+              <div class="swatch-grid" id="swatches-garage" data-material="garage">
+                <div class="swatch-none selected" data-colour="" data-prompt="" title="No change — keep original garage door" onclick="selectSwatch(this,'garage')">–</div>
               </div>
             </div>
 
             <!-- Generated prompt preview -->
-            <div class="form-section">
-              <label class="form-section__label">AI Will Apply</label>
-              <div class="recolour-preview-prompt" id="recolour-prompt-preview">Pick colours above and the AI prompt will appear here.</div>
+            <div class="form-section" style="margin-top:12px;">
+              <label class="form-section__label">AI Prompt Preview</label>
+              <div class="recolour-preview-prompt" id="recolour-prompt-preview">Pick products above — the AI prompt will appear here.</div>
             </div>
 
             <!-- Extra notes -->
             <div class="form-section">
               <label class="form-section__label" for="recolour-extras">Extra Notes (Optional)</label>
-              <input type="text" id="recolour-extras" class="form-input" placeholder="e.g. overcast lighting, keep landscaping">
+              <input type="text" id="recolour-extras" class="form-input" placeholder="e.g. overcast lighting, keep landscaping unchanged">
             </div>
 
             <hr class="divider">
-            <button class="btn-generate" id="btn-recolour" onclick="recolourFacade()" type="button" style="background:#1a3a2a;">
+            <button class="btn-generate" id="btn-recolour" onclick="recolourFacade()" type="button" style="background:linear-gradient(135deg,#1a3a2a,#2d6a4f);">
               <div class="spinner"></div>
               <span class="btn-text">🎨 Apply Recolour</span>
             </button>
@@ -1339,7 +1304,39 @@
     /* =============================================
        ENHANCE SUB-MODES (General / Recolour Facade)
     ============================================= */
-    const recolourSelections = { brick: '', roof: '', render: '', trim: '', garage: '' };
+
+    // Loaded from swatches.json via Jinja
+    const SWATCHES = {{ swatches_json | safe }};
+
+    // Stores { colour: "PGH Urban Gull", prompt: "PGH Urban Gull — a warm mid-grey..." }
+    const recolourSelections = { brick: null, roof: null, render: null, trim: null, garage: null };
+
+    function initSwatches() {
+      const MATERIALS = ['brick', 'roof', 'render', 'trim', 'garage'];
+      MATERIALS.forEach(mat => {
+        const grid = document.getElementById('swatches-' + mat);
+        if (!grid || !SWATCHES[mat]) return;
+        SWATCHES[mat].forEach(sw => {
+          const div = document.createElement('div');
+          div.className = 'swatch supplier-swatch';
+          div.style.background = sw.hex;
+          // Light border for near-white swatches
+          if (sw.hex && parseInt(sw.hex.slice(1), 16) > 0xD8D8D8) {
+            div.style.border = '1px solid #ccc';
+          }
+          div.dataset.colour = sw.name;
+          div.dataset.prompt = sw.prompt;
+          div.dataset.supplier = sw.supplier;
+          div.title = `${sw.name} — ${sw.supplier}`;
+          div.setAttribute('aria-label', `${sw.name} by ${sw.supplier}`);
+          div.onclick = () => selectSwatch(div, mat);
+
+          // Supplier badge tooltip on hover
+          div.innerHTML = `<span class="swatch-tooltip">${sw.name}<br><em>${sw.supplier}</em></span>`;
+          grid.appendChild(div);
+        });
+      });
+    }
 
     function switchEnhanceSub(sub) {
       document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
@@ -1351,36 +1348,43 @@
     function selectSwatch(el, material) {
       // Deselect siblings in the same grid
       const grid = el.closest('.swatch-grid');
-      grid.querySelectorAll('.swatch, .swatch-none').forEach(s => s.classList.remove('selected'));
+      grid.querySelectorAll('.swatch, .swatch-none, .supplier-swatch').forEach(s => s.classList.remove('selected'));
       el.classList.add('selected');
-      recolourSelections[material] = el.dataset.colour || '';
+      const colour = el.dataset.colour || '';
+      const prompt = el.dataset.prompt || '';
+      recolourSelections[material] = colour ? { colour, prompt } : null;
       updateRecolourPromptPreview();
     }
 
     function updateRecolourPromptPreview() {
-      const materialNames = { brick: 'brick/cladding', roof: 'roof', render: 'render/cladding', trim: 'fascia & trim', garage: 'garage door' };
       const changes = [];
-      for (const [mat, colour] of Object.entries(recolourSelections)) {
-        if (colour) changes.push(`<strong>${colour}</strong> ${materialNames[mat]}`);
+      for (const [mat, sel] of Object.entries(recolourSelections)) {
+        if (sel) changes.push(`<strong>${sel.colour}</strong>`);
       }
       const preview = document.getElementById('recolour-prompt-preview');
       if (!changes.length) {
-        preview.innerHTML = 'Pick colours above and the AI prompt will appear here.';
+        preview.innerHTML = 'Pick products above — the AI prompt will appear here.';
       } else {
-        preview.innerHTML = `Change to: ${changes.join(', ')} — same house, same composition, photorealistic.`;
+        preview.innerHTML = `Applying: ${changes.join(', ')} — same house, same composition, photorealistic.`;
       }
     }
 
     function buildRecolourPrompt() {
-      const materialNames = { brick: 'brick and cladding colour', roof: 'roof colour', render: 'render and feature cladding colour', trim: 'fascia, trim and window frame colour', garage: 'garage door colour' };
+      const materialLabels = {
+        brick:  'the brick and cladding',
+        roof:   'the roof iron',
+        render: 'the render and feature cladding',
+        trim:   'the fascia, gutters, trim and window frames',
+        garage: 'the garage door',
+      };
       const parts = [];
-      for (const [mat, colour] of Object.entries(recolourSelections)) {
-        if (colour) parts.push(`${materialNames[mat]} changed to ${colour}`);
+      for (const [mat, sel] of Object.entries(recolourSelections)) {
+        if (sel) parts.push(`change ${materialLabels[mat]} to ${sel.prompt}`);
       }
       const extras = document.getElementById('recolour-extras').value.trim();
-      const base = 'photorealistic house facade, same composition, same architecture, same landscaping, same camera angle';
-      const changes = parts.length ? parts.join(', ') : 'subtle enhancement';
-      return `${base}, ${changes}${extras ? ', ' + extras : ''}`;
+      const base = 'Photorealistic Australian house facade. Same architecture, same composition, same landscaping, same camera angle, same lighting.';
+      const changes = parts.length ? ' ' + parts.join('. ') + '.' : ' Subtle overall enhancement.';
+      return `${base}${changes}${extras ? ' Additional notes: ' + extras + '.' : ''} Keep all other materials unchanged.`;
     }
 
     async function recolourFacade() {
@@ -1388,9 +1392,9 @@
       if (!fileInput.files[0] && !enhanceSourceUrl) {
         showToast('Please upload a photo or render first.', 'error'); return;
       }
-      const hasChanges = Object.values(recolourSelections).some(v => v);
+      const hasChanges = Object.values(recolourSelections).some(v => v !== null);
       if (!hasChanges) {
-        showToast('Select at least one material colour to change.', 'error'); return;
+        showToast('Select at least one product to change.', 'error'); return;
       }
 
       const btn = document.getElementById('btn-recolour');
@@ -1460,6 +1464,7 @@
     /* ---- Init ---- */
     setState('empty');
     updateStyleHint();
+    initSwatches();
   </script>
 
 </body>

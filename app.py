@@ -787,7 +787,20 @@ def image_studio():
                 brand_config = json.load(f)
     except Exception:
         brand_config = {}
-    return render_template('image_generator.html', brand=brand_config, upload_limit_mb=UPLOAD_LIMIT_MB)
+    try:
+        swatches_path = os.path.join("resources", "swatches.json")
+        swatches = {}
+        if os.path.exists(swatches_path):
+            with open(swatches_path, 'r') as f:
+                swatches = json.load(f)
+    except Exception:
+        swatches = {}
+    return render_template(
+        'image_generator.html',
+        brand=brand_config,
+        upload_limit_mb=UPLOAD_LIMIT_MB,
+        swatches_json=json.dumps(swatches),
+    )
 
 
 @app.route('/sales-estimate')
