@@ -1216,10 +1216,10 @@
     function updateStyleHint() {
       const style = document.getElementById('enhance-style').value;
       const prompts = {
-        cavalier_brand: 'bright, modern Australian residential home, professional real estate photography',
-        social_media: 'aspirational lifestyle, vibrant, instagram-worthy, premium feel',
-        brochure: 'clean minimal, bright airy, white and neutral tones, professional',
-        custom: 'Enter your full description below…',
+        cavalier_brand: 'bright, modern Australian residential home, professional real estate photography, blue sky, well-maintained garden beds',
+        social_media: 'aspirational lifestyle, vibrant, instagram-worthy, premium feel, manicured lawn and garden',
+        brochure: 'clean minimal, bright airy, white and neutral tones, professional, tidy front garden',
+        custom: 'Describe the look you want (e.g. golden hour lighting, tidier front garden, blue sky)…',
       };
       document.getElementById('enhance-prompt').placeholder = prompts[style] || '';
     }
@@ -1251,10 +1251,19 @@
 
         // Step 2: Enhance via KIE.ai
         const originalPreview = document.getElementById('enhance-preview').src;
+        const userPrompt = document.getElementById('enhance-prompt').value.trim();
+
+        // Hard composition anchor — prepended to ALL prompts to prevent AI overshooting
+        // This anchors the house as dominant subject and keeps garden changes proportional
+        const compositionAnchor = 'The house facade must remain the dominant subject filling the frame. ' +
+          'Any garden or landscaping changes must be subtle and proportional — keep existing plants at the same scale, ' +
+          'never add large trees, oversized shrubs, or dense vegetation that blocks or reduces the visible facade. ' +
+          'Preserve the driveway, footpath, and open sky. Same camera angle and composition as the original. ';
+
         const payload = {
           image_url: imageUrl,
           style: document.getElementById('enhance-style').value,
-          prompt: document.getElementById('enhance-prompt').value.trim(),
+          prompt: compositionAnchor + userPrompt,
           strength: parseFloat(document.getElementById('enhance-strength').value),
           model: document.getElementById('enhance-model').value,
           aspect_ratio: document.getElementById('enhance-ratio').value,
