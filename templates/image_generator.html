@@ -1755,15 +1755,26 @@
 
       const originalUrl = currentImageUrl;
 
+      // Build material-specific instructions from what the user selected in the Plans tab
+      // This is the fix for "wrong material" — we tell the AI exactly what was chosen
+      const matLines = [];
+      if (plansSelections.roof)   matLines.push(`The roof MUST be ${plansSelections.roof.prompt} — do NOT use roof tiles.`);
+      else                        matLines.push('The roof MUST be Colorbond steel sheet metal — do NOT use terracotta or concrete roof tiles.');
+      if (plansSelections.brick)  matLines.push(`The walls MUST use ${plansSelections.brick.prompt} brick.`);
+      else                        matLines.push('The walls should have contemporary face brick or rendered panels.');
+      if (plansSelections.render) matLines.push(`Rendered/painted surfaces: ${plansSelections.render.prompt}.`);
+
+      const materialInstructions = matLines.join(' ');
+
       // Photorealism boost prompt — designed to turn a CG render into a real photo
       const refinePrompt = (
-        'The house facade must remain the dominant subject, same composition, same structure. '
-        + 'Transform this render into a photorealistic exterior photograph: '
-        + 'real brick texture, realistic roof tiles or Colorbond steel, '
-        + 'natural sunlight, soft shadows, blue sky with light clouds, '
+        'The house facade must remain the dominant subject, same composition, same camera angle, same structure. '
+        + 'Transform this render into a photorealistic exterior photograph. '
+        + materialInstructions + ' '
+        + 'Natural sunlight, soft shadows, blue sky with light clouds, '
         + 'manicured green lawn, established garden beds, clean concrete driveway. '
         + 'Professional real estate photography quality. '
-        + 'No text, no watermarks, no CG look, no plastic surfaces.'
+        + 'No text, no watermarks, no CG look, no plastic surfaces, no tiles unless explicitly stated.'
       );
 
       try {
