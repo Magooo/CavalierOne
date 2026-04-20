@@ -336,6 +336,16 @@
     .ft-apply { width: 100%; margin-top: 16px; padding: 11px; background: var(--brand-dark); color: #fff; border: none; border-radius: var(--radius); font-family: var(--font-body); font-size: 13px; cursor: pointer; transition: background 0.15s; }
     .ft-apply:hover { background: #7a0a0a; }
     .ft-apply:disabled { background: #ccc; cursor: not-allowed; }
+    /* ─── Elevation Eraser Canvas ───────────────────────────── */
+    .eraser-wrap { position: relative; width: 100%; background: #f0f0ed; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); display: none; }
+    .eraser-wrap.visible { display: block; }
+    .eraser-canvas { display: block; width: 100%; cursor: crosshair; touch-action: none; }
+    .eraser-toolbar { display: flex; align-items: center; gap: 10px; padding: 8px 10px; background: #fff; border-top: 1px solid var(--border); flex-wrap: wrap; }
+    .eraser-toolbar-label { font-size: 11px; color: var(--text-muted); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+    .eraser-size { width: 80px; accent-color: var(--brand-dark); }
+    .eraser-btn { background: none; border: 1px solid var(--border); border-radius: var(--radius); padding: 4px 10px; font-size: 11px; font-family: var(--font-body); color: var(--text-dark); cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+    .eraser-btn:hover { border-color: var(--brand-dark); color: var(--brand-dark); }
+    .eraser-hint { font-size: 10px; color: var(--text-muted); padding: 5px 10px 7px; background:#fff; border-top: 1px solid var(--border); }
   </style>
 </head>
 <body>
@@ -719,8 +729,24 @@
           <!-- Elevation Upload -->
           <div class="form-section">
             <label class="form-section__label">Elevation Drawing</label>
+
+            <!-- Canvas eraser editor - shows after upload -->
+            <div class="eraser-wrap" id="eraser-wrap">
+              <canvas id="eraser-canvas" class="eraser-canvas"></canvas>
+              <div class="eraser-toolbar">
+                <span class="eraser-toolbar-label">🧹 Eraser</span>
+                <input type="range" class="eraser-size" id="eraser-size" min="8" max="80" value="24" title="Eraser size">
+                <span id="eraser-size-label" style="font-size:11px;color:var(--text-muted);min-width:28px">24px</span>
+                <button class="eraser-btn" onclick="eraserUndo()" title="Undo last stroke">↩ Undo</button>
+                <button class="eraser-btn" onclick="eraserReset()" title="Restore original">↺ Reset</button>
+              </div>
+              <div class="eraser-hint">Paint white over dimension lines and annotation text before generating. Hold drag to erase.</div>
+            </div>
+
+            <!-- Fallback static preview (used as Before image) -->
+            <img id="plans-preview" class="upload-preview" src="" alt="Elevation preview" style="display:none">
+
             <div class="zone-picker-wrap" id="plans-preview-wrap">
-              <img id="plans-preview" class="upload-preview" src="" alt="Elevation preview">
               <div class="zone-picker-hint" id="plans-hint" style="display:block;">
                 <span>GPT-4 Vision will read this drawing and extract the architecture automatically.</span>
               </div>
@@ -1163,20 +1189,121 @@
       plansSelections[material] = colour ? { colour, prompt } : null;
     }
 
+    /* =============================================
+       ELEVATION ERASER CANVAS
+    ============================================= */
+    let eraserCtx        = null;
+    let eraserDrawing    = false;
+    let eraserSnapshots  = [];        // undo stack (ImageData)
+    let eraserOriginalSrc = null;     // data-URL of the raw uploaded file
+
+    function initEraserCanvas(src) {
+      const wrap   = document.getElementById('eraser-wrap');
+      const canvas = document.getElementById('eraser-canvas');
+      const img    = new Image();
+      img.onload = () => {
+        // Size canvas to image native resolution
+        canvas.width  = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        eraserCtx = canvas.getContext('2d');
+        eraserCtx.drawImage(img, 0, 0);
+        eraserSnapshots = [];          // clear undo stack
+        wrap.classList.add('visible');
+      };
+      img.src = src;
+    }
+
+    function eraserGetPos(e) {
+      const canvas = document.getElementById('eraser-canvas');
+      const rect   = canvas.getBoundingClientRect();
+      const scaleX = canvas.width  / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const src    = e.touches ? e.touches[0] : e;
+      return {
+        x: (src.clientX - rect.left)  * scaleX,
+        y: (src.clientY - rect.top)   * scaleY,
+      };
+    }
+
+    function eraserSaveSnapshot() {
+      const canvas = document.getElementById('eraser-canvas');
+      eraserSnapshots.push(eraserCtx.getImageData(0, 0, canvas.width, canvas.height));
+      if (eraserSnapshots.length > 30) eraserSnapshots.shift(); // keep last 30
+    }
+
+    function eraserUndo() {
+      if (!eraserSnapshots.length) return;
+      const canvas = document.getElementById('eraser-canvas');
+      eraserCtx.putImageData(eraserSnapshots.pop(), 0, 0);
+    }
+
+    function eraserReset() {
+      if (!eraserOriginalSrc || !eraserCtx) return;
+      const canvas = document.getElementById('eraser-canvas');
+      const img = new Image();
+      img.onload = () => {
+        eraserCtx.clearRect(0, 0, canvas.width, canvas.height);
+        eraserCtx.drawImage(img, 0, 0);
+        eraserSnapshots = [];
+      };
+      img.src = eraserOriginalSrc;
+    }
+
+    // Wire eraser events once DOM is ready
+    document.addEventListener('DOMContentLoaded', () => {
+      const canvas = document.getElementById('eraser-canvas');
+      const sizeSlider = document.getElementById('eraser-size');
+      sizeSlider.addEventListener('input', () => {
+        document.getElementById('eraser-size-label').textContent = sizeSlider.value + 'px';
+      });
+
+      function startErase(e) {
+        if (!eraserCtx) return;
+        e.preventDefault();
+        eraserSaveSnapshot();
+        eraserDrawing = true;
+        const {x, y} = eraserGetPos(e);
+        eraserCtx.beginPath();
+        eraserCtx.moveTo(x, y);
+      }
+      function doErase(e) {
+        if (!eraserDrawing || !eraserCtx) return;
+        e.preventDefault();
+        const size = parseInt(document.getElementById('eraser-size').value);
+        const {x, y} = eraserGetPos(e);
+        eraserCtx.globalCompositeOperation = 'source-over';
+        eraserCtx.fillStyle = '#ffffff';
+        eraserCtx.beginPath();
+        eraserCtx.arc(x, y, size / 2, 0, Math.PI * 2);
+        eraserCtx.fill();
+      }
+      function stopErase() { eraserDrawing = false; }
+
+      canvas.addEventListener('mousedown',  startErase);
+      canvas.addEventListener('mousemove',  doErase);
+      canvas.addEventListener('mouseup',    stopErase);
+      canvas.addEventListener('mouseleave', stopErase);
+      canvas.addEventListener('touchstart', startErase, { passive: false });
+      canvas.addEventListener('touchmove',  doErase,    { passive: false });
+      canvas.addEventListener('touchend',   stopErase);
+    });
+
     function handlePlansFile(input) {
       const file = input.files[0];
       if (!file) return;
       if (!validateUploadFile(file)) { input.value = ''; return; }
       const reader = new FileReader();
       reader.onload = e => {
-        const img = document.getElementById('plans-preview');
-        img.src = e.target.result;
-        img.classList.add('visible');
+        eraserOriginalSrc = e.target.result;
+        // Also set the hidden preview img (used as the Before image in compare)
+        const prevImg = document.getElementById('plans-preview');
+        prevImg.src = e.target.result;
+        // Load onto eraser canvas
+        initEraserCanvas(e.target.result);
         document.getElementById('plans-dropzone').style.display = 'none';
         document.getElementById('plans-clear').style.display = 'block';
-        document.getElementById('plans-preview-wrap').classList.add('visible');
         document.getElementById('plans-hint').innerHTML =
-          '<span>✅ Drawing loaded. Choose materials below, then hit Generate.</span>';
+          '<span>✅ Drawing loaded. Use the eraser to remove annotation text, then hit Generate.</span>';
       };
       reader.readAsDataURL(file);
     }
@@ -1184,17 +1311,20 @@
     function clearPlansUpload() {
       document.getElementById('plans-file').value = '';
       const img = document.getElementById('plans-preview');
-      img.src = ''; img.classList.remove('visible');
+      img.src = '';
       document.getElementById('plans-dropzone').style.display = '';
       document.getElementById('plans-clear').style.display = 'none';
-      document.getElementById('plans-preview-wrap').classList.remove('visible');
+      document.getElementById('eraser-wrap').classList.remove('visible');
+      eraserOriginalSrc = null;
+      eraserSnapshots   = [];
+      eraserCtx         = null;
       document.getElementById('plans-hint').innerHTML =
         '<span>GPT-4 Vision will read this drawing and extract the architecture automatically.</span>';
     }
 
     async function generateFromPlans() {
       const fileInput = document.getElementById('plans-file');
-      if (!fileInput.files[0]) {
+      if (!fileInput.files[0] && !eraserCtx) {
         showToast('Please upload an elevation drawing first.', 'error'); return;
       }
 
@@ -1208,18 +1338,32 @@
       try {
         // Build material prompt from swatch selections
         const matParts = [];
-        if (plansSelections.brick) matParts.push(`brick: ${plansSelections.brick.prompt}`);
-        if (plansSelections.roof)  matParts.push(`roof: ${plansSelections.roof.prompt}`);
+        if (plansSelections.brick)  matParts.push(`brick: ${plansSelections.brick.prompt}`);
+        if (plansSelections.roof)   matParts.push(`roof: ${plansSelections.roof.prompt}`);
         if (plansSelections.render) matParts.push(`render: ${plansSelections.render.prompt}`);
         const materialPrompt = matParts.join('; ');
 
+        // Export the (possibly erased) canvas as a Blob, fall back to raw file
+        const getImageBlob = () => new Promise(resolve => {
+          const canvas = document.getElementById('eraser-canvas');
+          if (eraserCtx && canvas.width > 0) {
+            canvas.toBlob(resolve, 'image/png');
+          } else {
+            resolve(fileInput.files[0]);
+          }
+        });
+
+        const imageBlob = await getImageBlob();
+        const ext = imageBlob.type === 'image/png' ? 'png' : 'jpg';
+
         const formData = new FormData();
-        formData.append('elevation_image', fileInput.files[0]);
+        formData.append('elevation_image', imageBlob, `elevation_cleaned.${ext}`);
         formData.append('style', document.getElementById('plans-style').value);
         formData.append('notes', document.getElementById('plans-notes').value.trim());
         formData.append('material_prompt', materialPrompt);
 
         const elevationPreviewSrc = document.getElementById('plans-preview').src;
+
 
         const { resp, data } = await safeJsonFetch('/api/generate-from-plans', { method: 'POST', body: formData });
         if (!resp.ok || data.error) throw new Error(data.error || 'Generation failed');
