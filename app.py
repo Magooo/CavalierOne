@@ -28,14 +28,16 @@ app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 app.config['SESSION_COOKIE_SECURE'] = False  # Vercel handles HTTPS at the edge
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 # Vercel serverless has a hard 4.5 MB request body limit.
-# Cap Flask at 4 MB so we can return a clean JSON error before Vercel chokes.
-app.config['MAX_CONTENT_LENGTH'] = 4 * 1024 * 1024  # 4 MB
+# Locally (no VERCEL env var) we allow up to 50 MB — full-quality renders are fine.
+IS_VERCEL = bool(os.environ.get('VERCEL'))
+UPLOAD_LIMIT_MB = 4 if IS_VERCEL else 50
+app.config['MAX_CONTENT_LENGTH'] = UPLOAD_LIMIT_MB * 1024 * 1024
 
 @app.errorhandler(413)
 def request_entity_too_large(e):
     return jsonify({
-        'error': 'File too large. Maximum upload size is 4 MB. '
-                 'Please resize your image before uploading.'
+        'error': f'File too large. Maximum upload size is {UPLOAD_LIMIT_MB} MB on this server. '
+                 f'{"Please resize your image (e.g. save as JPEG at 80% quality) before uploading." if IS_VERCEL else "Try a different format or reduce resolution."}'
     }), 413
 
 
@@ -773,7 +775,7 @@ def image_studio():
                 brand_config = json.load(f)
     except Exception:
         brand_config = {}
-    return render_template('image_generator.html', brand=brand_config)
+    return render_template('image_generator.html', brand=brand_config, upload_limit_mb=UPLOAD_LIMIT_MB)
 
 
 @app.route('/sales-estimate')

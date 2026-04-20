@@ -837,20 +837,22 @@
 
     /**
      * Validate a file before upload. Shows a toast and returns false if invalid.
-     * Vercel hard limit is 4.5 MB; we warn at 4 MB.
+     * Limit comes from server config: 50 MB locally, 4 MB on Vercel.
      */
     function validateUploadFile(file) {
       if (!file) return false;
-      const MAX_MB = 4;
+      const MAX_MB = {{ upload_limit_mb }};
       if (file.size > MAX_MB * 1024 * 1024) {
         showToast(
-          `Image is ${(file.size/1024/1024).toFixed(1)} MB — max is ${MAX_MB} MB. ` +
-          'Please resize it first (e.g. save as JPEG at 80% quality).', 'error'
+          `Image is ${(file.size/1024/1024).toFixed(1)} MB \u2014 max is ${MAX_MB} MB on this server. ` +
+          (MAX_MB <= 4 ? 'Please resize it first (e.g. save as JPEG at 80% quality).' : 'Try a smaller file or different format.'),
+          'error'
         );
         return false;
       }
       return true;
     }
+
 
     /* =============================================
        MODE SWITCHING
