@@ -859,12 +859,25 @@ Output ONLY a single vivid descriptive paragraph (3–5 sentences) describing th
 
         if replicate_key:
             # PRIMARY: Flux Canny ControlNet — preserves elevation structure exactly
+            # Upload to Supabase first so Replicate can fetch it via public URL
+            # (Vercel serverless can't guarantee local file paths after request handling)
             try:
+                with open(file_path, 'rb') as f_read:
+                    file_bytes = f_read.read()
+                unique_name = f"studio/elev_{uuid.uuid4().hex}.{ext}"
+                if supabase:
+                    supabase.storage.from_("cavalierone_uploads").upload(
+                        unique_name, file_bytes, {"content-type": f"image/{ext}"}
+                    )
+                    control_image_url = supabase.storage.from_("cavalierone_uploads").get_public_url(unique_name)
+                else:
+                    control_image_url = request.host_url.rstrip('/') + f'/uploads/{safe_name}'
+
                 engine_used = "replicate_controlnet"
                 from utils.replicate_client import generate_image_controlnet
                 image_url = generate_image_controlnet(
                     prompt=gen_prompt,
-                    image_path=file_path,
+                    image_path=control_image_url,  # Pass public URL — works on Vercel
                     api_token=replicate_key
                 )
             except Exception as rep_err:
@@ -879,6 +892,7 @@ Output ONLY a single vivid descriptive paragraph (3–5 sentences) describing th
                     negative_prompt=negative,
                 )
                 image_url = urls[0] if urls else None
+
         else:
             # FALLBACK: KIE text-to-image from vision description
             # NOTE: We do NOT use img2img here — an elevation drawing on white paper
