@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Image Studio | Cavalier One</title>
+  <meta name="description" content="Generate on-brand Cavalier Homes marketing images using AI — listing heroes, interiors, social content, and brochure assets.">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
+
+  <!-- Google Fonts: Playfair Display + Inter (Century Gothic substitute) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    /* =============================================
+       DESIGN TOKENS — from DESIGN.md / brand_config
+    ============================================= */
+    :root {
+      --accent:       #AD4B43;
+      --accent-dark:  #8e3c35;
+      --accent-light: rgba(173, 75, 67, 0.08);
+      --black:        #000000;
+      --white:        #FFFFFF;
+      --text:         #212121;
+      --text-muted:   #54595F;
+      --mid:          #AEA299;
+      --bg:           #EEEDEC;
+      --bg-muted:     #F5F3F2;
+      --card:         #FFFFFF;
+      --footer:       #222222;
+      --border:       #E0DEDD;
+      --shadow-sm:    0 2px 8px rgba(0,0,0,0.06);
+      --shadow-md:    0 4px 20px rgba(0,0,0,0.10);
+      --shadow-lg:    0 12px 48px rgba(0,0,0,0.14);
+      --radius-sm:    3px;
+      --radius-md:    6px;
+      --radius-lg:    12px;
+      --font-display: 'Playfair Display', Georgia, serif;
+      --font-body:    'Inter', 'Century Gothic', 'Avant Garde Gothic', sans-serif;
+      --transition:   all 0.2s ease;
+    }
+
+    /* =============================================
+       RESET & BASE
+    ============================================= */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* =============================================
+       TOP NAV BAR
+    ============================================= */
+    .topbar {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .topbar__left {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .topbar__logo {
+      max-height: 36px;
+    }
+
+    .topbar__title {
+      font-family: var(--font-display);
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--text-muted);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      border-left: 1px solid var(--border);
+      padding-left: 20px;
+    }
+
+    .topbar__right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      font-size: 13px;
+    }
+
+    .topbar__link {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-weight: 500;
+      transition: var(--transition);
+    }
+
+    .topbar__link:hover { color: var(--accent); }
+
+    .topbar__back {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 13px;
+      letter-spacing: 0.5px;
+      transition: var(--transition);
+    }
+
+    .topbar__back:hover { color: var(--accent-dark); }
+
+    /* =============================================
+       PAGE HEADER
+    ============================================= */
+    .page-header {
+      background: var(--white);
+      padding: 48px 32px 40px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .page-header__inner {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .page-header__eyebrow {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+
+    .page-header__title {
+      font-family: var(--font-display);
+      font-size: 42px;
+      font-weight: 400;
+      color: var(--black);
+      line-height: 1.15;
+      margin-bottom: 14px;
+    }
+
+    .page-header__desc {
+      font-size: 16px;
+      color: var(--text-muted);
+      max-width: 600px;
+      line-height: 1.6;
+    }
+
+    .page-header__models {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+
+    .model-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      background: var(--bg-muted);
+      letter-spacing: 0.3px;
+    }
+
+    .model-chip--active {
+      background: var(--accent-light);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* =============================================
+       MAIN LAYOUT
+    ============================================= */
+    .studio {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 32px 80px;
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 32px;
+      align-items: start;
+    }
+
+    /* =============================================
+       LEFT PANEL — Controls
+    ============================================= */
+    .controls-panel {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+      position: sticky;
+      top: 80px;
+    }
+
+    .controls-panel__header {
+      padding: 24px 28px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .controls-panel__title {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 400;
+      color: var(--black);
+    }
+
+    .controls-panel__subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .controls-panel__body {
+      padding: 24px 28px;
+    }
+
+    /* Image Type Selector */
+    .type-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+
+    .type-card {
+      border: 2px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 14px 12px;
+      cursor: pointer;
+      transition: var(--transition);
+      text-align: center;
+      background: var(--bg-muted);
+    }
+
+    .type-card:hover {
+      border-color: var(--accent);
+      background: var(--accent-light);
+    }
+
+    .type-card.selected {
+      border-color: var(--accent);
+      background: var(--accent-light);
+    }
+
+    .type-card__icon {
+      font-size: 22px;
+      margin-bottom: 6px;
+    }
+
+    .type-card__label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .type-card.selected .type-card__label {
+      color: var(--accent);
+    }
+
+    /* Form Fields */
+    .form-section {
+      margin-bottom: 24px;
+    }
+
+    .form-section__label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-body);
+      font-size: 14px;
+      color: var(--text);
+      background: var(--white);
+      transition: var(--transition);
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-light);
+    }
+
+    .form-select {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-body);
+      font-size: 14px;
+      color: var(--text);
+      background: var(--white);
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%2354595F' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      transition: var(--transition);
+    }
+
+    .form-select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-light);
+    }
+
+    /* Dynamic fields show/hide */
+    .field-group { display: none; }
+    .field-group.visible { display: block; }
+
+    /* Dimensions row */
+    .dims-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    /* Advanced toggle */
+    .advanced-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 8px 0;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      transition: var(--transition);
+    }
+
+    .advanced-toggle:hover { color: var(--accent); }
+
+    .advanced-toggle__chevron {
+      transition: transform 0.2s;
+      margin-left: auto;
+    }
+
+    .advanced-toggle.open .advanced-toggle__chevron {
+      transform: rotate(180deg);
+    }
+
+    .advanced-section {
+      display: none;
+      padding-top: 16px;
+    }
+
+    .advanced-section.open { display: block; }
+
+    hr.divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 20px 0;
+    }
+
+    /* Generate Button */
+    .btn-generate {
+      width: 100%;
+      padding: 16px;
+      background: var(--accent);
+      color: var(--white);
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-body);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    .btn-generate:hover:not(:disabled) {
+      background: var(--accent-dark);
+      box-shadow: 0 4px 16px rgba(173, 75, 67, 0.35);
+    }
+
+    .btn-generate:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btn-generate .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+
+    .btn-generate.loading .spinner { display: block; }
+    .btn-generate.loading .btn-text { opacity: 0.7; }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* =============================================
+       RIGHT PANEL — Preview
+    ============================================= */
+    .preview-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* Canvas / Result */
+    .canvas {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+      min-height: 500px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .canvas__toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .canvas__toolbar-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+    }
+
+    .canvas__actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-action {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: var(--transition);
+      border: 1.5px solid var(--border);
+      background: var(--white);
+      color: var(--text-muted);
+    }
+
+    .btn-action:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .btn-action--primary {
+      background: var(--accent);
+      color: var(--white);
+      border-color: var(--accent);
+    }
+
+    .btn-action--primary:hover {
+      background: var(--accent-dark);
+      border-color: var(--accent-dark);
+      color: var(--white);
+    }
+
+    .btn-action:disabled, .btn-action.disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    /* Image Preview Area */
+    .canvas__body {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 400px;
+      padding: 24px;
+      position: relative;
+    }
+
+    /* Empty state */
+    .canvas__empty {
+      text-align: center;
+      max-width: 360px;
+    }
+
+    .canvas__empty-icon {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: var(--accent-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      font-size: 32px;
+    }
+
+    .canvas__empty-title {
+      font-family: var(--font-display);
+      font-size: 22px;
+      color: var(--black);
+      margin-bottom: 10px;
+    }
+
+    .canvas__empty-desc {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* Loading state */
+    .canvas__loading {
+      display: none;
+      text-align: center;
+    }
+
+    .canvas__loading.active { display: block; }
+
+    .canvas__loading-wave {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .canvas__loading-wave span {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: wave 1.2s ease-in-out infinite;
+    }
+
+    .canvas__loading-wave span:nth-child(2) { animation-delay: 0.15s; }
+    .canvas__loading-wave span:nth-child(3) { animation-delay: 0.30s; }
+    .canvas__loading-wave span:nth-child(4) { animation-delay: 0.45s; }
+
+    @keyframes wave {
+      0%, 80%, 100% { transform: scale(0.7); opacity: 0.5; }
+      40% { transform: scale(1.2); opacity: 1; }
+    }
+
+    .canvas__loading-title {
+      font-family: var(--font-display);
+      font-size: 20px;
+      color: var(--black);
+      margin-bottom: 8px;
+    }
+
+    .canvas__loading-sub {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .canvas__loading-bar {
+      width: 200px;
+      height: 3px;
+      background: var(--border);
+      border-radius: 2px;
+      margin: 20px auto 0;
+      overflow: hidden;
+    }
+
+    .canvas__loading-bar-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 2px;
+      animation: loadbar 2s ease-in-out infinite;
+    }
+
+    @keyframes loadbar {
+      0% { width: 0%; transform: translateX(0); }
+      50% { width: 60%; }
+      100% { width: 100%; transform: translateX(100%); }
+    }
+
+    /* Generated image */
+    .canvas__result {
+      display: none;
+      width: 100%;
+    }
+
+    .canvas__result.active { display: block; }
+
+    .canvas__result img {
+      width: 100%;
+      height: auto;
+      border-radius: var(--radius-md);
+      display: block;
+      box-shadow: var(--shadow-md);
+    }
+
+    /* Error state */
+    .canvas__error {
+      display: none;
+      background: #fff5f5;
+      border: 1px solid #feb2b2;
+      border-radius: var(--radius-md);
+      padding: 20px 24px;
+      text-align: left;
+      width: 100%;
+    }
+
+    .canvas__error.active { display: block; }
+
+    .canvas__error-title {
+      font-weight: 600;
+      color: #c53030;
+      margin-bottom: 8px;
+    }
+
+    .canvas__error-msg {
+      font-size: 13px;
+      color: #742a2a;
+      font-family: monospace;
+      word-break: break-all;
+    }
+
+    /* Prompt card */
+    .prompt-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+    }
+
+    .prompt-card__header {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .prompt-card__title {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .prompt-card__copy {
+      font-size: 12px;
+      color: var(--accent);
+      cursor: pointer;
+      font-weight: 600;
+      border: none;
+      background: none;
+      padding: 0;
+    }
+
+    .prompt-card__body {
+      padding: 18px 24px;
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.65;
+      min-height: 60px;
+      font-style: italic;
+    }
+
+    .prompt-placeholder {
+      color: var(--mid);
+      font-style: normal;
+      font-size: 13px;
+    }
+
+    /* History strip */
+    .history-panel {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+    }
+
+    .history-panel__header {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .history-panel__title {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .history-strip {
+      display: flex;
+      gap: 12px;
+      padding: 16px 24px;
+      overflow-x: auto;
+      min-height: 96px;
+    }
+
+    .history-strip::-webkit-scrollbar { height: 4px; }
+    .history-strip::-webkit-scrollbar-thumb { background: var(--mid); border-radius: 2px; }
+
+    .history-thumb {
+      flex-shrink: 0;
+      width: 72px;
+      height: 72px;
+      border-radius: var(--radius-md);
+      object-fit: cover;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: var(--transition);
+    }
+
+    .history-thumb:hover {
+      border-color: var(--accent);
+      transform: scale(1.04);
+    }
+
+    .history-empty {
+      color: var(--mid);
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      padding: 0 0 8px;
+    }
+
+    /* =============================================
+       STATUS TOAST
+    ============================================= */
+    .toast {
+      position: fixed;
+      bottom: 32px;
+      right: 32px;
+      background: var(--footer);
+      color: var(--white);
+      padding: 14px 20px;
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      font-weight: 500;
+      box-shadow: var(--shadow-lg);
+      z-index: 9999;
+      transform: translateY(80px);
+      opacity: 0;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      max-width: 360px;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .toast--success { border-left: 4px solid #48bb78; }
+    .toast--error   { border-left: 4px solid #fc8181; }
+
+    /* =============================================
+       RESPONSIVE
+    ============================================= */
+    @media (max-width: 900px) {
+      .studio {
+        grid-template-columns: 1fr;
+        padding: 24px 16px 60px;
+      }
+
+      .controls-panel {
+        position: static;
+      }
+
+      .page-header { padding: 32px 16px 28px; }
+
+      .topbar { padding: 12px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==================== TOP BAR ==================== -->
+  <nav class="topbar">
+    <div class="topbar__left">
+      <img src="/{{ brand.assets.logo_primary }}" alt="Cavalier Homes" class="topbar__logo">
+      <span class="topbar__title">AI Image Studio</span>
+    </div>
+    <div class="topbar__right">
+      <a href="/" class="topbar__back">
+        ← Back to Dashboard
+      </a>
+      {% if session.get('role') == 'admin' %}
+      <a href="/admin" class="topbar__link">Admin</a>
+      {% endif %}
+      <a href="/logout" class="topbar__link">Logout</a>
+    </div>
+  </nav>
+
+  <!-- ==================== PAGE HEADER ==================== -->
+  <header class="page-header">
+    <div class="page-header__inner">
+      <p class="page-header__eyebrow">Cavalier One — Marketing</p>
+      <h1 class="page-header__title">AI Image Studio</h1>
+      <p class="page-header__desc">
+        Generate on-brand marketing images using AI. Every image is built using
+        Cavalier's brand guidelines — fresh, bright, modern Australian residential aesthetic.
+      </p>
+      <div class="page-header__models">
+        <span class="model-chip model-chip--active">● Flux-2 Flex</span>
+        <span class="model-chip">Flux-2 Pro</span>
+        <span class="model-chip">Ideogram V3</span>
+        <span class="model-chip">GPT-Image-1.5</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==================== STUDIO LAYOUT ==================== -->
+  <main class="studio">
+
+    <!-- ===== LEFT: CONTROLS ===== -->
+    <aside class="controls-panel">
+      <div class="controls-panel__header">
+        <h2 class="controls-panel__title">Image Settings</h2>
+        <p class="controls-panel__subtitle">Configure your asset, then generate.</p>
+      </div>
+
+      <div class="controls-panel__body">
+
+        <!-- Image Type Selector -->
+        <div class="form-section">
+          <label class="form-section__label">Image Type</label>
+          <div class="type-grid">
+            <div class="type-card selected" data-type="listing_hero" onclick="selectType(this)">
+              <div class="type-card__icon">🏠</div>
+              <div class="type-card__label">Listing Hero</div>
+            </div>
+            <div class="type-card" data-type="interior" onclick="selectType(this)">
+              <div class="type-card__icon">🛋️</div>
+              <div class="type-card__label">Interior</div>
+            </div>
+            <div class="type-card" data-type="social_feed" onclick="selectType(this)">
+              <div class="type-card__icon">📱</div>
+              <div class="type-card__label">Social Feed</div>
+            </div>
+            <div class="type-card" data-type="brochure" onclick="selectType(this)">
+              <div class="type-card__icon">📄</div>
+              <div class="type-card__label">Brochure</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- === LISTING HERO fields === -->
+        <div id="fields-listing_hero" class="field-group visible">
+          <div class="form-section">
+            <label class="form-section__label" for="suburb">Suburb / Location</label>
+            <input type="text" id="suburb" class="form-input" placeholder="e.g. Shepparton, Wodonga">
+          </div>
+          <div class="form-section">
+            <label class="form-section__label" for="house_type">Home Type</label>
+            <select id="house_type" class="form-select">
+              <option value="single storey">Single Storey</option>
+              <option value="double storey">Double Storey</option>
+              <option value="acreage">Acreage / Rural</option>
+              <option value="display home">Display Home</option>
+              <option value="hamptons">Hamptons Style</option>
+              <option value="modern coastal">Modern Coastal</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- === INTERIOR fields === -->
+        <div id="fields-interior" class="field-group">
+          <div class="form-section">
+            <label class="form-section__label" for="room">Room / Space</label>
+            <select id="room" class="form-select">
+              <option value="kitchen">Kitchen</option>
+              <option value="living room">Living Room</option>
+              <option value="master bedroom">Master Bedroom</option>
+              <option value="ensuite bathroom">Ensuite Bathroom</option>
+              <option value="alfresco entertaining area">Alfresco / Outdoor</option>
+              <option value="home office study">Home Office / Study</option>
+              <option value="laundry">Laundry</option>
+              <option value="kids bedroom">Kids Bedroom</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- === SOCIAL FEED fields === -->
+        <div id="fields-social_feed" class="field-group">
+          <div class="form-section">
+            <label class="form-section__label" for="caption_context">Post Context</label>
+            <input type="text" id="caption_context" class="form-input" placeholder="e.g. New display home opening this Saturday">
+          </div>
+          <div class="form-section">
+            <label class="form-section__label" for="format">Format / Aspect Ratio</label>
+            <select id="format" class="form-select">
+              <option value="square">Square (1:1) — Facebook / Instagram Feed</option>
+              <option value="portrait">Portrait (4:5) — Instagram Recommended</option>
+              <option value="landscape">Landscape (16:9) — Facebook Cover / Twitter</option>
+              <option value="story">Story (9:16) — Instagram / Facebook Story</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- === BROCHURE fields === -->
+        <div id="fields-brochure" class="field-group">
+          <div class="form-section">
+            <label class="form-section__label" for="section_title">Document Section</label>
+            <select id="section_title" class="form-select">
+              <option value="Our Story">Our Story</option>
+              <option value="Inclusions">Inclusions</option>
+              <option value="Build Process">Build Process</option>
+              <option value="Display Homes">Display Homes</option>
+              <option value="Site Works">Site Works</option>
+              <option value="House & Land">House &amp; Land</option>
+              <option value="Contact Us">Contact Us</option>
+            </select>
+          </div>
+        </div>
+
+        <hr class="divider">
+
+        <!-- Extra prompt detail (all types) -->
+        <div class="form-section">
+          <label class="form-section__label" for="extras">Extra Prompt Detail (Optional)</label>
+          <input type="text" id="extras" class="form-input" placeholder="e.g. sunset lighting, green hedges">
+        </div>
+
+        <!-- Advanced Toggle -->
+        <button class="advanced-toggle" onclick="toggleAdvanced(this)" id="adv-toggle" type="button">
+          <span>Advanced Options</span>
+          <span class="advanced-toggle__chevron">▾</span>
+        </button>
+
+        <div class="advanced-section" id="advanced-section">
+          <div class="form-section">
+            <label class="form-section__label" for="model">AI Model</label>
+            <select id="model" class="form-select">
+              <option value="flux-2-flex-text-to-image">Flux-2 Flex (Fast — Default)</option>
+              <option value="flux-2-pro-text-to-image">Flux-2 Pro (Highest Quality)</option>
+              <option value="ideogram-v3-text-to-image">Ideogram V3 (Great for text)</option>
+              <option value="gpt-image-1-5-text-to-image">GPT-Image-1.5 (OpenAI)</option>
+              <option value="google-nano-banana-2">Google Nano Banana 2 (Fastest)</option>
+            </select>
+          </div>
+
+          <div class="form-section">
+            <label class="form-section__label">Output Size</label>
+            <div class="dims-row">
+              <div>
+                <label class="form-section__label" for="width" style="font-size:10px">Width (px)</label>
+                <input type="number" id="width" class="form-input" value="1024" min="256" max="2048" step="64">
+              </div>
+              <div>
+                <label class="form-section__label" for="height" style="font-size:10px">Height (px)</label>
+                <input type="number" id="height" class="form-input" value="768" min="256" max="2048" step="64">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <label class="form-section__label" for="prompt_override">Custom Prompt Override</label>
+            <textarea id="prompt_override" class="form-input" rows="3"
+              placeholder="Write your own prompt — bypasses the template builder entirely."
+              style="resize: vertical; min-height: 80px;"></textarea>
+          </div>
+        </div>
+
+        <hr class="divider">
+
+        <!-- Generate Button -->
+        <button class="btn-generate" id="btn-generate" onclick="generateImage()" type="button">
+          <div class="spinner"></div>
+          <span class="btn-text">Generate Image</span>
+        </button>
+
+      </div>
+    </aside>
+
+    <!-- ===== RIGHT: PREVIEW ===== -->
+    <section class="preview-panel">
+
+      <!-- Main Canvas -->
+      <div class="canvas">
+        <div class="canvas__toolbar">
+          <span class="canvas__toolbar-title">Preview</span>
+          <div class="canvas__actions">
+            <button class="btn-action disabled" id="btn-download" onclick="downloadImage()" type="button">
+              ↓ Download
+            </button>
+            <button class="btn-action btn-action--primary disabled" id="btn-open" onclick="openImageFull()" type="button">
+              ↗ Open Full
+            </button>
+          </div>
+        </div>
+
+        <div class="canvas__body">
+          <!-- Empty State -->
+          <div class="canvas__empty" id="state-empty">
+            <div class="canvas__empty-icon">✨</div>
+            <h3 class="canvas__empty-title">Ready to generate</h3>
+            <p class="canvas__empty-desc">
+              Select an image type, fill in the details on the left, then click
+              <strong>Generate Image</strong>. The AI will build a Cavalier-branded
+              asset in 15–30 seconds.
+            </p>
+          </div>
+
+          <!-- Loading State -->
+          <div class="canvas__loading" id="state-loading">
+            <div class="canvas__loading-wave">
+              <span></span><span></span><span></span><span></span>
+            </div>
+            <h3 class="canvas__loading-title">Generating your image…</h3>
+            <p class="canvas__loading-sub" id="loading-sub">Building your Cavalier-branded asset with AI</p>
+            <div class="canvas__loading-bar">
+              <div class="canvas__loading-bar-fill"></div>
+            </div>
+          </div>
+
+          <!-- Result State -->
+          <div class="canvas__result" id="state-result">
+            <img id="result-img" src="" alt="Generated Cavalier Homes marketing image">
+          </div>
+
+          <!-- Error State -->
+          <div class="canvas__error" id="state-error">
+            <div class="canvas__error-title">Generation Failed</div>
+            <div class="canvas__error-msg" id="error-msg"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Prompt Inspector -->
+      <div class="prompt-card">
+        <div class="prompt-card__header">
+          <span class="prompt-card__title">Prompt Used</span>
+          <button class="prompt-card__copy" id="btn-copy-prompt" onclick="copyPrompt()" type="button">Copy</button>
+        </div>
+        <div class="prompt-card__body" id="prompt-display">
+          <span class="prompt-placeholder">The AI prompt will appear here after generation.</span>
+        </div>
+      </div>
+
+      <!-- History Strip -->
+      <div class="history-panel">
+        <div class="history-panel__header">
+          <span class="history-panel__title">This Session</span>
+        </div>
+        <div class="history-strip" id="history-strip">
+          <span class="history-empty">Your generated images will appear here.</span>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <!-- ==================== JAVASCRIPT ==================== -->
+  <script>
+    /* ---- State ---- */
+    let currentType = 'listing_hero';
+    let currentImageUrl = null;
+    let generatedPrompt = null;
+    let sessionHistory = [];
+
+    /* ---- Type Selector ---- */
+    function selectType(card) {
+      // Update cards
+      document.querySelectorAll('.type-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      currentType = card.dataset.type;
+
+      // Show/hide dynamic fields
+      document.querySelectorAll('.field-group').forEach(f => f.classList.remove('visible'));
+      const fields = document.getElementById('fields-' + currentType);
+      if (fields) fields.classList.add('visible');
+
+      // Auto-set sensible dimensions
+      const dimPresets = {
+        listing_hero: [1024, 768],
+        interior:     [1024, 768],
+        social_feed:  [1080, 1080],
+        brochure:     [1200, 480],
+      };
+      const [w, h] = dimPresets[currentType] || [1024, 768];
+      document.getElementById('width').value = w;
+      document.getElementById('height').value = h;
+    }
+
+    /* ---- Advanced Toggle ---- */
+    function toggleAdvanced(btn) {
+      btn.classList.toggle('open');
+      const section = document.getElementById('advanced-section');
+      section.classList.toggle('open');
+    }
+
+    /* ---- Set State ---- */
+    function setState(state) {
+      ['empty', 'loading', 'result', 'error'].forEach(s => {
+        const el = document.getElementById('state-' + s);
+        if (el) el.style.display = 'none';
+        if (s === 'loading') el.classList.remove('active');
+        if (s === 'result') el.classList.remove('active');
+        if (s === 'error') el.classList.remove('active');
+      });
+
+      const el = document.getElementById('state-' + state);
+      if (!el) return;
+      el.style.display = '';
+      if (state !== 'empty') el.classList.add('active');
+      if (state === 'empty') el.style.display = 'block';
+    }
+
+    /* ---- Generate ---- */
+    async function generateImage() {
+      const btn = document.getElementById('btn-generate');
+
+      // Build payload
+      const payload = {
+        image_type: currentType,
+        model:      document.getElementById('model').value,
+        width:      parseInt(document.getElementById('width').value),
+        height:     parseInt(document.getElementById('height').value),
+        extras:     document.getElementById('extras').value,
+        prompt_override: document.getElementById('prompt_override').value.trim(),
+      };
+
+      // Type-specific fields
+      if (currentType === 'listing_hero') {
+        payload.suburb     = document.getElementById('suburb').value;
+        payload.house_type = document.getElementById('house_type').value;
+      } else if (currentType === 'interior') {
+        payload.room = document.getElementById('room').value;
+      } else if (currentType === 'social_feed') {
+        payload.caption_context = document.getElementById('caption_context').value;
+        payload.format = document.getElementById('format').value;
+      } else if (currentType === 'brochure') {
+        payload.section_title = document.getElementById('section_title').value;
+      }
+
+      // Loading UI
+      btn.disabled = true;
+      btn.classList.add('loading');
+      setState('loading');
+      disableActions(true);
+
+      const modelName = document.getElementById('model').options[document.getElementById('model').selectedIndex].text;
+      document.getElementById('loading-sub').textContent = `Using ${modelName} — typically 15–40 seconds`;
+
+      try {
+        const resp = await fetch('/api/generate-image', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await resp.json();
+
+        if (!resp.ok || data.error) {
+          throw new Error(data.error || 'Unknown error from server');
+        }
+
+        if (!data.image_url) {
+          throw new Error('No image URL returned — check your KIE_API_KEY in Settings.');
+        }
+
+        // Success
+        currentImageUrl = data.image_url;
+        generatedPrompt = data.prompt;
+
+        document.getElementById('result-img').src = data.image_url;
+        document.getElementById('prompt-display').textContent = data.prompt || '—';
+        setState('result');
+        disableActions(false);
+        addToHistory(data.image_url);
+        showToast('Image generated successfully!', 'success');
+
+      } catch (err) {
+        setState('error');
+        document.getElementById('error-msg').textContent = err.message;
+        showToast('Generation failed. See error above.', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.classList.remove('loading');
+      }
+    }
+
+    /* ---- Actions ---- */
+    function disableActions(disabled) {
+      ['btn-download', 'btn-open'].forEach(id => {
+        const el = document.getElementById(id);
+        if (disabled) {
+          el.classList.add('disabled');
+        } else {
+          el.classList.remove('disabled');
+        }
+      });
+    }
+
+    function downloadImage() {
+      if (!currentImageUrl) return;
+      const a = document.createElement('a');
+      a.href = currentImageUrl;
+      a.download = 'cavalier-' + currentType + '-' + Date.now() + '.jpg';
+      a.target = '_blank';
+      a.click();
+      showToast('Download started.', 'success');
+    }
+
+    function openImageFull() {
+      if (!currentImageUrl) return;
+      window.open(currentImageUrl, '_blank');
+    }
+
+    function copyPrompt() {
+      if (!generatedPrompt) return;
+      navigator.clipboard.writeText(generatedPrompt).then(() => {
+        showToast('Prompt copied to clipboard.', 'success');
+      });
+    }
+
+    /* ---- History ---- */
+    function addToHistory(url) {
+      sessionHistory.unshift(url);
+      const strip = document.getElementById('history-strip');
+
+      // Clear "empty" text on first image
+      if (sessionHistory.length === 1) strip.innerHTML = '';
+
+      const img = document.createElement('img');
+      img.src = url;
+      img.className = 'history-thumb';
+      img.alt = 'Generated image';
+      img.title = 'Click to reload this image';
+      img.onclick = () => {
+        currentImageUrl = url;
+        document.getElementById('result-img').src = url;
+        setState('result');
+        disableActions(false);
+        showToast('Loaded from history.', 'success');
+      };
+
+      strip.insertBefore(img, strip.firstChild);
+    }
+
+    /* ---- Toast ---- */
+    let toastTimer;
+    function showToast(msg, type = 'success') {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.className = 'toast toast--' + type + ' show';
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => el.classList.remove('show'), 3500);
+    }
+
+    /* ---- Init ---- */
+    setState('empty');
+  </script>
+
+</body>
+</html>

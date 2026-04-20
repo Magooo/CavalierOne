@@ -514,6 +514,101 @@ def get_channel_videos_api():
     videos = get_channel_videos(channel_url, limit=limit)
     return jsonify(videos)
 
+
+@app.route('/api/generate-image', methods=['POST'])
+@require_role(['admin', 'marketing'])
+def api_generate_image():
+    """
+    Generate a Cavalier-branded marketing image via kie.ai.
+
+    POST body (JSON):
+      image_type:  'listing_hero' | 'interior' | 'social_feed' | 'brochure'
+      model:       (optional) kie.ai model slug. Defaults to flux-2-flex-text-to-image
+      suburb:      (for listing_hero) e.g. 'Shepparton'
+      house_type:  (for listing_hero) e.g. 'single storey'
+      room:        (for interior) e.g. 'kitchen'
+      format:      (for social_feed) 'square' | 'portrait' | 'landscape' | 'story'
+      caption_context: (for social_feed) brief description of what the post is about
+      section_title: (for brochure) document section name
+      prompt_override: (optional) full custom prompt, bypasses template builder
+      width:       (optional) image width in pixels, default 1024
+      height:      (optional) image height in pixels, default 768
+
+    Returns JSON:
+      { image_url, image_urls, prompt, model, image_type }
+    """
+    import traceback
+    from marketing.image_generator import generate_cavalier_image, build_listing_hero_prompt, \
+        build_interior_lifestyle_prompt, build_social_feed_prompt, build_brochure_section_prompt
+    from utils.kie_client import generate_image as kie_generate
+
+    try:
+        data = request.get_json(force=True, silent=True) or {}
+
+        image_type = data.get('image_type', 'listing_hero')
+        model = data.get('model', 'flux-2-flex-text-to-image')
+        width = int(data.get('width', 1024))
+        height = int(data.get('height', 768))
+        prompt_override = data.get('prompt_override', '').strip()
+
+        if prompt_override:
+            # Use the custom prompt directly
+            image_urls = kie_generate(
+                prompt=prompt_override,
+                model=model,
+                width=width,
+                height=height,
+            )
+            result = {
+                'image_url': image_urls[0] if image_urls else None,
+                'image_urls': image_urls,
+                'prompt': prompt_override,
+                'model': model,
+                'image_type': image_type,
+            }
+        else:
+            # Build kwargs for the appropriate prompt template
+            kwargs = {}
+            if image_type == 'listing_hero':
+                kwargs = {
+                    'suburb': data.get('suburb', ''),
+                    'house_type': data.get('house_type', ''),
+                    'extras': data.get('extras', ''),
+                }
+            elif image_type == 'interior':
+                kwargs = {
+                    'room': data.get('room', 'kitchen'),
+                    'extras': data.get('extras', ''),
+                }
+            elif image_type == 'social_feed':
+                kwargs = {
+                    'caption_context': data.get('caption_context', ''),
+                    'format': data.get('format', 'square'),
+                    'extras': data.get('extras', ''),
+                }
+            elif image_type == 'brochure':
+                kwargs = {
+                    'section_title': data.get('section_title', ''),
+                    'extras': data.get('extras', ''),
+                }
+
+            result = generate_cavalier_image(
+                image_type=image_type,
+                model=model,
+                width=width,
+                height=height,
+                **kwargs
+            )
+
+        return jsonify(result)
+
+    except RuntimeError as e:
+        return jsonify({'error': str(e)}), 500
+    except Exception as e:
+        return jsonify({'error': f'Unexpected error: {str(e)}', 'detail': traceback.format_exc()[-600:]}), 500
+
+
+
 @app.route('/resources/brand_assets/<path:filename>')
 def serve_brand_assets(filename):
     directory = os.path.join(os.getcwd(), 'resources', 'brand_assets')
@@ -526,6 +621,14 @@ def uploaded_file(filename):
 @app.route('/sales-training')
 def sales_training():
     return render_template('sales_training.html')
+
+@app.route('/image-studio')
+def image_studio():
+    """AI Image Studio — generate on-brand Cavalier marketing images via kie.ai."""
+    if not user_can_access('rendering') and session.get('role') not in ('admin', 'marketing'):
+        return "Access Denied: Image Studio requires admin or marketing access.", 403
+    brand_config = load_brand_config()
+    return render_template('image_generator.html', brand=brand_config)
 
 @app.route('/sales-estimate')
 def sales_estimate():

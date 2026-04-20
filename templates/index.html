@@ -248,6 +248,9 @@
             {% if user_can_access('brain') %}
             <button class="tab-btn" onclick="window.location.href='/brain'">🧠 Brain</button>
             {% endif %}
+            {% if user_can_access('rendering') or session.get('role') in ('admin', 'marketing') %}
+            <button class="tab-btn" onclick="window.location.href='/image-studio'" style="background: #ad4b43; color: white; border-radius: 12px 12px 0 0;">✨ Image Studio</button>
+            {% endif %}
         </div>
 
         <div class="card">
