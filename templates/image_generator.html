@@ -813,6 +813,46 @@
     let designSourceUrl  = null; // URL used for "add to design" mode
 
     /* =============================================
+       HELPERS
+    ============================================= */
+    /**
+     * Like fetch(), but always tries to parse JSON and falls back to
+     * a {error: text} object if the server returns non-JSON (e.g. a 413
+     * "Request Entity Too Large" plain-text page from Vercel/nginx).
+     */
+    async function safeJsonFetch(url, options) {
+      const resp = await fetch(url, options);
+      let data;
+      const ct = resp.headers.get('content-type') || '';
+      if (ct.includes('application/json')) {
+        data = await resp.json();
+      } else {
+        const text = await resp.text();
+        // Try parsing anyway (some servers send JSON without the right header)
+        try { data = JSON.parse(text); }
+        catch { data = { error: text.slice(0, 200) || `HTTP ${resp.status}` }; }
+      }
+      return { resp, data };
+    }
+
+    /**
+     * Validate a file before upload. Shows a toast and returns false if invalid.
+     * Vercel hard limit is 4.5 MB; we warn at 4 MB.
+     */
+    function validateUploadFile(file) {
+      if (!file) return false;
+      const MAX_MB = 4;
+      if (file.size > MAX_MB * 1024 * 1024) {
+        showToast(
+          `Image is ${(file.size/1024/1024).toFixed(1)} MB — max is ${MAX_MB} MB. ` +
+          'Please resize it first (e.g. save as JPEG at 80% quality).', 'error'
+        );
+        return false;
+      }
+      return true;
+    }
+
+    /* =============================================
        MODE SWITCHING
     ============================================= */
     function switchMode(mode) {
@@ -917,6 +957,7 @@
     function handleEnhanceFile(input) {
       const file = input.files[0];
       if (!file) return;
+      if (!validateUploadFile(file)) { input.value = ''; return; }
       const reader = new FileReader();
       reader.onload = e => {
         document.getElementById('enhance-preview').src = e.target.result;
@@ -966,9 +1007,8 @@
         if (!imageUrl && fileInput.files[0]) {
           const formData = new FormData();
           formData.append('file', fileInput.files[0]);
-          const upResp = await fetch('/api/upload-image', { method: 'POST', body: formData });
-          const upData = await upResp.json();
-          if (!upResp.ok || upData.error) throw new Error('Upload failed: ' + (upData.error || 'Unknown'));
+          const { resp: upResp, data: upData } = await safeJsonFetch('/api/upload-image', { method: 'POST', body: formData });
+          if (!upResp.ok || upData.error) throw new Error('Upload failed: ' + (upData.error || `HTTP ${upResp.status}`));
           imageUrl = upData.url;
           enhanceSourceUrl = imageUrl;
         }
@@ -984,8 +1024,7 @@
           aspect_ratio: document.getElementById('enhance-ratio').value,
         };
 
-        const resp = await fetch('/api/enhance-image', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
-        const data = await resp.json();
+        const { resp, data } = await safeJsonFetch('/api/enhance-image', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
         if (!resp.ok || data.error) throw new Error(data.error || 'Enhancement failed');
         if (!data.image_url) throw new Error('No image URL returned.');
 
@@ -1013,6 +1052,7 @@
     function handleDesignFile(input) {
       const file = input.files[0];
       if (!file) return;
+      if (!validateUploadFile(file)) { input.value = ''; return; }
       const reader = new FileReader();
       reader.onload = e => {
         document.getElementById('design-preview').src = e.target.result;
@@ -1065,9 +1105,8 @@
         if (hasFile) {
           const formData = new FormData();
           formData.append('file', fileInput.files[0]);
-          const upResp = await fetch('/api/upload-image', { method: 'POST', body: formData });
-          const upData = await upResp.json();
-          if (!upResp.ok || upData.error) throw new Error('Upload failed: ' + (upData.error || 'Unknown'));
+          const { resp: upResp, data: upData } = await safeJsonFetch('/api/upload-image', { method: 'POST', body: formData });
+          if (!upResp.ok || upData.error) throw new Error('Upload failed: ' + (upData.error || `HTTP ${upResp.status}`));
           finalUrl = upData.url;
         }
 
@@ -1384,8 +1423,7 @@
           aspect_ratio: '16:9',
         };
 
-        const resp = await fetch('/api/enhance-image', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
-        const data = await resp.json();
+        const { resp, data } = await safeJsonFetch('/api/enhance-image', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
         if (!resp.ok || data.error) throw new Error(data.error || 'Recolour failed');
         if (!data.image_url) throw new Error('No image URL returned.');
 

@@ -27,6 +27,17 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 app.config['SESSION_COOKIE_SECURE'] = False  # Vercel handles HTTPS at the edge
 app.config['SESSION_COOKIE_HTTPONLY'] = True
+# Vercel serverless has a hard 4.5 MB request body limit.
+# Cap Flask at 4 MB so we can return a clean JSON error before Vercel chokes.
+app.config['MAX_CONTENT_LENGTH'] = 4 * 1024 * 1024  # 4 MB
+
+@app.errorhandler(413)
+def request_entity_too_large(e):
+    return jsonify({
+        'error': 'File too large. Maximum upload size is 4 MB. '
+                 'Please resize your image before uploading.'
+    }), 413
+
 
 import io
 
