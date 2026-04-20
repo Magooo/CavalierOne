@@ -4,18 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AI Image Studio | Cavalier One</title>
-  <meta name="description" content="Generate on-brand Cavalier Homes marketing images using AI — listing heroes, interiors, social content, and brochure assets.">
+  <meta name="description" content="Generate and enhance Cavalier Homes marketing images using AI — listing heroes, interiors, social content, and brochure assets.">
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
-
-  <!-- Google Fonts: Playfair Display + Inter (Century Gothic substitute) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
   <style>
-    /* =============================================
-       DESIGN TOKENS — from DESIGN.md / brand_config
-    ============================================= */
     :root {
       --accent:       #AD4B43;
       --accent-dark:  #8e3c35;
@@ -41,798 +36,209 @@
       --transition:   all 0.2s ease;
     }
 
-    /* =============================================
-       RESET & BASE
-    ============================================= */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     html { scroll-behavior: smooth; }
+    body { font-family: var(--font-body); background: var(--bg); color: var(--text); line-height: 1.6; min-height: 100vh; }
 
-    body {
-      font-family: var(--font-body);
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.6;
-      min-height: 100vh;
-    }
-
-    /* =============================================
-       TOP NAV BAR
-    ============================================= */
-    .topbar {
-      background: var(--white);
-      border-bottom: 1px solid var(--border);
-      padding: 14px 32px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      box-shadow: var(--shadow-sm);
-    }
-
-    .topbar__left {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-    }
-
-    .topbar__logo {
-      max-height: 36px;
-    }
-
-    .topbar__title {
-      font-family: var(--font-display);
-      font-size: 13px;
-      font-weight: 400;
-      color: var(--text-muted);
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      border-left: 1px solid var(--border);
-      padding-left: 20px;
-    }
-
-    .topbar__right {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-      font-size: 13px;
-    }
-
-    .topbar__link {
-      color: var(--text-muted);
-      text-decoration: none;
-      font-weight: 500;
-      transition: var(--transition);
-    }
-
+    /* ---- TOP NAV ---- */
+    .topbar { background: var(--white); border-bottom: 1px solid var(--border); padding: 14px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; box-shadow: var(--shadow-sm); }
+    .topbar__left { display: flex; align-items: center; gap: 20px; }
+    .topbar__logo { max-height: 36px; }
+    .topbar__title { font-family: var(--font-display); font-size: 13px; font-weight: 400; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; border-left: 1px solid var(--border); padding-left: 20px; }
+    .topbar__right { display: flex; align-items: center; gap: 20px; font-size: 13px; }
+    .topbar__link { color: var(--text-muted); text-decoration: none; font-weight: 500; transition: var(--transition); }
     .topbar__link:hover { color: var(--accent); }
-
-    .topbar__back {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      color: var(--accent);
-      text-decoration: none;
-      font-weight: 600;
-      font-size: 13px;
-      letter-spacing: 0.5px;
-      transition: var(--transition);
-    }
-
+    .topbar__back { display: flex; align-items: center; gap: 6px; color: var(--accent); text-decoration: none; font-weight: 600; font-size: 13px; letter-spacing: 0.5px; transition: var(--transition); }
     .topbar__back:hover { color: var(--accent-dark); }
 
-    /* =============================================
-       PAGE HEADER
-    ============================================= */
-    .page-header {
-      background: var(--white);
-      padding: 48px 32px 40px;
-      border-bottom: 1px solid var(--border);
-    }
+    /* ---- PAGE HEADER ---- */
+    .page-header { background: var(--white); padding: 48px 32px 40px; border-bottom: 1px solid var(--border); }
+    .page-header__inner { max-width: 1200px; margin: 0 auto; }
+    .page-header__eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; }
+    .page-header__title { font-family: var(--font-display); font-size: 42px; font-weight: 400; color: var(--black); line-height: 1.15; margin-bottom: 14px; }
+    .page-header__desc { font-size: 16px; color: var(--text-muted); max-width: 600px; line-height: 1.6; }
 
-    .page-header__inner {
-      max-width: 1200px;
-      margin: 0 auto;
-    }
+    /* ---- MODE TABS ---- */
+    .mode-tabs { display: flex; gap: 0; margin-top: 28px; border: 1.5px solid var(--border); border-radius: var(--radius-md); overflow: hidden; width: fit-content; }
+    .mode-tab { padding: 10px 24px; font-size: 12px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; border: none; background: var(--bg-muted); color: var(--text-muted); transition: var(--transition); display: flex; align-items: center; gap: 8px; }
+    .mode-tab + .mode-tab { border-left: 1.5px solid var(--border); }
+    .mode-tab.active { background: var(--accent); color: var(--white); }
+    .mode-tab:hover:not(.active) { background: var(--accent-light); color: var(--accent); }
 
-    .page-header__eyebrow {
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      color: var(--accent);
-      margin-bottom: 12px;
-    }
+    /* ---- STUDIO LAYOUT ---- */
+    .studio { max-width: 1200px; margin: 0 auto; padding: 40px 32px 80px; display: grid; grid-template-columns: 380px 1fr; gap: 32px; align-items: start; }
 
-    .page-header__title {
-      font-family: var(--font-display);
-      font-size: 42px;
-      font-weight: 400;
-      color: var(--black);
-      line-height: 1.15;
-      margin-bottom: 14px;
-    }
+    /* ---- LEFT PANEL ---- */
+    .controls-panel { background: var(--white); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); overflow: hidden; position: sticky; top: 80px; }
+    .controls-panel__header { padding: 24px 28px 20px; border-bottom: 1px solid var(--border); }
+    .controls-panel__title { font-family: var(--font-display); font-size: 18px; font-weight: 400; color: var(--black); }
+    .controls-panel__subtitle { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+    .controls-panel__body { padding: 24px 28px; }
 
-    .page-header__desc {
-      font-size: 16px;
-      color: var(--text-muted);
-      max-width: 600px;
-      line-height: 1.6;
-    }
+    /* ---- MODE PANELS ---- */
+    .mode-panel { display: none; }
+    .mode-panel.active { display: block; }
 
-    .page-header__models {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-top: 20px;
-    }
+    /* Image type selector */
+    .type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 28px; }
+    .type-card { border: 2px solid var(--border); border-radius: var(--radius-md); padding: 14px 12px; cursor: pointer; transition: var(--transition); text-align: center; background: var(--bg-muted); }
+    .type-card:hover, .type-card.selected { border-color: var(--accent); background: var(--accent-light); }
+    .type-card__icon { font-size: 22px; margin-bottom: 6px; }
+    .type-card__label { font-size: 11px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-muted); }
+    .type-card.selected .type-card__label { color: var(--accent); }
 
-    .model-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 11px;
-      font-weight: 500;
-      padding: 4px 10px;
-      border-radius: 20px;
-      border: 1px solid var(--border);
-      color: var(--text-muted);
-      background: var(--bg-muted);
-      letter-spacing: 0.3px;
-    }
-
-    .model-chip--active {
-      background: var(--accent-light);
-      border-color: var(--accent);
-      color: var(--accent);
-    }
-
-    /* =============================================
-       MAIN LAYOUT
-    ============================================= */
-    .studio {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 40px 32px 80px;
-      display: grid;
-      grid-template-columns: 380px 1fr;
-      gap: 32px;
-      align-items: start;
-    }
-
-    /* =============================================
-       LEFT PANEL — Controls
-    ============================================= */
-    .controls-panel {
-      background: var(--white);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-md);
-      overflow: hidden;
-      position: sticky;
-      top: 80px;
-    }
-
-    .controls-panel__header {
-      padding: 24px 28px 20px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .controls-panel__title {
-      font-family: var(--font-display);
-      font-size: 18px;
-      font-weight: 400;
-      color: var(--black);
-    }
-
-    .controls-panel__subtitle {
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-top: 4px;
-    }
-
-    .controls-panel__body {
-      padding: 24px 28px;
-    }
-
-    /* Image Type Selector */
-    .type-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 28px;
-    }
-
-    .type-card {
-      border: 2px solid var(--border);
-      border-radius: var(--radius-md);
-      padding: 14px 12px;
-      cursor: pointer;
-      transition: var(--transition);
-      text-align: center;
-      background: var(--bg-muted);
-    }
-
-    .type-card:hover {
-      border-color: var(--accent);
-      background: var(--accent-light);
-    }
-
-    .type-card.selected {
-      border-color: var(--accent);
-      background: var(--accent-light);
-    }
-
-    .type-card__icon {
-      font-size: 22px;
-      margin-bottom: 6px;
-    }
-
-    .type-card__label {
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-      color: var(--text-muted);
-    }
-
-    .type-card.selected .type-card__label {
-      color: var(--accent);
-    }
-
-    /* Form Fields */
-    .form-section {
-      margin-bottom: 24px;
-    }
-
-    .form-section__label {
-      display: block;
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      margin-bottom: 8px;
-    }
-
-    .form-input {
-      width: 100%;
-      padding: 10px 14px;
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius-sm);
-      font-family: var(--font-body);
-      font-size: 14px;
-      color: var(--text);
-      background: var(--white);
-      transition: var(--transition);
-    }
-
-    .form-input:focus {
-      outline: none;
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px var(--accent-light);
-    }
-
-    .form-select {
-      width: 100%;
-      padding: 10px 14px;
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius-sm);
-      font-family: var(--font-body);
-      font-size: 14px;
-      color: var(--text);
-      background: var(--white);
-      cursor: pointer;
-      appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%2354595F' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 14px center;
-      transition: var(--transition);
-    }
-
-    .form-select:focus {
-      outline: none;
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px var(--accent-light);
-    }
-
-    /* Dynamic fields show/hide */
+    /* Form */
+    .form-section { margin-bottom: 24px; }
+    .form-section__label { display: block; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; }
+    .form-input { width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-family: var(--font-body); font-size: 14px; color: var(--text); background: var(--white); transition: var(--transition); }
+    .form-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); }
+    .form-select { width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-family: var(--font-body); font-size: 14px; color: var(--text); background: var(--white); cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%2354595F' d='M1 1l5 5 5-5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; transition: var(--transition); }
+    .form-select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); }
     .field-group { display: none; }
     .field-group.visible { display: block; }
 
-    /* Dimensions row */
-    .dims-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
+    /* Upload drop zone */
+    .upload-zone { border: 2px dashed var(--border); border-radius: var(--radius-md); padding: 32px 20px; text-align: center; cursor: pointer; transition: var(--transition); background: var(--bg-muted); position: relative; margin-bottom: 20px; }
+    .upload-zone:hover, .upload-zone.drag-over { border-color: var(--accent); background: var(--accent-light); }
+    .upload-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+    .upload-zone__icon { font-size: 32px; margin-bottom: 10px; }
+    .upload-zone__title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+    .upload-zone__sub { font-size: 12px; color: var(--text-muted); }
+    .upload-preview { display: none; width: 100%; height: 180px; object-fit: cover; border-radius: var(--radius-md); margin-bottom: 12px; border: 1px solid var(--border); }
+    .upload-preview.visible { display: block; }
+    .upload-clear { font-size: 12px; color: var(--accent); cursor: pointer; font-weight: 600; text-align: center; display: none; margin-bottom: 16px; background: none; border: none; width: 100%; }
+    .upload-clear.visible { display: block; }
 
-    /* Advanced toggle */
-    .advanced-toggle {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 12px;
-      font-weight: 500;
-      color: var(--text-muted);
-      cursor: pointer;
-      padding: 8px 0;
-      border: none;
-      background: none;
-      width: 100%;
-      text-align: left;
-      transition: var(--transition);
-    }
+    /* Strength slider */
+    .slider-row { display: flex; align-items: center; gap: 12px; }
+    .range-input { flex: 1; appearance: none; height: 4px; border-radius: 2px; background: var(--border); outline: none; cursor: pointer; }
+    .range-input::-webkit-slider-thumb { appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); cursor: pointer; border: 2px solid white; box-shadow: 0 1px 4px rgba(0,0,0,0.2); }
+    .range-value { font-size: 13px; font-weight: 600; color: var(--accent); min-width: 36px; text-align: right; }
 
+    /* Advanced section */
+    .advanced-toggle { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 500; color: var(--text-muted); cursor: pointer; padding: 8px 0; border: none; background: none; width: 100%; text-align: left; transition: var(--transition); }
     .advanced-toggle:hover { color: var(--accent); }
-
-    .advanced-toggle__chevron {
-      transition: transform 0.2s;
-      margin-left: auto;
-    }
-
-    .advanced-toggle.open .advanced-toggle__chevron {
-      transform: rotate(180deg);
-    }
-
-    .advanced-section {
-      display: none;
-      padding-top: 16px;
-    }
-
+    .advanced-toggle__chevron { transition: transform 0.2s; margin-left: auto; }
+    .advanced-toggle.open .advanced-toggle__chevron { transform: rotate(180deg); }
+    .advanced-section { display: none; padding-top: 16px; }
     .advanced-section.open { display: block; }
 
-    hr.divider {
-      border: none;
-      border-top: 1px solid var(--border);
-      margin: 20px 0;
-    }
+    hr.divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
 
-    /* Generate Button */
-    .btn-generate {
-      width: 100%;
-      padding: 16px;
-      background: var(--accent);
-      color: var(--white);
-      border: none;
-      border-radius: var(--radius-sm);
-      font-family: var(--font-body);
-      font-size: 13px;
-      font-weight: 600;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: var(--transition);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      margin-top: 4px;
-    }
-
-    .btn-generate:hover:not(:disabled) {
-      background: var(--accent-dark);
-      box-shadow: 0 4px 16px rgba(173, 75, 67, 0.35);
-    }
-
-    .btn-generate:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    .btn-generate .spinner {
-      width: 16px;
-      height: 16px;
-      border: 2px solid rgba(255,255,255,0.3);
-      border-top-color: white;
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-      display: none;
-    }
-
+    /* Buttons */
+    .btn-generate { width: 100%; padding: 16px; background: var(--accent); color: var(--white); border: none; border-radius: var(--radius-sm); font-family: var(--font-body); font-size: 13px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; transition: var(--transition); display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 4px; }
+    .btn-generate:hover:not(:disabled) { background: var(--accent-dark); box-shadow: 0 4px 16px rgba(173, 75, 67, 0.35); }
+    .btn-generate:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-generate .spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; display: none; }
     .btn-generate.loading .spinner { display: block; }
     .btn-generate.loading .btn-text { opacity: 0.7; }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
+    /* ---- RIGHT PANEL ---- */
+    .preview-panel { display: flex; flex-direction: column; gap: 24px; }
+    .canvas { background: var(--white); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); overflow: hidden; min-height: 500px; display: flex; flex-direction: column; }
+    .canvas__toolbar { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid var(--border); }
+    .canvas__toolbar-title { font-size: 13px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.5px; }
+    .canvas__actions { display: flex; gap: 8px; }
 
-    /* =============================================
-       RIGHT PANEL — Preview
-    ============================================= */
-    .preview-panel {
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
-    }
+    .btn-action { display: flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; letter-spacing: 0.5px; cursor: pointer; text-decoration: none; transition: var(--transition); border: 1.5px solid var(--border); background: var(--white); color: var(--text-muted); }
+    .btn-action:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-action--primary { background: var(--accent); color: var(--white); border-color: var(--accent); }
+    .btn-action--primary:hover { background: var(--accent-dark); border-color: var(--accent-dark); color: var(--white); }
+    .btn-action--green { background: #2d7d4f; color: var(--white); border-color: #2d7d4f; }
+    .btn-action--green:hover { background: #235f3c; border-color: #235f3c; color: var(--white); }
+    .btn-action:disabled, .btn-action.disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
 
-    /* Canvas / Result */
-    .canvas {
-      background: var(--white);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-md);
-      overflow: hidden;
-      min-height: 500px;
-      display: flex;
-      flex-direction: column;
-    }
+    .canvas__body { flex: 1; display: flex; align-items: center; justify-content: center; min-height: 400px; padding: 24px; position: relative; }
+    .canvas__empty { text-align: center; max-width: 360px; }
+    .canvas__empty-icon { width: 80px; height: 80px; border-radius: 50%; background: var(--accent-light); display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 32px; }
+    .canvas__empty-title { font-family: var(--font-display); font-size: 22px; color: var(--black); margin-bottom: 10px; }
+    .canvas__empty-desc { font-size: 14px; color: var(--text-muted); line-height: 1.6; }
 
-    .canvas__toolbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 16px 24px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .canvas__toolbar-title {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-muted);
-      letter-spacing: 0.5px;
-    }
-
-    .canvas__actions {
-      display: flex;
-      gap: 8px;
-    }
-
-    .btn-action {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 7px 14px;
-      border-radius: var(--radius-sm);
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-      cursor: pointer;
-      text-decoration: none;
-      transition: var(--transition);
-      border: 1.5px solid var(--border);
-      background: var(--white);
-      color: var(--text-muted);
-    }
-
-    .btn-action:hover {
-      border-color: var(--accent);
-      color: var(--accent);
-    }
-
-    .btn-action--primary {
-      background: var(--accent);
-      color: var(--white);
-      border-color: var(--accent);
-    }
-
-    .btn-action--primary:hover {
-      background: var(--accent-dark);
-      border-color: var(--accent-dark);
-      color: var(--white);
-    }
-
-    .btn-action:disabled, .btn-action.disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-      pointer-events: none;
-    }
-
-    /* Image Preview Area */
-    .canvas__body {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 400px;
-      padding: 24px;
-      position: relative;
-    }
-
-    /* Empty state */
-    .canvas__empty {
-      text-align: center;
-      max-width: 360px;
-    }
-
-    .canvas__empty-icon {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      background: var(--accent-light);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 20px;
-      font-size: 32px;
-    }
-
-    .canvas__empty-title {
-      font-family: var(--font-display);
-      font-size: 22px;
-      color: var(--black);
-      margin-bottom: 10px;
-    }
-
-    .canvas__empty-desc {
-      font-size: 14px;
-      color: var(--text-muted);
-      line-height: 1.6;
-    }
-
-    /* Loading state */
-    .canvas__loading {
-      display: none;
-      text-align: center;
-    }
-
+    .canvas__loading { display: none; text-align: center; }
     .canvas__loading.active { display: block; }
-
-    .canvas__loading-wave {
-      display: flex;
-      gap: 6px;
-      justify-content: center;
-      margin-bottom: 20px;
-    }
-
-    .canvas__loading-wave span {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--accent);
-      animation: wave 1.2s ease-in-out infinite;
-    }
-
+    .canvas__loading-wave { display: flex; gap: 6px; justify-content: center; margin-bottom: 20px; }
+    .canvas__loading-wave span { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); animation: wave 1.2s ease-in-out infinite; }
     .canvas__loading-wave span:nth-child(2) { animation-delay: 0.15s; }
     .canvas__loading-wave span:nth-child(3) { animation-delay: 0.30s; }
     .canvas__loading-wave span:nth-child(4) { animation-delay: 0.45s; }
+    @keyframes wave { 0%, 80%, 100% { transform: scale(0.7); opacity: 0.5; } 40% { transform: scale(1.2); opacity: 1; } }
+    .canvas__loading-title { font-family: var(--font-display); font-size: 20px; color: var(--black); margin-bottom: 8px; }
+    .canvas__loading-sub { font-size: 13px; color: var(--text-muted); }
+    .canvas__loading-bar { width: 200px; height: 3px; background: var(--border); border-radius: 2px; margin: 20px auto 0; overflow: hidden; }
+    .canvas__loading-bar-fill { height: 100%; background: var(--accent); border-radius: 2px; animation: loadbar 2s ease-in-out infinite; }
+    @keyframes loadbar { 0% { width: 0%; transform: translateX(0); } 50% { width: 60%; } 100% { width: 100%; transform: translateX(100%); } }
 
-    @keyframes wave {
-      0%, 80%, 100% { transform: scale(0.7); opacity: 0.5; }
-      40% { transform: scale(1.2); opacity: 1; }
-    }
-
-    .canvas__loading-title {
-      font-family: var(--font-display);
-      font-size: 20px;
-      color: var(--black);
-      margin-bottom: 8px;
-    }
-
-    .canvas__loading-sub {
-      font-size: 13px;
-      color: var(--text-muted);
-    }
-
-    .canvas__loading-bar {
-      width: 200px;
-      height: 3px;
-      background: var(--border);
-      border-radius: 2px;
-      margin: 20px auto 0;
-      overflow: hidden;
-    }
-
-    .canvas__loading-bar-fill {
-      height: 100%;
-      background: var(--accent);
-      border-radius: 2px;
-      animation: loadbar 2s ease-in-out infinite;
-    }
-
-    @keyframes loadbar {
-      0% { width: 0%; transform: translateX(0); }
-      50% { width: 60%; }
-      100% { width: 100%; transform: translateX(100%); }
-    }
-
-    /* Generated image */
-    .canvas__result {
-      display: none;
-      width: 100%;
-    }
-
+    .canvas__result { display: none; width: 100%; }
     .canvas__result.active { display: block; }
 
-    .canvas__result img {
-      width: 100%;
-      height: auto;
-      border-radius: var(--radius-md);
-      display: block;
-      box-shadow: var(--shadow-md);
-    }
+    /* Before/after comparison for enhance mode */
+    .canvas__compare { display: none; width: 100%; }
+    .canvas__compare.active { display: flex; gap: 12px; }
+    .compare-side { flex: 1; text-align: center; }
+    .compare-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; }
+    .compare-img { width: 100%; height: 220px; object-fit: cover; border-radius: var(--radius-md); border: 1px solid var(--border); display: block; }
 
-    /* Error state */
-    .canvas__error {
-      display: none;
-      background: #fff5f5;
-      border: 1px solid #feb2b2;
-      border-radius: var(--radius-md);
-      padding: 20px 24px;
-      text-align: left;
-      width: 100%;
-    }
-
+    .canvas__result img { width: 100%; height: auto; border-radius: var(--radius-md); display: block; box-shadow: var(--shadow-md); }
+    .canvas__error { display: none; background: #fff5f5; border: 1px solid #feb2b2; border-radius: var(--radius-md); padding: 20px 24px; text-align: left; width: 100%; }
     .canvas__error.active { display: block; }
-
-    .canvas__error-title {
-      font-weight: 600;
-      color: #c53030;
-      margin-bottom: 8px;
-    }
-
-    .canvas__error-msg {
-      font-size: 13px;
-      color: #742a2a;
-      font-family: monospace;
-      word-break: break-all;
-    }
+    .canvas__error-title { font-weight: 600; color: #c53030; margin-bottom: 8px; }
+    .canvas__error-msg { font-size: 13px; color: #742a2a; font-family: monospace; word-break: break-all; }
 
     /* Prompt card */
-    .prompt-card {
-      background: var(--white);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-md);
-      overflow: hidden;
-    }
+    .prompt-card { background: var(--white); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); overflow: hidden; }
+    .prompt-card__header { padding: 16px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .prompt-card__title { font-size: 12px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); }
+    .prompt-card__copy { font-size: 12px; color: var(--accent); cursor: pointer; font-weight: 600; border: none; background: none; padding: 0; }
+    .prompt-card__body { padding: 18px 24px; font-size: 13px; color: var(--text); line-height: 1.65; min-height: 60px; font-style: italic; }
+    .prompt-placeholder { color: var(--mid); font-style: normal; font-size: 13px; }
 
-    .prompt-card__header {
-      padding: 16px 24px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .prompt-card__title {
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      color: var(--text-muted);
-    }
-
-    .prompt-card__copy {
-      font-size: 12px;
-      color: var(--accent);
-      cursor: pointer;
-      font-weight: 600;
-      border: none;
-      background: none;
-      padding: 0;
-    }
-
-    .prompt-card__body {
-      padding: 18px 24px;
-      font-size: 13px;
-      color: var(--text);
-      line-height: 1.65;
-      min-height: 60px;
-      font-style: italic;
-    }
-
-    .prompt-placeholder {
-      color: var(--mid);
-      font-style: normal;
-      font-size: 13px;
-    }
-
-    /* History strip */
-    .history-panel {
-      background: var(--white);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-md);
-      overflow: hidden;
-    }
-
-    .history-panel__header {
-      padding: 16px 24px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .history-panel__title {
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      color: var(--text-muted);
-    }
-
-    .history-strip {
-      display: flex;
-      gap: 12px;
-      padding: 16px 24px;
-      overflow-x: auto;
-      min-height: 96px;
-    }
-
+    /* History */
+    .history-panel { background: var(--white); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); overflow: hidden; }
+    .history-panel__header { padding: 16px 24px; border-bottom: 1px solid var(--border); }
+    .history-panel__title { font-size: 12px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); }
+    .history-strip { display: flex; gap: 12px; padding: 16px 24px; overflow-x: auto; min-height: 96px; }
     .history-strip::-webkit-scrollbar { height: 4px; }
     .history-strip::-webkit-scrollbar-thumb { background: var(--mid); border-radius: 2px; }
+    .history-thumb { flex-shrink: 0; width: 72px; height: 72px; border-radius: var(--radius-md); object-fit: cover; cursor: pointer; border: 2px solid transparent; transition: var(--transition); }
+    .history-thumb:hover { border-color: var(--accent); transform: scale(1.04); }
+    .history-empty { color: var(--mid); font-size: 13px; display: flex; align-items: center; padding: 0 0 8px; }
 
-    .history-thumb {
-      flex-shrink: 0;
-      width: 72px;
-      height: 72px;
-      border-radius: var(--radius-md);
-      object-fit: cover;
-      cursor: pointer;
-      border: 2px solid transparent;
-      transition: var(--transition);
-    }
-
-    .history-thumb:hover {
-      border-color: var(--accent);
-      transform: scale(1.04);
-    }
-
-    .history-empty {
-      color: var(--mid);
-      font-size: 13px;
-      display: flex;
-      align-items: center;
-      padding: 0 0 8px;
-    }
-
-    /* =============================================
-       STATUS TOAST
-    ============================================= */
-    .toast {
-      position: fixed;
-      bottom: 32px;
-      right: 32px;
-      background: var(--footer);
-      color: var(--white);
-      padding: 14px 20px;
-      border-radius: var(--radius-md);
-      font-size: 13px;
-      font-weight: 500;
-      box-shadow: var(--shadow-lg);
-      z-index: 9999;
-      transform: translateY(80px);
-      opacity: 0;
-      transition: transform 0.3s ease, opacity 0.3s ease;
-      max-width: 360px;
-    }
-
-    .toast.show {
-      transform: translateY(0);
-      opacity: 1;
-    }
-
+    /* Toast */
+    .toast { position: fixed; bottom: 32px; right: 32px; background: var(--footer); color: var(--white); padding: 14px 20px; border-radius: var(--radius-md); font-size: 13px; font-weight: 500; box-shadow: var(--shadow-lg); z-index: 9999; transform: translateY(80px); opacity: 0; transition: transform 0.3s ease, opacity 0.3s ease; max-width: 360px; }
+    .toast.show { transform: translateY(0); opacity: 1; }
     .toast--success { border-left: 4px solid #48bb78; }
     .toast--error   { border-left: 4px solid #fc8181; }
 
-    /* =============================================
-       RESPONSIVE
-    ============================================= */
+    /* Info pill */
+    .info-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; padding: 4px 10px; border-radius: 20px; background: var(--accent-light); color: var(--accent); font-weight: 600; letter-spacing: 0.3px; margin-bottom: 16px; }
+
+    /* "Add to Design" banner */
+    .add-design-banner { background: linear-gradient(135deg, #1a3a2a 0%, #2d7d4f 100%); border-radius: var(--radius-lg); padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; box-shadow: var(--shadow-md); }
+    .add-design-banner__text { color: white; }
+    .add-design-banner__title { font-family: var(--font-display); font-size: 16px; font-weight: 400; margin-bottom: 4px; }
+    .add-design-banner__sub { font-size: 12px; opacity: 0.75; }
+    .add-design-banner.hidden { display: none; }
+
     @media (max-width: 900px) {
-      .studio {
-        grid-template-columns: 1fr;
-        padding: 24px 16px 60px;
-      }
-
-      .controls-panel {
-        position: static;
-      }
-
+      .studio { grid-template-columns: 1fr; padding: 24px 16px 60px; }
+      .controls-panel { position: static; }
       .page-header { padding: 32px 16px 28px; }
-
       .topbar { padding: 12px 16px; }
+      .canvas__compare.active { flex-direction: column; }
     }
   </style>
 </head>
 <body>
 
-  <!-- ==================== TOP BAR ==================== -->
+  <!-- TOP BAR -->
   <nav class="topbar">
     <div class="topbar__left">
       <img src="/{{ brand.assets.logo_primary | default('static/images/favicon.png') }}" alt="Cavalier Homes" class="topbar__logo">
       <span class="topbar__title">AI Image Studio</span>
     </div>
     <div class="topbar__right">
-      <a href="/" class="topbar__back">
-        ← Back to Dashboard
-      </a>
+      <a href="/" class="topbar__back">← Back to Dashboard</a>
       {% if session.get('role') == 'admin' %}
       <a href="/admin" class="topbar__link">Admin</a>
       {% endif %}
@@ -840,183 +246,320 @@
     </div>
   </nav>
 
-  <!-- ==================== PAGE HEADER ==================== -->
+  <!-- PAGE HEADER -->
   <header class="page-header">
     <div class="page-header__inner">
       <p class="page-header__eyebrow">Cavalier One — Marketing</p>
       <h1 class="page-header__title">AI Image Studio</h1>
       <p class="page-header__desc">
-        Generate on-brand marketing images using AI. Every image is built using
-        Cavalier's brand guidelines — fresh, bright, modern Australian residential aesthetic.
+        Generate new on-brand marketing images from scratch, or upload a photo and let AI transform it into a polished Cavalier asset.
       </p>
-      <div class="page-header__models">
-        <span class="model-chip model-chip--active">● Flux-2 Flex</span>
-        <span class="model-chip">Flux-2 Pro</span>
-        <span class="model-chip">Ideogram V3</span>
-        <span class="model-chip">GPT-Image-1.5</span>
+
+      <!-- MODE TABS -->
+      <div class="mode-tabs" id="mode-tabs">
+        <button class="mode-tab active" data-mode="generate" onclick="switchMode('generate')">
+          ✨ Generate
+        </button>
+        <button class="mode-tab" data-mode="enhance" onclick="switchMode('enhance')">
+          🖼 Enhance Photo
+        </button>
+        <button class="mode-tab" data-mode="design" onclick="switchMode('design')">
+          📐 Add to Design
+        </button>
       </div>
     </div>
   </header>
 
-  <!-- ==================== STUDIO LAYOUT ==================== -->
+  <!-- STUDIO -->
   <main class="studio">
 
     <!-- ===== LEFT: CONTROLS ===== -->
     <aside class="controls-panel">
       <div class="controls-panel__header">
-        <h2 class="controls-panel__title">Image Settings</h2>
-        <p class="controls-panel__subtitle">Configure your asset, then generate.</p>
+        <h2 class="controls-panel__title" id="panel-title">Image Settings</h2>
+        <p class="controls-panel__subtitle" id="panel-subtitle">Configure your asset, then generate.</p>
       </div>
 
       <div class="controls-panel__body">
 
-        <!-- Image Type Selector -->
-        <div class="form-section">
-          <label class="form-section__label">Image Type</label>
-          <div class="type-grid">
-            <div class="type-card selected" data-type="listing_hero" onclick="selectType(this)">
-              <div class="type-card__icon">🏠</div>
-              <div class="type-card__label">Listing Hero</div>
-            </div>
-            <div class="type-card" data-type="interior" onclick="selectType(this)">
-              <div class="type-card__icon">🛋️</div>
-              <div class="type-card__label">Interior</div>
-            </div>
-            <div class="type-card" data-type="social_feed" onclick="selectType(this)">
-              <div class="type-card__icon">📱</div>
-              <div class="type-card__label">Social Feed</div>
-            </div>
-            <div class="type-card" data-type="brochure" onclick="selectType(this)">
-              <div class="type-card__icon">📄</div>
-              <div class="type-card__label">Brochure</div>
-            </div>
-          </div>
-        </div>
+        <!-- =================== MODE: GENERATE =================== -->
+        <div class="mode-panel active" id="panel-generate">
 
-        <!-- === LISTING HERO fields === -->
-        <div id="fields-listing_hero" class="field-group visible">
+          <!-- Image Type -->
           <div class="form-section">
-            <label class="form-section__label" for="suburb">Suburb / Location</label>
-            <input type="text" id="suburb" class="form-input" placeholder="e.g. Shepparton, Wodonga">
-          </div>
-          <div class="form-section">
-            <label class="form-section__label" for="house_type">Home Type</label>
-            <select id="house_type" class="form-select">
-              <option value="single storey">Single Storey</option>
-              <option value="double storey">Double Storey</option>
-              <option value="acreage">Acreage / Rural</option>
-              <option value="display home">Display Home</option>
-              <option value="hamptons">Hamptons Style</option>
-              <option value="modern coastal">Modern Coastal</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- === INTERIOR fields === -->
-        <div id="fields-interior" class="field-group">
-          <div class="form-section">
-            <label class="form-section__label" for="room">Room / Space</label>
-            <select id="room" class="form-select">
-              <option value="kitchen">Kitchen</option>
-              <option value="living room">Living Room</option>
-              <option value="master bedroom">Master Bedroom</option>
-              <option value="ensuite bathroom">Ensuite Bathroom</option>
-              <option value="alfresco entertaining area">Alfresco / Outdoor</option>
-              <option value="home office study">Home Office / Study</option>
-              <option value="laundry">Laundry</option>
-              <option value="kids bedroom">Kids Bedroom</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- === SOCIAL FEED fields === -->
-        <div id="fields-social_feed" class="field-group">
-          <div class="form-section">
-            <label class="form-section__label" for="caption_context">Post Context</label>
-            <input type="text" id="caption_context" class="form-input" placeholder="e.g. New display home opening this Saturday">
-          </div>
-          <div class="form-section">
-            <label class="form-section__label" for="format">Format / Aspect Ratio</label>
-            <select id="format" class="form-select">
-              <option value="square">Square (1:1) — Facebook / Instagram Feed</option>
-              <option value="portrait">Portrait (4:5) — Instagram Recommended</option>
-              <option value="landscape">Landscape (16:9) — Facebook Cover / Twitter</option>
-              <option value="story">Story (9:16) — Instagram / Facebook Story</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- === BROCHURE fields === -->
-        <div id="fields-brochure" class="field-group">
-          <div class="form-section">
-            <label class="form-section__label" for="section_title">Document Section</label>
-            <select id="section_title" class="form-select">
-              <option value="Our Story">Our Story</option>
-              <option value="Inclusions">Inclusions</option>
-              <option value="Build Process">Build Process</option>
-              <option value="Display Homes">Display Homes</option>
-              <option value="Site Works">Site Works</option>
-              <option value="House & Land">House &amp; Land</option>
-              <option value="Contact Us">Contact Us</option>
-            </select>
-          </div>
-        </div>
-
-        <hr class="divider">
-
-        <!-- Extra prompt detail (all types) -->
-        <div class="form-section">
-          <label class="form-section__label" for="extras">Extra Prompt Detail (Optional)</label>
-          <input type="text" id="extras" class="form-input" placeholder="e.g. sunset lighting, green hedges">
-        </div>
-
-        <!-- Advanced Toggle -->
-        <button class="advanced-toggle" onclick="toggleAdvanced(this)" id="adv-toggle" type="button">
-          <span>Advanced Options</span>
-          <span class="advanced-toggle__chevron">▾</span>
-        </button>
-
-        <div class="advanced-section" id="advanced-section">
-          <div class="form-section">
-            <label class="form-section__label" for="model">AI Model</label>
-            <select id="model" class="form-select">
-              <option value="flux-2-flex-text-to-image">Flux-2 Flex (Fast — Default)</option>
-              <option value="flux-2-pro-text-to-image">Flux-2 Pro (Highest Quality)</option>
-              <option value="ideogram-v3-text-to-image">Ideogram V3 (Great for text)</option>
-              <option value="gpt-image-1-5-text-to-image">GPT-Image-1.5 (OpenAI)</option>
-              <option value="google-nano-banana-2">Google Nano Banana 2 (Fastest)</option>
-            </select>
-          </div>
-
-          <div class="form-section">
-            <label class="form-section__label">Output Size</label>
-            <div class="dims-row">
-              <div>
-                <label class="form-section__label" for="width" style="font-size:10px">Width (px)</label>
-                <input type="number" id="width" class="form-input" value="1024" min="256" max="2048" step="64">
+            <label class="form-section__label">Image Type</label>
+            <div class="type-grid">
+              <div class="type-card selected" data-type="listing_hero" onclick="selectType(this)">
+                <div class="type-card__icon">🏠</div>
+                <div class="type-card__label">Listing Hero</div>
               </div>
-              <div>
-                <label class="form-section__label" for="height" style="font-size:10px">Height (px)</label>
-                <input type="number" id="height" class="form-input" value="768" min="256" max="2048" step="64">
+              <div class="type-card" data-type="interior" onclick="selectType(this)">
+                <div class="type-card__icon">🛋️</div>
+                <div class="type-card__label">Interior</div>
+              </div>
+              <div class="type-card" data-type="social_feed" onclick="selectType(this)">
+                <div class="type-card__icon">📱</div>
+                <div class="type-card__label">Social Feed</div>
+              </div>
+              <div class="type-card" data-type="brochure" onclick="selectType(this)">
+                <div class="type-card__icon">📄</div>
+                <div class="type-card__label">Brochure</div>
               </div>
             </div>
           </div>
 
-          <div class="form-section">
-            <label class="form-section__label" for="prompt_override">Custom Prompt Override</label>
-            <textarea id="prompt_override" class="form-input" rows="3"
-              placeholder="Write your own prompt — bypasses the template builder entirely."
-              style="resize: vertical; min-height: 80px;"></textarea>
+          <!-- Listing Hero fields -->
+          <div id="fields-listing_hero" class="field-group visible">
+            <div class="form-section">
+              <label class="form-section__label" for="suburb">Suburb / Location</label>
+              <input type="text" id="suburb" class="form-input" placeholder="e.g. Shepparton, Wodonga">
+            </div>
+            <div class="form-section">
+              <label class="form-section__label" for="house_type">Home Type</label>
+              <select id="house_type" class="form-select">
+                <option value="single storey">Single Storey</option>
+                <option value="double storey">Double Storey</option>
+                <option value="acreage">Acreage / Rural</option>
+                <option value="display home">Display Home</option>
+                <option value="hamptons">Hamptons Style</option>
+                <option value="modern coastal">Modern Coastal</option>
+              </select>
+            </div>
           </div>
-        </div>
 
-        <hr class="divider">
+          <!-- Interior fields -->
+          <div id="fields-interior" class="field-group">
+            <div class="form-section">
+              <label class="form-section__label" for="room">Room / Space</label>
+              <select id="room" class="form-select">
+                <option value="kitchen">Kitchen</option>
+                <option value="living room">Living Room</option>
+                <option value="master bedroom">Master Bedroom</option>
+                <option value="ensuite bathroom">Ensuite Bathroom</option>
+                <option value="alfresco entertaining area">Alfresco / Outdoor</option>
+                <option value="home office study">Home Office / Study</option>
+                <option value="laundry">Laundry</option>
+                <option value="kids bedroom">Kids Bedroom</option>
+              </select>
+            </div>
+          </div>
 
-        <!-- Generate Button -->
-        <button class="btn-generate" id="btn-generate" onclick="generateImage()" type="button">
-          <div class="spinner"></div>
-          <span class="btn-text">Generate Image</span>
-        </button>
+          <!-- Social Feed fields -->
+          <div id="fields-social_feed" class="field-group">
+            <div class="form-section">
+              <label class="form-section__label" for="caption_context">Post Context</label>
+              <input type="text" id="caption_context" class="form-input" placeholder="e.g. New display home opening this Saturday">
+            </div>
+            <div class="form-section">
+              <label class="form-section__label" for="format">Format / Aspect Ratio</label>
+              <select id="format" class="form-select">
+                <option value="square">Square (1:1) — Facebook / Instagram Feed</option>
+                <option value="portrait">Portrait (4:5) — Instagram Recommended</option>
+                <option value="landscape">Landscape (16:9) — Facebook Cover / Twitter</option>
+                <option value="story">Story (9:16) — Instagram / Facebook Story</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Brochure fields -->
+          <div id="fields-brochure" class="field-group">
+            <div class="form-section">
+              <label class="form-section__label" for="section_title">Document Section</label>
+              <select id="section_title" class="form-select">
+                <option value="Our Story">Our Story</option>
+                <option value="Inclusions">Inclusions</option>
+                <option value="Build Process">Build Process</option>
+                <option value="Display Homes">Display Homes</option>
+                <option value="Site Works">Site Works</option>
+                <option value="House &amp; Land">House &amp; Land</option>
+                <option value="Contact Us">Contact Us</option>
+              </select>
+            </div>
+          </div>
+
+          <hr class="divider">
+
+          <div class="form-section">
+            <label class="form-section__label" for="extras">Extra Prompt Detail (Optional)</label>
+            <input type="text" id="extras" class="form-input" placeholder="e.g. sunset lighting, green hedges">
+          </div>
+
+          <!-- Advanced -->
+          <button class="advanced-toggle" onclick="toggleAdvanced(this)" id="adv-toggle" type="button">
+            <span>Advanced Options</span>
+            <span class="advanced-toggle__chevron">▾</span>
+          </button>
+          <div class="advanced-section" id="advanced-section">
+            <div class="form-section">
+              <label class="form-section__label" for="model">AI Model</label>
+              <select id="model" class="form-select">
+                <option value="flux-2/flex-text-to-image">Flux-2 Flex (Fast — Default)</option>
+                <option value="flux-2/pro-text-to-image">Flux-2 Pro (Highest Quality)</option>
+                <option value="ideogram/v3-text-to-image">Ideogram V3 (Great for text)</option>
+                <option value="gpt-image/1-5-text-to-image">GPT-Image-1.5 (OpenAI)</option>
+                <option value="google/nano-banana-2">Google Nano Banana 2 (Fastest)</option>
+              </select>
+            </div>
+            <div class="form-section">
+              <label class="form-section__label" for="aspect_ratio">Aspect Ratio</label>
+              <select id="aspect_ratio" class="form-select">
+                <option value="16:9">16:9 — Landscape (Default)</option>
+                <option value="1:1">1:1 — Square</option>
+                <option value="4:3">4:3 — Standard</option>
+                <option value="9:16">9:16 — Portrait / Story</option>
+                <option value="4:5">4:5 — Instagram Portrait</option>
+              </select>
+            </div>
+            <div class="form-section">
+              <label class="form-section__label" for="prompt_override">Custom Prompt Override</label>
+              <textarea id="prompt_override" class="form-input" rows="3"
+                placeholder="Write your own prompt — bypasses the template builder entirely."
+                style="resize: vertical; min-height: 80px;"></textarea>
+            </div>
+          </div>
+
+          <hr class="divider">
+          <button class="btn-generate" id="btn-generate" onclick="generateImage()" type="button">
+            <div class="spinner"></div>
+            <span class="btn-text">✨ Generate Image</span>
+          </button>
+        </div><!-- /panel-generate -->
+
+        <!-- =================== MODE: ENHANCE =================== -->
+        <div class="mode-panel" id="panel-enhance">
+          <div class="info-pill">🖼 Flux-2 Image-to-Image</div>
+
+          <!-- Upload zone -->
+          <div class="form-section">
+            <label class="form-section__label">Upload Your Photo</label>
+            <img id="enhance-preview" class="upload-preview" src="" alt="Upload preview">
+            <button class="upload-clear" id="enhance-clear" onclick="clearEnhanceUpload()" type="button">✕ Remove photo</button>
+            <div class="upload-zone" id="enhance-dropzone">
+              <input type="file" id="enhance-file" accept="image/*" onchange="handleEnhanceFile(this)">
+              <div class="upload-zone__icon">📷</div>
+              <div class="upload-zone__title">Drag & drop or click to upload</div>
+              <div class="upload-zone__sub">JPG, PNG, WebP — max 10 MB</div>
+            </div>
+          </div>
+
+          <!-- Style preset -->
+          <div class="form-section">
+            <label class="form-section__label" for="enhance-style">Apply Style</label>
+            <select id="enhance-style" class="form-select" onchange="updateStyleHint()">
+              <option value="cavalier_brand">Cavalier Brand — Bright & Modern Australian</option>
+              <option value="social_media">Social Media — Aspirational Lifestyle</option>
+              <option value="brochure">Brochure — Clean & Professional</option>
+              <option value="custom">Custom Prompt Only</option>
+            </select>
+          </div>
+
+          <!-- Extra description -->
+          <div class="form-section">
+            <label class="form-section__label" for="enhance-prompt">Extra Description (Optional)</label>
+            <textarea id="enhance-prompt" class="form-input" rows="2"
+              placeholder="e.g. golden hour lighting, blue sky, lush lawn"
+              style="resize: vertical; min-height: 60px;"></textarea>
+          </div>
+
+          <!-- Strength slider -->
+          <div class="form-section">
+            <label class="form-section__label">Transformation Strength</label>
+            <div class="slider-row">
+              <input type="range" id="enhance-strength" class="range-input" min="0.3" max="1.0" step="0.05" value="0.75"
+                oninput="document.getElementById('strength-val').textContent = parseFloat(this.value).toFixed(2)">
+              <span class="range-value" id="strength-val">0.75</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--mid); margin-top:4px;">
+              <span>Subtle tweak</span>
+              <span>Full restyle</span>
+            </div>
+          </div>
+
+          <!-- Advanced -->
+          <button class="advanced-toggle" onclick="toggleAdvanced(this)" id="adv-toggle-enh" type="button">
+            <span>Advanced Options</span>
+            <span class="advanced-toggle__chevron">▾</span>
+          </button>
+          <div class="advanced-section" id="advanced-section-enh">
+            <div class="form-section">
+              <label class="form-section__label" for="enhance-model">AI Model</label>
+              <select id="enhance-model" class="form-select">
+                <option value="flux-2/flex-image-to-image">Flux-2 Flex (Default)</option>
+                <option value="flux-2/pro-image-to-image">Flux-2 Pro (Higher Quality)</option>
+              </select>
+            </div>
+            <div class="form-section">
+              <label class="form-section__label" for="enhance-ratio">Output Aspect Ratio</label>
+              <select id="enhance-ratio" class="form-select">
+                <option value="16:9">16:9 — Landscape (Default)</option>
+                <option value="1:1">1:1 — Square</option>
+                <option value="9:16">9:16 — Story / Portrait</option>
+                <option value="4:3">4:3 — Standard</option>
+              </select>
+            </div>
+          </div>
+
+          <hr class="divider">
+          <button class="btn-generate" id="btn-enhance" onclick="enhanceImage()" type="button">
+            <div class="spinner"></div>
+            <span class="btn-text">🪄 Enhance Photo</span>
+          </button>
+        </div><!-- /panel-enhance -->
+
+        <!-- =================== MODE: ADD TO DESIGN =================== -->
+        <div class="mode-panel" id="panel-design">
+          <div class="info-pill">📐 Template Injection</div>
+
+          <p style="font-size:13px; color:var(--text-muted); margin-bottom:20px; line-height:1.6;">
+            Upload a photo (or use a generated image) and it will be inserted into the selected Cavalier document template.
+          </p>
+
+          <!-- Upload zone -->
+          <div class="form-section">
+            <label class="form-section__label">Upload Photo</label>
+            <img id="design-preview" class="upload-preview" src="" alt="Design upload preview">
+            <button class="upload-clear" id="design-clear" onclick="clearDesignUpload()" type="button">✕ Remove photo</button>
+            <div class="upload-zone" id="design-dropzone">
+              <input type="file" id="design-file" accept="image/*" onchange="handleDesignFile(this)">
+              <div class="upload-zone__icon">📤</div>
+              <div class="upload-zone__title">Drag & drop or click to upload</div>
+              <div class="upload-zone__sub">JPG, PNG, WebP — will be placed as the hero image</div>
+            </div>
+          </div>
+
+          <div style="padding: 12px 0; text-align: center; font-size: 12px; color: var(--mid); font-weight: 600; letter-spacing: 0.5px;">— OR —</div>
+
+          <div class="form-section">
+            <label class="form-section__label">Use Generated Image</label>
+            <button class="btn-action btn-action--primary" onclick="useGeneratedAsDesign()" type="button" id="btn-use-generated" style="width:100%; justify-content:center;">
+              Use Last Generated Image
+            </button>
+          </div>
+
+          <hr class="divider">
+
+          <!-- Template selector -->
+          <div class="form-section">
+            <label class="form-section__label" for="design-template">Document Template</label>
+            <select id="design-template" class="form-select">
+              <option value="brochure_hero">Property Brochure — Hero Image</option>
+              <option value="social_facebook">Facebook Post Layout</option>
+              <option value="social_instagram">Instagram Square Layout</option>
+              <option value="letterhead">Company Letterhead</option>
+            </select>
+          </div>
+
+          <div class="form-section">
+            <label class="form-section__label" for="design-caption">Caption / Headline (Optional)</label>
+            <input type="text" id="design-caption" class="form-input" placeholder="e.g. Shepparton Display Home Now Open">
+          </div>
+
+          <hr class="divider">
+          <button class="btn-generate" id="btn-design" onclick="addToDesign()" type="button" style="background: #2d7d4f;">
+            <div class="spinner"></div>
+            <span class="btn-text">📐 Build Design Preview</span>
+          </button>
+        </div><!-- /panel-design -->
 
       </div>
     </aside>
@@ -1024,55 +567,72 @@
     <!-- ===== RIGHT: PREVIEW ===== -->
     <section class="preview-panel">
 
-      <!-- Main Canvas -->
+      <!-- Canvas -->
       <div class="canvas">
         <div class="canvas__toolbar">
-          <span class="canvas__toolbar-title">Preview</span>
+          <span class="canvas__toolbar-title" id="canvas-title">Preview</span>
           <div class="canvas__actions">
-            <button class="btn-action disabled" id="btn-download" onclick="downloadImage()" type="button">
-              ↓ Download
-            </button>
-            <button class="btn-action btn-action--primary disabled" id="btn-open" onclick="openImageFull()" type="button">
-              ↗ Open Full
-            </button>
+            <button class="btn-action disabled" id="btn-download" onclick="downloadImage()" type="button">↓ Download</button>
+            <button class="btn-action btn-action--primary disabled" id="btn-open" onclick="openImageFull()" type="button">↗ Open Full</button>
           </div>
         </div>
 
         <div class="canvas__body">
-          <!-- Empty State -->
+          <!-- Empty -->
           <div class="canvas__empty" id="state-empty">
             <div class="canvas__empty-icon">✨</div>
-            <h3 class="canvas__empty-title">Ready to generate</h3>
+            <h3 class="canvas__empty-title">Ready to create</h3>
             <p class="canvas__empty-desc">
-              Select an image type, fill in the details on the left, then click
-              <strong>Generate Image</strong>. The AI will build a Cavalier-branded
-              asset in 15–30 seconds.
+              Choose a mode above: <strong>Generate</strong> creates a new image from scratch,
+              <strong>Enhance Photo</strong> transforms an uploaded photo, and
+              <strong>Add to Design</strong> places an image into a document template.
             </p>
           </div>
 
-          <!-- Loading State -->
+          <!-- Loading -->
           <div class="canvas__loading" id="state-loading">
             <div class="canvas__loading-wave">
               <span></span><span></span><span></span><span></span>
             </div>
-            <h3 class="canvas__loading-title">Generating your image…</h3>
-            <p class="canvas__loading-sub" id="loading-sub">Building your Cavalier-branded asset with AI</p>
-            <div class="canvas__loading-bar">
-              <div class="canvas__loading-bar-fill"></div>
-            </div>
+            <h3 class="canvas__loading-title" id="loading-title">Processing…</h3>
+            <p class="canvas__loading-sub" id="loading-sub">Working on your image</p>
+            <div class="canvas__loading-bar"><div class="canvas__loading-bar-fill"></div></div>
           </div>
 
-          <!-- Result State -->
+          <!-- Result (single image) -->
           <div class="canvas__result" id="state-result">
             <img id="result-img" src="" alt="Generated Cavalier Homes marketing image">
           </div>
 
-          <!-- Error State -->
+          <!-- Result (before/after compare) -->
+          <div class="canvas__compare" id="state-compare">
+            <div class="compare-side">
+              <div class="compare-label">Before</div>
+              <img id="compare-before" class="compare-img" src="" alt="Original photo">
+            </div>
+            <div class="compare-side">
+              <div class="compare-label">After (AI Enhanced)</div>
+              <img id="compare-after" class="compare-img" src="" alt="AI enhanced photo">
+            </div>
+          </div>
+
+          <!-- Error -->
           <div class="canvas__error" id="state-error">
-            <div class="canvas__error-title">Generation Failed</div>
+            <div class="canvas__error-title">Failed</div>
             <div class="canvas__error-msg" id="error-msg"></div>
           </div>
         </div>
+      </div>
+
+      <!-- Add to Design Banner (shown after result) -->
+      <div class="add-design-banner hidden" id="add-design-banner">
+        <div class="add-design-banner__text">
+          <div class="add-design-banner__title">Use this image in a design?</div>
+          <div class="add-design-banner__sub">Place it directly into a brochure, social post, or letterhead template.</div>
+        </div>
+        <button class="btn-action btn-action--green" onclick="switchMode('design'); useGeneratedAsDesign();" type="button">
+          📐 Add to Design →
+        </button>
       </div>
 
       <!-- Prompt Inspector -->
@@ -1086,94 +646,88 @@
         </div>
       </div>
 
-      <!-- History Strip -->
+      <!-- History -->
       <div class="history-panel">
         <div class="history-panel__header">
           <span class="history-panel__title">This Session</span>
         </div>
         <div class="history-strip" id="history-strip">
-          <span class="history-empty">Your generated images will appear here.</span>
+          <span class="history-empty">Your generated and enhanced images will appear here.</span>
         </div>
       </div>
 
     </section>
-
   </main>
 
-  <!-- Toast -->
   <div class="toast" id="toast"></div>
 
   <!-- ==================== JAVASCRIPT ==================== -->
   <script>
     /* ---- State ---- */
+    let currentMode = 'generate';
     let currentType = 'listing_hero';
     let currentImageUrl = null;
     let generatedPrompt = null;
     let sessionHistory = [];
+    let enhanceSourceUrl = null; // URL of uploaded photo for enhance mode
+    let designSourceUrl  = null; // URL used for "add to design" mode
 
-    /* ---- Type Selector ---- */
+    /* =============================================
+       MODE SWITCHING
+    ============================================= */
+    function switchMode(mode) {
+      currentMode = mode;
+      document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+      document.querySelector(`.mode-tab[data-mode="${mode}"]`).classList.add('active');
+      document.querySelectorAll('.mode-panel').forEach(p => p.classList.remove('active'));
+      document.getElementById('panel-' + mode).classList.add('active');
+
+      const titles = {
+        generate: ['Image Settings', 'Configure your asset, then generate.'],
+        enhance:  ['Enhance a Photo', 'Upload a photo and AI will restyle it with Cavalier branding.'],
+        design:   ['Add to Design', 'Place an image into a document or social template.'],
+      };
+      document.getElementById('panel-title').textContent = titles[mode][0];
+      document.getElementById('panel-subtitle').textContent = titles[mode][1];
+    }
+
+    /* =============================================
+       GENERATE MODE
+    ============================================= */
     function selectType(card) {
-      // Update cards
       document.querySelectorAll('.type-card').forEach(c => c.classList.remove('selected'));
       card.classList.add('selected');
       currentType = card.dataset.type;
-
-      // Show/hide dynamic fields
       document.querySelectorAll('.field-group').forEach(f => f.classList.remove('visible'));
       const fields = document.getElementById('fields-' + currentType);
       if (fields) fields.classList.add('visible');
 
-      // Auto-set sensible dimensions
-      const dimPresets = {
-        listing_hero: [1024, 768],
-        interior:     [1024, 768],
-        social_feed:  [1080, 1080],
-        brochure:     [1200, 480],
-      };
-      const [w, h] = dimPresets[currentType] || [1024, 768];
-      document.getElementById('width').value = w;
-      document.getElementById('height').value = h;
+      const ratioMap = { listing_hero: '16:9', interior: '4:3', social_feed: '1:1', brochure: '16:9' };
+      const ar = document.getElementById('aspect_ratio');
+      if (ar) {
+        const target = ratioMap[currentType];
+        for (let i = 0; i < ar.options.length; i++) {
+          if (ar.options[i].value === target) { ar.selectedIndex = i; break; }
+        }
+      }
     }
 
-    /* ---- Advanced Toggle ---- */
     function toggleAdvanced(btn) {
       btn.classList.toggle('open');
-      const section = document.getElementById('advanced-section');
-      section.classList.toggle('open');
+      const id = btn.id === 'adv-toggle-enh' ? 'advanced-section-enh' : 'advanced-section';
+      document.getElementById(id).classList.toggle('open');
     }
 
-    /* ---- Set State ---- */
-    function setState(state) {
-      ['empty', 'loading', 'result', 'error'].forEach(s => {
-        const el = document.getElementById('state-' + s);
-        if (el) el.style.display = 'none';
-        if (s === 'loading') el.classList.remove('active');
-        if (s === 'result') el.classList.remove('active');
-        if (s === 'error') el.classList.remove('active');
-      });
-
-      const el = document.getElementById('state-' + state);
-      if (!el) return;
-      el.style.display = '';
-      if (state !== 'empty') el.classList.add('active');
-      if (state === 'empty') el.style.display = 'block';
-    }
-
-    /* ---- Generate ---- */
     async function generateImage() {
       const btn = document.getElementById('btn-generate');
-
-      // Build payload
       const payload = {
         image_type: currentType,
         model:      document.getElementById('model').value,
-        width:      parseInt(document.getElementById('width').value),
-        height:     parseInt(document.getElementById('height').value),
+        aspect_ratio: document.getElementById('aspect_ratio').value,
+        resolution: '1K',
         extras:     document.getElementById('extras').value,
         prompt_override: document.getElementById('prompt_override').value.trim(),
       };
-
-      // Type-specific fields
       if (currentType === 'listing_hero') {
         payload.suburb     = document.getElementById('suburb').value;
         payload.house_type = document.getElementById('house_type').value;
@@ -1186,62 +740,370 @@
         payload.section_title = document.getElementById('section_title').value;
       }
 
-      // Loading UI
-      btn.disabled = true;
-      btn.classList.add('loading');
+      btn.disabled = true; btn.classList.add('loading');
       setState('loading');
       disableActions(true);
-
-      const modelName = document.getElementById('model').options[document.getElementById('model').selectedIndex].text;
-      document.getElementById('loading-sub').textContent = `Using ${modelName} — typically 15–40 seconds`;
+      document.getElementById('add-design-banner').classList.add('hidden');
+      document.getElementById('loading-title').textContent = 'Generating your image…';
+      const mName = document.getElementById('model').options[document.getElementById('model').selectedIndex].text;
+      document.getElementById('loading-sub').textContent = `Using ${mName} — typically 15–40 seconds`;
 
       try {
-        const resp = await fetch('/api/generate-image', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
-
+        const resp = await fetch('/api/generate-image', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
         const data = await resp.json();
+        if (!resp.ok || data.error) throw new Error(data.error || 'Server error');
+        if (!data.image_url) throw new Error('No image URL returned — check KIE_API_KEY.');
 
-        if (!resp.ok || data.error) {
-          throw new Error(data.error || 'Unknown error from server');
-        }
-
-        if (!data.image_url) {
-          throw new Error('No image URL returned — check your KIE_API_KEY in Settings.');
-        }
-
-        // Success
         currentImageUrl = data.image_url;
         generatedPrompt = data.prompt;
-
         document.getElementById('result-img').src = data.image_url;
         document.getElementById('prompt-display').textContent = data.prompt || '—';
         setState('result');
         disableActions(false);
-        addToHistory(data.image_url);
-        showToast('Image generated successfully!', 'success');
-
+        addToHistory(data.image_url, '✨');
+        document.getElementById('add-design-banner').classList.remove('hidden');
+        showToast('Image generated!', 'success');
       } catch (err) {
-        setState('error');
-        document.getElementById('error-msg').textContent = err.message;
-        showToast('Generation failed. See error above.', 'error');
+        setState('error'); document.getElementById('error-msg').textContent = err.message;
+        showToast('Generation failed.', 'error');
       } finally {
-        btn.disabled = false;
-        btn.classList.remove('loading');
+        btn.disabled = false; btn.classList.remove('loading');
       }
     }
 
-    /* ---- Actions ---- */
+    /* =============================================
+       ENHANCE MODE
+    ============================================= */
+    function handleEnhanceFile(input) {
+      const file = input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        document.getElementById('enhance-preview').src = e.target.result;
+        document.getElementById('enhance-preview').classList.add('visible');
+        document.getElementById('enhance-dropzone').style.display = 'none';
+        document.getElementById('enhance-clear').classList.add('visible');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function clearEnhanceUpload() {
+      document.getElementById('enhance-file').value = '';
+      document.getElementById('enhance-preview').src = '';
+      document.getElementById('enhance-preview').classList.remove('visible');
+      document.getElementById('enhance-dropzone').style.display = '';
+      document.getElementById('enhance-clear').classList.remove('visible');
+      enhanceSourceUrl = null;
+    }
+
+    function updateStyleHint() {
+      const style = document.getElementById('enhance-style').value;
+      const prompts = {
+        cavalier_brand: 'bright, modern Australian residential home, professional real estate photography',
+        social_media: 'aspirational lifestyle, vibrant, instagram-worthy, premium feel',
+        brochure: 'clean minimal, bright airy, white and neutral tones, professional',
+        custom: 'Enter your full description below…',
+      };
+      document.getElementById('enhance-prompt').placeholder = prompts[style] || '';
+    }
+
+    async function enhanceImage() {
+      const fileInput = document.getElementById('enhance-file');
+      if (!fileInput.files[0] && !enhanceSourceUrl) {
+        showToast('Please upload a photo first.', 'error'); return;
+      }
+
+      const btn = document.getElementById('btn-enhance');
+      btn.disabled = true; btn.classList.add('loading');
+      setState('loading');
+      disableActions(true);
+      document.getElementById('loading-title').textContent = 'Enhancing your photo…';
+      document.getElementById('loading-sub').textContent = 'Uploading & running AI transformation — 20–60 seconds';
+
+      try {
+        // Step 1: Upload file → get public URL
+        let imageUrl = enhanceSourceUrl;
+        if (!imageUrl && fileInput.files[0]) {
+          const formData = new FormData();
+          formData.append('file', fileInput.files[0]);
+          const upResp = await fetch('/api/upload-image', { method: 'POST', body: formData });
+          const upData = await upResp.json();
+          if (!upResp.ok || upData.error) throw new Error('Upload failed: ' + (upData.error || 'Unknown'));
+          imageUrl = upData.url;
+          enhanceSourceUrl = imageUrl;
+        }
+
+        // Step 2: Enhance via KIE.ai
+        const originalPreview = document.getElementById('enhance-preview').src;
+        const payload = {
+          image_url: imageUrl,
+          style: document.getElementById('enhance-style').value,
+          prompt: document.getElementById('enhance-prompt').value.trim(),
+          strength: parseFloat(document.getElementById('enhance-strength').value),
+          model: document.getElementById('enhance-model').value,
+          aspect_ratio: document.getElementById('enhance-ratio').value,
+        };
+
+        const resp = await fetch('/api/enhance-image', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+        const data = await resp.json();
+        if (!resp.ok || data.error) throw new Error(data.error || 'Enhancement failed');
+        if (!data.image_url) throw new Error('No image URL returned.');
+
+        currentImageUrl = data.image_url;
+        generatedPrompt = data.prompt;
+        document.getElementById('compare-before').src = originalPreview || imageUrl;
+        document.getElementById('compare-after').src = data.image_url;
+        document.getElementById('prompt-display').textContent = data.prompt || '—';
+        setState('compare');
+        disableActions(false);
+        addToHistory(data.image_url, '🪄');
+        document.getElementById('add-design-banner').classList.remove('hidden');
+        showToast('Photo enhanced!', 'success');
+      } catch (err) {
+        setState('error'); document.getElementById('error-msg').textContent = err.message;
+        showToast('Enhancement failed.', 'error');
+      } finally {
+        btn.disabled = false; btn.classList.remove('loading');
+      }
+    }
+
+    /* =============================================
+       DESIGN MODE
+    ============================================= */
+    function handleDesignFile(input) {
+      const file = input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        document.getElementById('design-preview').src = e.target.result;
+        document.getElementById('design-preview').classList.add('visible');
+        document.getElementById('design-dropzone').style.display = 'none';
+        document.getElementById('design-clear').classList.add('visible');
+        designSourceUrl = e.target.result; // data URL for preview; real URL after upload
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function clearDesignUpload() {
+      document.getElementById('design-file').value = '';
+      document.getElementById('design-preview').src = '';
+      document.getElementById('design-preview').classList.remove('visible');
+      document.getElementById('design-dropzone').style.display = '';
+      document.getElementById('design-clear').classList.remove('visible');
+      designSourceUrl = null;
+    }
+
+    function useGeneratedAsDesign() {
+      if (!currentImageUrl) { showToast('No generated image yet — generate or enhance one first.', 'error'); return; }
+      switchMode('design');
+      document.getElementById('design-preview').src = currentImageUrl;
+      document.getElementById('design-preview').classList.add('visible');
+      document.getElementById('design-dropzone').style.display = 'none';
+      document.getElementById('design-clear').classList.add('visible');
+      designSourceUrl = currentImageUrl;
+      showToast('Image loaded for design placement.', 'success');
+    }
+
+    async function addToDesign() {
+      const fileInput = document.getElementById('design-file');
+      const hasFile = fileInput.files[0];
+      const hasUrl  = designSourceUrl && !designSourceUrl.startsWith('data:');
+
+      if (!hasFile && !hasUrl && !currentImageUrl) {
+        showToast('Upload a photo or generate an image first.', 'error'); return;
+      }
+
+      const btn = document.getElementById('btn-design');
+      btn.disabled = true; btn.classList.add('loading');
+      setState('loading');
+      document.getElementById('loading-title').textContent = 'Building your design…';
+      document.getElementById('loading-sub').textContent = 'Placing image into template';
+
+      try {
+        // Step 1: Upload file if needed
+        let finalUrl = designSourceUrl || currentImageUrl;
+        if (hasFile) {
+          const formData = new FormData();
+          formData.append('file', fileInput.files[0]);
+          const upResp = await fetch('/api/upload-image', { method: 'POST', body: formData });
+          const upData = await upResp.json();
+          if (!upResp.ok || upData.error) throw new Error('Upload failed: ' + (upData.error || 'Unknown'));
+          finalUrl = upData.url;
+        }
+
+        const template = document.getElementById('design-template').value;
+        const caption  = document.getElementById('design-caption').value.trim();
+
+        // Build a live preview using Canvas / an iframe
+        // For now, open the image in a styled full-screen preview with template overlay
+        const designHtml = buildDesignPreviewHtml(finalUrl, template, caption);
+        const blob = new Blob([designHtml], { type: 'text/html' });
+        const blobUrl = URL.createObjectURL(blob);
+
+        currentImageUrl = finalUrl;
+        document.getElementById('result-img').src = finalUrl;
+        setState('result');
+        disableActions(false);
+        showToast('Design preview ready — click "Open Full" to view!', 'success');
+
+        // Auto-open design preview
+        window.open(blobUrl, '_blank');
+
+      } catch (err) {
+        setState('error'); document.getElementById('error-msg').textContent = err.message;
+        showToast('Design failed.', 'error');
+      } finally {
+        btn.disabled = false; btn.classList.remove('loading');
+      }
+    }
+
+    function buildDesignPreviewHtml(imageUrl, template, caption) {
+      const templates = {
+        brochure_hero: {
+          label: 'Property Brochure',
+          style: `
+            @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@400;600&display=swap');
+            body{margin:0;background:#EEEDEC;display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:'Inter',sans-serif;}
+            .page{width:794px;background:white;box-shadow:0 20px 60px rgba(0,0,0,0.2);border-radius:8px;overflow:hidden;}
+            .hero{width:100%;height:480px;object-fit:cover;display:block;}
+            .content{padding:48px 56px;}
+            .eyebrow{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#AD4B43;font-weight:600;margin-bottom:12px;}
+            .title{font-family:'Playfair Display',serif;font-size:36px;color:#000;margin-bottom:16px;line-height:1.2;}
+            .divider{width:48px;height:3px;background:#AD4B43;margin-bottom:24px;}
+            .body{font-size:15px;color:#444;line-height:1.7;}
+            .footer-bar{background:#000;color:white;padding:20px 56px;display:flex;align-items:center;justify-content:space-between;}
+            .footer-brand{font-family:'Playfair Display',serif;font-size:16px;}
+            .footer-contact{font-size:12px;opacity:0.7;letter-spacing:1px;}
+          `,
+          html: (img, cap) => `
+            <div class="page">
+              <img class="hero" src="${img}" alt="Property">
+              <div class="content">
+                <div class="eyebrow">Cavalier Homes</div>
+                <div class="title">${cap || 'Your New Home Awaits'}</div>
+                <div class="divider"></div>
+                <div class="body">Experience the Cavalier difference — superior craftsmanship, contemporary design, and exceptional value across regional Victoria and beyond.</div>
+              </div>
+              <div class="footer-bar">
+                <div class="footer-brand">Cavalier Homes</div>
+                <div class="footer-contact">cavalierhomes.com.au</div>
+              </div>
+            </div>`
+        },
+        social_facebook: {
+          label: 'Facebook Post',
+          style: `
+            @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;700&display=swap');
+            body{margin:0;background:#f0f2f5;display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:'Inter',sans-serif;}
+            .card{width:540px;background:white;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.15);}
+            .img-wrap{position:relative;padding-top:52.5%;overflow:hidden;}
+            .img-wrap img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+            .img-wrap .overlay{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,rgba(0,0,0,0.7),transparent);padding:24px 24px 20px;color:white;}
+            .overlay .title{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:6px;}
+            .overlay .tag{font-size:12px;opacity:0.8;letter-spacing:1px;text-transform:uppercase;}
+            .post-footer{padding:14px 20px;display:flex;align-items:center;gap:12px;border-top:1px solid #eee;}
+            .brand-dot{width:36px;height:36px;border-radius:50%;background:#AD4B43;display:flex;align-items:center;justify-content:center;color:white;font-size:14px;font-weight:700;}
+            .brand-name{font-size:13px;font-weight:700;color:#000;}
+          `,
+          html: (img, cap) => `
+            <div class="card">
+              <div class="img-wrap">
+                <img src="${img}" alt="Post">
+                <div class="overlay">
+                  <div class="title">${cap || 'Dream Homes, Built for You'}</div>
+                  <div class="tag">Cavalier Homes · Regional Victoria</div>
+                </div>
+              </div>
+              <div class="post-footer">
+                <div class="brand-dot">C</div>
+                <div class="brand-name">Cavalier Homes</div>
+              </div>
+            </div>`
+        },
+        social_instagram: {
+          label: 'Instagram Square',
+          style: `
+            @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;600&display=swap');
+            body{margin:0;background:linear-gradient(135deg,#f5f5f5,#e8e8e8);display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:'Inter',sans-serif;}
+            .frame{width:480px;height:480px;position:relative;border-radius:8px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.25);}
+            .frame img{width:100%;height:100%;object-fit:cover;}
+            .frame .overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.65) 0%,transparent 50%);}
+            .frame .caption{position:absolute;bottom:28px;left:28px;right:28px;color:white;}
+            .caption .brand{font-size:11px;letter-spacing:3px;text-transform:uppercase;opacity:0.8;margin-bottom:6px;}
+            .caption .title{font-family:'Playfair Display',serif;font-size:24px;line-height:1.25;}
+            .frame .badge{position:absolute;top:20px;right:20px;background:#AD4B43;color:white;font-size:10px;font-weight:700;letter-spacing:1.5px;padding:6px 12px;border-radius:20px;text-transform:uppercase;}
+          `,
+          html: (img, cap) => `
+            <div class="frame">
+              <img src="${img}" alt="Post">
+              <div class="overlay"></div>
+              <div class="badge">Cavalier Homes</div>
+              <div class="caption">
+                <div class="brand">@cavalierhomes</div>
+                <div class="title">${cap || 'Modern Living Starts Here'}</div>
+              </div>
+            </div>`
+        },
+        letterhead: {
+          label: 'Letterhead',
+          style: `
+            @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500&display=swap');
+            body{margin:0;background:#EEEDEC;display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:'Inter',sans-serif;}
+            .page{width:794px;background:white;box-shadow:0 20px 60px rgba(0,0,0,0.2);border-radius:4px;overflow:hidden;}
+            .header{background:#000;padding:28px 56px;display:flex;align-items:center;justify-content:space-between;}
+            .header-brand{font-family:'Playfair Display',serif;font-size:22px;color:white;letter-spacing:1px;}
+            .header-right{font-size:11px;color:rgba(255,255,255,0.6);letter-spacing:1px;text-align:right;line-height:1.8;}
+            .image-band{width:100%;height:280px;object-fit:cover;display:block;}
+            .accent-bar{height:4px;background:#AD4B43;}
+            .body{padding:48px 56px;min-height:320px;}
+            .body-date{font-size:12px;color:#999;margin-bottom:24px;letter-spacing:1px;}
+            .body-content{font-size:14px;color:#444;line-height:1.8;max-width:520px;}
+            .footer{border-top:1px solid #eee;padding:20px 56px;font-size:11px;color:#aaa;letter-spacing:0.5px;display:flex;justify-content:space-between;}
+          `,
+          html: (img, cap) => `
+            <div class="page">
+              <div class="header">
+                <div class="header-brand">Cavalier Homes</div>
+                <div class="header-right">cavalierhomes.com.au<br>1300 CAVALIER</div>
+              </div>
+              <img class="image-band" src="${img}" alt="Header Image">
+              <div class="accent-bar"></div>
+              <div class="body">
+                <div class="body-date">${new Date().toLocaleDateString('en-AU', {day:'numeric',month:'long',year:'numeric'}).toUpperCase()}</div>
+                <div class="body-content">${cap ? `<strong>${cap}</strong><br><br>` : ''}Lorem ipsum dolor sit amet, consectetur adipiscing elit. Your document content will appear here. This letterhead is ready for direct use in correspondence.</div>
+              </div>
+              <div class="footer">
+                <span>Cavalier Homes Pty Ltd</span>
+                <span>ABN 00 000 000 000 · Regional Victoria · NT</span>
+              </div>
+            </div>`
+        },
+      };
+
+      const tmpl = templates[template] || templates['brochure_hero'];
+      return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${tmpl.label} | Cavalier Homes</title><style>${tmpl.style}</style></head><body>${tmpl.html(imageUrl, caption)}</body></html>`;
+    }
+
+    /* =============================================
+       SHARED CANVAS STATE
+    ============================================= */
+    function setState(state) {
+      const ids = ['empty', 'loading', 'result', 'compare', 'error'];
+      ids.forEach(s => {
+        const el = document.getElementById('state-' + s);
+        if (el) { el.style.display = 'none'; el.classList.remove('active'); }
+      });
+      const el = document.getElementById('state-' + state);
+      if (!el) return;
+      el.style.display = '';
+      el.classList.add('active');
+      if (state === 'empty') el.style.display = 'block';
+    }
+
     function disableActions(disabled) {
       ['btn-download', 'btn-open'].forEach(id => {
         const el = document.getElementById(id);
-        if (disabled) {
-          el.classList.add('disabled');
-        } else {
-          el.classList.remove('disabled');
-        }
+        disabled ? el.classList.add('disabled') : el.classList.remove('disabled');
       });
     }
 
@@ -1249,7 +1111,7 @@
       if (!currentImageUrl) return;
       const a = document.createElement('a');
       a.href = currentImageUrl;
-      a.download = 'cavalier-' + currentType + '-' + Date.now() + '.jpg';
+      a.download = `cavalier-${currentMode}-${Date.now()}.jpg`;
       a.target = '_blank';
       a.click();
       showToast('Download started.', 'success');
@@ -1262,24 +1124,18 @@
 
     function copyPrompt() {
       if (!generatedPrompt) return;
-      navigator.clipboard.writeText(generatedPrompt).then(() => {
-        showToast('Prompt copied to clipboard.', 'success');
-      });
+      navigator.clipboard.writeText(generatedPrompt).then(() => showToast('Prompt copied!', 'success'));
     }
 
-    /* ---- History ---- */
-    function addToHistory(url) {
+    function addToHistory(url, badge = '') {
       sessionHistory.unshift(url);
       const strip = document.getElementById('history-strip');
-
-      // Clear "empty" text on first image
       if (sessionHistory.length === 1) strip.innerHTML = '';
-
       const img = document.createElement('img');
       img.src = url;
       img.className = 'history-thumb';
-      img.alt = 'Generated image';
-      img.title = 'Click to reload this image';
+      img.alt = badge + ' Image';
+      img.title = 'Click to reload';
       img.onclick = () => {
         currentImageUrl = url;
         document.getElementById('result-img').src = url;
@@ -1287,22 +1143,30 @@
         disableActions(false);
         showToast('Loaded from history.', 'success');
       };
-
       strip.insertBefore(img, strip.firstChild);
     }
 
-    /* ---- Toast ---- */
     let toastTimer;
     function showToast(msg, type = 'success') {
       const el = document.getElementById('toast');
       el.textContent = msg;
-      el.className = 'toast toast--' + type + ' show';
+      el.className = `toast toast--${type} show`;
       clearTimeout(toastTimer);
       toastTimer = setTimeout(() => el.classList.remove('show'), 3500);
     }
 
+    /* ---- Drag-over styling ---- */
+    ['enhance-dropzone', 'design-dropzone'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('dragover', e => { e.preventDefault(); el.classList.add('drag-over'); });
+      el.addEventListener('dragleave', () => el.classList.remove('drag-over'));
+      el.addEventListener('drop', e => { e.preventDefault(); el.classList.remove('drag-over'); });
+    });
+
     /* ---- Init ---- */
     setState('empty');
+    updateStyleHint();
   </script>
 
 </body>

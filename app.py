@@ -610,6 +610,131 @@ def api_generate_image():
         return jsonify({'error': f'Unexpected error: {str(e)}', 'detail': traceback.format_exc()[-600:]}), 500
 
 
+@app.route('/api/upload-image', methods=['POST'])
+@require_role(['admin', 'marketing'])
+def api_upload_image():
+    """
+    Upload an image file to Supabase Storage and return the public URL.
+
+    Used by the Image Studio to get a publicly-accessible URL before
+    passing the image to KIE.ai for enhancement.
+
+    Form field: file  (multipart/form-data)
+    Returns JSON: { url, filename }
+    """
+    import traceback
+
+    try:
+        file = request.files.get('file')
+        if not file or not file.filename:
+            return jsonify({'error': 'No file provided'}), 400
+
+        allowed = {'jpg', 'jpeg', 'png', 'webp', 'gif'}
+        ext = os.path.splitext(file.filename)[1].lstrip('.').lower()
+        if ext not in allowed:
+            return jsonify({'error': f'File type .{ext} not allowed. Use: {", ".join(allowed)}'}), 400
+
+        file_bytes = file.read()
+        unique_name = f"studio/{uuid.uuid4().hex}.{ext}"
+
+        if supabase:
+            supabase.storage.from_("cavalierone_uploads").upload(
+                unique_name, file_bytes, {"content-type": file.content_type or f"image/{ext}"}
+            )
+            public_url = supabase.storage.from_("cavalierone_uploads").get_public_url(unique_name)
+        else:
+            # Fallback: encode as data URL (local dev without Supabase)
+            import base64
+            encoded = base64.b64encode(file_bytes).decode()
+            public_url = f"data:image/{ext};base64,{encoded}"
+
+        return jsonify({'url': public_url, 'filename': unique_name})
+
+    except Exception as e:
+        return jsonify({'error': f'Upload failed: {str(e)}', 'detail': traceback.format_exc()[-400:]}), 500
+
+
+@app.route('/api/enhance-image', methods=['POST'])
+@require_role(['admin', 'marketing'])
+def api_enhance_image():
+    """
+    Enhance an uploaded photo using KIE.ai image-to-image.
+
+    POST body (JSON):
+      image_url:    Publicly accessible URL of the source image
+      prompt:       What to turn the image into (e.g. "bright modern Australian home exterior")
+      style:        Preset style key: 'cavalier_brand' | 'social_media' | 'brochure' | 'custom'
+      strength:     0.0–1.0, how much to change (default 0.75)
+      aspect_ratio: Output aspect ratio (default "16:9")
+      model:        kie.ai img2img model slug (default "flux-2/flex-image-to-image")
+
+    Returns JSON: { image_url, image_urls, prompt, model }
+    """
+    import traceback
+    from utils.kie_client import enhance_image as kie_enhance
+
+    # Style presets — inject brand-consistent phrasing into the prompt
+    STYLE_PRESETS = {
+        'cavalier_brand': (
+            "modern Australian residential home, fresh bright natural lighting, "
+            "lush green lawn, clean contemporary architecture, photorealistic, "
+            "professional real estate photography, warm inviting atmosphere"
+        ),
+        'social_media': (
+            "aspirational lifestyle photograph, vibrant colours, instagram-worthy, "
+            "modern Australian home, natural sunlight, premium feel, no text or watermarks"
+        ),
+        'brochure': (
+            "clean minimal brochure photograph, bright airy modern interior, "
+            "white and neutral tones, wide letterbox crop, professional, photorealistic"
+        ),
+        'custom': '',
+    }
+
+    try:
+        data = request.get_json(force=True, silent=True) or {}
+
+        image_url = data.get('image_url', '').strip()
+        if not image_url:
+            return jsonify({'error': 'image_url is required'}), 400
+
+        style = data.get('style', 'cavalier_brand')
+        custom_prompt = data.get('prompt', '').strip()
+        style_prefix = STYLE_PRESETS.get(style, STYLE_PRESETS['cavalier_brand'])
+
+        # Merge style prefix with any user-specified prompt detail
+        if custom_prompt and style_prefix:
+            prompt = f"{style_prefix}, {custom_prompt}"
+        elif custom_prompt:
+            prompt = custom_prompt
+        else:
+            prompt = style_prefix
+
+        model = data.get('model', 'flux-2/flex-image-to-image')
+        strength = float(data.get('strength', 0.75))
+        aspect_ratio = data.get('aspect_ratio', '16:9')
+
+        image_urls = kie_enhance(
+            image_url=image_url,
+            prompt=prompt,
+            model=model,
+            strength=strength,
+            aspect_ratio=aspect_ratio,
+        )
+
+        return jsonify({
+            'image_url': image_urls[0] if image_urls else None,
+            'image_urls': image_urls,
+            'prompt': prompt,
+            'model': model,
+            'original_url': image_url,
+        })
+
+    except RuntimeError as e:
+        return jsonify({'error': str(e)}), 500
+    except Exception as e:
+        return jsonify({'error': f'Unexpected error: {str(e)}', 'detail': traceback.format_exc()[-600:]}), 500
+
 
 @app.route('/resources/brand_assets/<path:filename>')
 def serve_brand_assets(filename):

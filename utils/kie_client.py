@@ -264,3 +264,62 @@ def get_available_image_models() -> list[str]:
         "flux-2/flex-image-to-image",         # Flux-2 Flex img2img
         "flux-2/pro-image-to-image",          # Flux-2 Pro img2img
     ]
+
+
+def enhance_image(
+    image_url: str,
+    prompt: str,
+    model: str = "flux-2/flex-image-to-image",
+    strength: float = 0.75,
+    aspect_ratio: str = "16:9",
+    max_wait: int = MAX_WAIT_SECONDS,
+) -> list[str]:
+    """
+    Enhance / restyle an existing image using kie.ai image-to-image.
+
+    Args:
+        image_url:    URL of the source image (must be publicly accessible).
+        prompt:       Description of the desired output style / changes.
+        model:        kie.ai img2img model slug (default: flux-2/flex-image-to-image).
+        strength:     How much to change the image: 0.0 = no change, 1.0 = full regen.
+        aspect_ratio: Output aspect ratio, e.g. "16:9", "1:1".
+        max_wait:     Max seconds to wait for completion.
+
+    Returns:
+        List of enhanced image URLs.
+    """
+    payload = {
+        "model": model,
+        "input": {
+            "image_url": image_url,
+            "prompt": prompt,
+            "strength": strength,
+            "aspect_ratio": aspect_ratio,
+            "nsfw_checker": False,
+        },
+    }
+
+    resp = requests.post(
+        f"{KIE_BASE_URL}/jobs/createTask",
+        headers=_headers(),
+        json=payload,
+        timeout=30,
+    )
+    resp.raise_for_status()
+    data = resp.json()
+
+    task_id = (
+        (data.get("data") or {}).get("taskId")
+        or (data.get("data") or {}).get("task_id")
+        or data.get("taskId")
+    )
+    if not task_id:
+        raise RuntimeError(f"kie.ai enhance_image: no taskId. Response: {data}")
+
+    result = _poll_task(task_id, max_wait=max_wait)
+    urls = _extract_image_urls(result)
+    if not urls:
+        raise RuntimeError(
+            f"enhance_image completed but returned no image URLs. Response: {result}"
+        )
+    return urls
