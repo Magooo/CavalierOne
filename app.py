@@ -627,8 +627,13 @@ def image_studio():
     """AI Image Studio — generate on-brand Cavalier marketing images via kie.ai."""
     if not user_can_access('rendering') and session.get('role') not in ('admin', 'marketing'):
         return "Access Denied: Image Studio requires admin or marketing access.", 403
-    brand_config = load_brand_config()
+    brand_config_path = os.path.join("resources", "brand_config.json")
+    brand_config = {}
+    if os.path.exists(brand_config_path):
+        with open(brand_config_path, 'r') as f:
+            brand_config = json.load(f)
     return render_template('image_generator.html', brand=brand_config)
+
 
 @app.route('/sales-estimate')
 def sales_estimate():
