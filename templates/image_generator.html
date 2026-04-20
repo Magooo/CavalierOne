@@ -855,14 +855,21 @@
             <label class="form-section__label">Choose Materials <span style="font-size:10px;font-weight:400;color:var(--text-muted)">(optional — improves results)</span></label>
 
             <div class="material-section">
-              <div class="material-label"><span class="material-icon">🧱</span> Brick / Cladding</div>
+              <div class="material-label"><span class="material-icon">🧱</span> Brick / Masonry</div>
               <div class="swatch-grid" id="plans-swatches-brick" data-material="brick">
                 <div class="swatch-none selected" data-colour="" data-prompt="" onclick="selectPlansSwatch(this,'brick')">–</div>
               </div>
             </div>
 
             <div class="material-section">
-              <div class="material-label"><span class="material-icon">🏠</span> Roof Iron</div>
+              <div class="material-label"><span class="material-icon">🗂️</span> Sheet Cladding <span style="font-size:10px;font-weight:400;color:var(--text-muted)">Hardie / Nailstrip / Lysaght</span></div>
+              <div class="swatch-grid" id="plans-swatches-cladding" data-material="cladding">
+                <div class="swatch-none selected" data-colour="" data-prompt="" onclick="selectPlansSwatch(this,'cladding')">–</div>
+              </div>
+            </div>
+
+            <div class="material-section">
+              <div class="material-label"><span class="material-icon">🏠</span> Roof Iron (Colorbond)</div>
               <div class="swatch-grid" id="plans-swatches-roof" data-material="roof">
                 <div class="swatch-none selected" data-colour="" data-prompt="" onclick="selectPlansSwatch(this,'roof')">–</div>
               </div>
@@ -1230,10 +1237,10 @@
     /* =============================================
        FROM PLANS MODE
     ============================================= */
-    const plansSelections = { brick: null, roof: null, render: null };
+    const plansSelections = { brick: null, cladding: null, roof: null, render: null };
 
     function initPlansSwatches() {
-      ['brick', 'roof', 'render'].forEach(mat => {
+      ['brick', 'cladding', 'roof', 'render'].forEach(mat => {
         const grid = document.getElementById('plans-swatches-' + mat);
         if (!grid || !SWATCHES[mat]) return;
         SWATCHES[mat].forEach(sw => {
@@ -1399,7 +1406,29 @@
         document.getElementById('eraser-size-label').textContent = sizeSlider.value + 'px';
       });
 
-      // Show/hide/update floating cursor
+      // ─── Fine-Tune panel: colour dot + pill selection ────────────────────────────────
+      // Colour dots (.ft-colour) and pills (.ft-pill) both use data-group to scope
+      // deselection to their sibling group. Without this handler the 'selected' class
+      // never moves off the default and nothing appears to respond when clicked.
+      document.addEventListener('click', e => {
+        const dot = e.target.closest('.ft-colour');
+        if (dot) {
+          const group = dot.dataset.group;
+          document.querySelectorAll(`.ft-colour[data-group="${group}"]`)
+            .forEach(d => d.classList.remove('selected'));
+          dot.classList.add('selected');
+          return;
+        }
+        const pill = e.target.closest('.ft-pill');
+        if (pill) {
+          const group = pill.dataset.group;
+          document.querySelectorAll(`.ft-pill[data-group="${group}"]`)
+            .forEach(p => p.classList.remove('selected'));
+          pill.classList.add('selected');
+        }
+      });
+
+      // ─── Eraser canvas events ─────────────────────────────────────────────
       canvas.addEventListener('mouseenter', () => cursor.style.display = 'block');
       canvas.addEventListener('mouseleave', () => { cursor.style.display = 'none'; eraserDrawing = false; });
       canvas.addEventListener('mousemove', e => updateCursor(e));
@@ -1490,11 +1519,12 @@
       document.getElementById('loading-sub').textContent = 'GPT-4 Vision reads the plans, then AI generates a photorealistic render — may take 60–90s';
 
       try {
-        // Build material prompt from swatch selections
+        // Build material prompt from swatch selections — each zone prefixed for server-side mapping
         const matParts = [];
-        if (plansSelections.brick)  matParts.push(`brick: ${plansSelections.brick.prompt}`);
-        if (plansSelections.roof)   matParts.push(`roof: ${plansSelections.roof.prompt}`);
-        if (plansSelections.render) matParts.push(`render: ${plansSelections.render.prompt}`);
+        if (plansSelections.brick)    matParts.push(`brick: ${plansSelections.brick.prompt}`);
+        if (plansSelections.cladding) matParts.push(`cladding: ${plansSelections.cladding.prompt}`);
+        if (plansSelections.roof)     matParts.push(`roof: ${plansSelections.roof.prompt}`);
+        if (plansSelections.render)   matParts.push(`render: ${plansSelections.render.prompt}`);
         const materialPrompt = matParts.join('; ');
 
         // Export the (possibly erased) canvas as a Blob, fall back to raw file

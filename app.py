@@ -834,9 +834,38 @@ Output ONLY a single vivid descriptive paragraph (3–5 sentences) describing th
         vision_analysis = client.generate_text(vision_prompt, image_path=file_path)
         print(f"[Plans] Vision: {vision_analysis[:250]}...")
 
-        # ── Step 2: Build generation prompt ────────────────────────────────────
-        material_section = f" {material_prompt}." if material_prompt else \
-            " Contemporary face brick lower walls, rendered upper panels, Colorbond steel roof, aluminium window frames."
+        # ── Step 2: Build generation prompt with explicit surface-zone mapping ──
+        # Parse "zone: product_description; zone: product_description" format from frontend
+        material_section_parts = []
+        if material_prompt:
+            for part in material_prompt.split(';'):
+                part = part.strip()
+                if ':' not in part:
+                    continue
+                zone, desc = part.split(':', 1)
+                zone = zone.strip().lower()
+                desc = desc.strip()
+                # Map generic zone names to explicit surface descriptions
+                zone_label = {
+                    'brick':    'lower wall / primary facade surface',
+                    'cladding': 'upper wall, feature panel, or secondary facade surface',
+                    'roof':     'roof cladding (steel sheet, NOT roof tiles)',
+                    'render':   'rendered or painted wall surface',
+                }.get(zone, zone)
+                material_section_parts.append(f"{zone_label}: {desc}")
+
+        if material_section_parts:
+            material_section = (
+                " CRITICAL — render these exact materials on each surface zone: "
+                + "; ".join(material_section_parts)
+                + ". Reproduce the texture, profile, colour and finish of each product with photographic accuracy."
+            )
+        else:
+            material_section = (
+                " Contemporary face brick lower walls, smooth rendered upper feature panels, "
+                "COLORBOND STEEL SHEET METAL ROOF (absolutely NOT roof tiles — it must be flat Colorbond sheeting), "
+                "aluminium window frames, Colorbond fascia and gutters."
+            )
 
         gen_prompt = (
             f"Photorealistic architectural exterior photograph of a newly built Australian residential house, "
