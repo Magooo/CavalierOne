@@ -821,6 +821,7 @@
         <div class="canvas__toolbar">
           <span class="canvas__toolbar-title" id="canvas-title">Preview</span>
           <div class="canvas__actions">
+            <button class="btn-action disabled" id="btn-refine" onclick="refineRender()" type="button" title="Run through KIE.ai to make it more photorealistic" style="display:none;">🔄 Refine Render</button>
             <button class="btn-action disabled" id="btn-download" onclick="downloadImage()" type="button">↓ Download</button>
             <button class="btn-action btn-action--primary disabled" id="btn-open" onclick="openImageFull()" type="button">↗ Open Full</button>
           </div>
@@ -1736,11 +1737,88 @@
       if (state === 'empty') el.style.display = 'block';
     }
 
+    /* =============================================
+       REFINE RENDER — pass current image back through KIE img2img
+       Best used after a ControlNet / Plans render to add photorealism
+    ============================================= */
+    async function refineRender() {
+      if (!currentImageUrl) {
+        showToast('No image to refine.', 'error'); return;
+      }
+
+      const btn = document.getElementById('btn-refine');
+      btn.disabled = true; btn.textContent = '⏳ Refining…';
+      setState('loading');
+      disableActions(true);
+      document.getElementById('loading-title').textContent = 'Refining render with KIE.ai…';
+      document.getElementById('loading-sub').textContent = 'Applying photorealistic textures, lighting and atmosphere — 20–40 seconds';
+
+      const originalUrl = currentImageUrl;
+
+      // Photorealism boost prompt — designed to turn a CG render into a real photo
+      const refinePrompt = (
+        'The house facade must remain the dominant subject, same composition, same structure. '
+        + 'Transform this render into a photorealistic exterior photograph: '
+        + 'real brick texture, realistic roof tiles or Colorbond steel, '
+        + 'natural sunlight, soft shadows, blue sky with light clouds, '
+        + 'manicured green lawn, established garden beds, clean concrete driveway. '
+        + 'Professional real estate photography quality. '
+        + 'No text, no watermarks, no CG look, no plastic surfaces.'
+      );
+
+      try {
+        const payload = {
+          image_url:    originalUrl,
+          style:        'cavalier_brand',
+          prompt:       refinePrompt,
+          strength:     0.52,          // Low-to-mid strength — preserve structure, add realism
+          model:        'flux-2/flex-image-to-image',
+          aspect_ratio: '16:9',
+        };
+
+        const { resp, data } = await safeJsonFetch('/api/enhance-image', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        if (!resp.ok || data.error) throw new Error(data.error || 'Refinement failed');
+        if (!data.image_url) throw new Error('No image returned.');
+
+        // Update compare panel: original render on left, refined on right
+        document.getElementById('compare-before').src = originalUrl;
+        document.getElementById('compare-after').src   = data.image_url;
+        currentImageUrl = data.image_url;
+        generatedPrompt = data.prompt || refinePrompt;
+        setState('compare');
+        disableActions(false);
+        addToHistory(data.image_url, '🔄');
+        showToast('Render refined — looking more photorealistic!', 'success');
+
+      } catch (err) {
+        setState('error');
+        document.getElementById('error-msg').textContent = err.message;
+        showToast('Refinement failed.', 'error');
+      } finally {
+        btn.disabled = false; btn.textContent = '🔄 Refine Render';
+        disableActions(false);
+      }
+    }
+
     function disableActions(disabled) {
       ['btn-download', 'btn-open'].forEach(id => {
         const el = document.getElementById(id);
         disabled ? el.classList.add('disabled') : el.classList.remove('disabled');
       });
+      // Show/enable the Refine button once we have an image
+      const refineBtn = document.getElementById('btn-refine');
+      if (refineBtn) {
+        if (!disabled && currentImageUrl) {
+          refineBtn.style.display = '';
+          refineBtn.classList.remove('disabled');
+        } else if (disabled) {
+          refineBtn.classList.add('disabled');
+        }
+      }
     }
 
     function downloadImage() {
