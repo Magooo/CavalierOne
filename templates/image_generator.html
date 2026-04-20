@@ -826,7 +826,7 @@
   <!-- ==================== TOP BAR ==================== -->
   <nav class="topbar">
     <div class="topbar__left">
-      <img src="/{{ brand.assets.logo_primary }}" alt="Cavalier Homes" class="topbar__logo">
+      <img src="/{{ brand.assets.logo_primary | default('static/images/favicon.png') }}" alt="Cavalier Homes" class="topbar__logo">
       <span class="topbar__title">AI Image Studio</span>
     </div>
     <div class="topbar__right">
