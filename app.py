@@ -770,6 +770,138 @@ def serve_brand_assets(filename):
 def uploaded_file(filename):
     return send_file(os.path.join("resources", "uploads", filename))
 
+
+@app.route('/api/generate-from-plans', methods=['POST'])
+@require_role(['admin', 'marketing'])
+def api_generate_from_plans():
+    """
+    Generate a photorealistic facade render from an architectural elevation drawing.
+
+    Multipart form fields:
+      elevation_image  — the elevation drawing file (PNG, JPG, PDF page)
+      style            — house style e.g. "Modern Australian", "Hamptons", "Heritage"
+      notes            — free text notes from the user
+      material_prompt  — swatch-derived material descriptions (e.g. "Colorbond Monument roof, PGH Urban Gull brick")
+
+    Returns JSON: { image_url, vision_analysis, prompt, engine }
+    """
+    import traceback
+    import time
+
+    try:
+        file = request.files.get('elevation_image')
+        if not file or not file.filename:
+            return jsonify({'error': 'No elevation image uploaded'}), 400
+
+        allowed_ext = {'png', 'jpg', 'jpeg', 'webp'}
+        ext = os.path.splitext(file.filename)[1].lstrip('.').lower()
+        if ext not in allowed_ext:
+            return jsonify({'error': f'Unsupported file type .{ext}. Use PNG, JPG, or WebP.'}), 400
+
+        style = request.form.get('style', 'Modern Australian Contemporary')
+        notes = request.form.get('notes', '')
+        material_prompt = request.form.get('material_prompt', '')
+
+        # Save to uploads dir (needed for Replicate which reads local file)
+        upload_dir = os.path.join(os.getcwd(), 'resources', 'uploads')
+        os.makedirs(upload_dir, exist_ok=True)
+        safe_name = f"plan_{uuid.uuid4().hex}.{ext}"
+        file_path = os.path.join(upload_dir, safe_name)
+        file.save(file_path)
+
+        # ── Step 1: GPT-4 Vision — read the elevation ──────────────────────────
+        from marketing.llm_client import LLMClient
+        client = LLMClient(provider="openai")
+
+        vision_prompt = f"""You are an architectural building surveyor analysing an elevation drawing for a photorealistic render.
+Extract these details concisely:
+1. ROOF: type (hip/gable/skillion), pitch direction, material
+2. WALLS: number of storeys, wall zones (brick/render/cladding), window positions
+3. EAVES: overhang or flush? width?
+4. GARAGE: present? flush or separate?
+5. COLUMNS/PIERS: material and height
+6. OVERALL STYLE: e.g. contemporary, traditional, federation
+
+User style preference: {style}
+User notes: {notes}
+
+Output a concise paragraph describing what a photorealistic render of this elevation should look like, suitable for an AI image generator. Focus on architectural features and proportions, not measurements."""
+
+        vision_analysis = client.generate_text(vision_prompt, image_path=file_path)
+        print(f"[Plans] Vision analysis: {vision_analysis[:200]}...")
+
+        # ── Step 2: Build the generation prompt ────────────────────────────────
+        material_section = f" Materials: {material_prompt}." if material_prompt else ""
+        base_desc = (
+            f"Photorealistic Australian residential house facade exterior, "
+            f"professional architectural visualisation, {style} style, "
+            f"sunny day, manicured Australian garden, blue sky, clean driveway. "
+            f"{vision_analysis}{material_section} "
+            f"Cinematic lighting, sharp focus, no text, no watermarks."
+        )
+
+        # ── Step 3: Try Replicate ControlNet, fallback to KIE.ai img2img ───────
+        replicate_key = os.environ.get("REPLICATE_API_TOKEN")
+        engine_used = "replicate_controlnet"
+
+        if replicate_key:
+            try:
+                from utils.replicate_client import generate_image_controlnet
+                image_url = generate_image_controlnet(
+                    prompt=base_desc,
+                    image_path=file_path,
+                    api_token=replicate_key
+                )
+            except Exception as rep_err:
+                print(f"[Plans] Replicate failed ({rep_err}), falling back to KIE.ai img2img")
+                engine_used = "kie_img2img_fallback"
+                # Upload to Supabase first for public URL
+                with open(file_path, 'rb') as f_read:
+                    file_bytes = f_read.read()
+                unique_name = f"studio/plan_{uuid.uuid4().hex}.{ext}"
+                if supabase:
+                    supabase.storage.from_("cavalierone_uploads").upload(
+                        unique_name, file_bytes, {"content-type": f"image/{ext}"}
+                    )
+                    public_url = supabase.storage.from_("cavalierone_uploads").get_public_url(unique_name)
+                else:
+                    public_url = request.host_url.rstrip('/') + f'/uploads/{safe_name}'
+
+                from utils.kie_client import enhance_image as kie_enhance
+                urls = kie_enhance(image_url=public_url, prompt=base_desc, model='flux-2/flex-image-to-image', strength=0.85, aspect_ratio='16:9')
+                image_url = urls[0] if urls else None
+        else:
+            # No Replicate key → KIE.ai img2img
+            engine_used = "kie_img2img"
+            with open(file_path, 'rb') as f_read:
+                file_bytes = f_read.read()
+            unique_name = f"studio/plan_{uuid.uuid4().hex}.{ext}"
+            if supabase:
+                supabase.storage.from_("cavalierone_uploads").upload(
+                    unique_name, file_bytes, {"content-type": f"image/{ext}"}
+                )
+                public_url = supabase.storage.from_("cavalierone_uploads").get_public_url(unique_name)
+            else:
+                public_url = request.host_url.rstrip('/') + f'/uploads/{safe_name}'
+
+            from utils.kie_client import enhance_image as kie_enhance
+            urls = kie_enhance(image_url=public_url, prompt=base_desc, model='flux-2/flex-image-to-image', strength=0.85, aspect_ratio='16:9')
+            image_url = urls[0] if urls else None
+
+        if not image_url:
+            return jsonify({'error': 'AI generation returned no image'}), 500
+
+        return jsonify({
+            'image_url': image_url,
+            'vision_analysis': vision_analysis,
+            'prompt': base_desc,
+            'engine': engine_used,
+        })
+
+    except Exception as e:
+        print(f"[Plans] Error: {e}")
+        return jsonify({'error': f'Generation failed: {str(e)}', 'detail': traceback.format_exc()[-600:]}), 500
+
 @app.route('/sales-training')
 def sales_training():
     return render_template('sales_training.html')

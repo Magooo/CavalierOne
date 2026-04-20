@@ -341,8 +341,11 @@
         <button class="mode-tab" data-mode="enhance" onclick="switchMode('enhance')">
           🖼 Enhance Photo
         </button>
+        <button class="mode-tab" data-mode="plans" onclick="switchMode('plans')">
+          📐 From Plans
+        </button>
         <button class="mode-tab" data-mode="design" onclick="switchMode('design')">
-          📐 Add to Design
+          🗂 Add to Design
         </button>
       </div>
     </div>
@@ -674,6 +677,84 @@
 
         </div><!-- /panel-enhance -->
 
+        <!-- =================== MODE: FROM PLANS =================== -->
+        <div class="mode-panel" id="panel-plans">
+          <div class="info-pill">📐 AI Architectural Visualisation</div>
+
+          <p style="font-size:13px; color:var(--text-muted); margin-bottom:20px; line-height:1.6;">
+            Upload an <strong>elevation drawing</strong> from your architect. AI reads the structure, applies your chosen materials, and generates a photorealistic facade render.
+          </p>
+
+          <!-- Elevation Upload -->
+          <div class="form-section">
+            <label class="form-section__label">Elevation Drawing</label>
+            <div class="zone-picker-wrap" id="plans-preview-wrap">
+              <img id="plans-preview" class="upload-preview" src="" alt="Elevation preview">
+              <div class="zone-picker-hint" id="plans-hint" style="display:block;">
+                <span>GPT-4 Vision will read this drawing and extract the architecture automatically.</span>
+              </div>
+            </div>
+            <button class="upload-clear" id="plans-clear" onclick="clearPlansUpload()" type="button" style="display:none;">✕ Remove drawing</button>
+            <div class="upload-zone" id="plans-dropzone">
+              <input type="file" id="plans-file" accept="image/png,image/jpeg,image/webp" onchange="handlePlansFile(this)">
+              <div class="upload-zone__icon">📏</div>
+              <div class="upload-zone__title">Upload Elevation Drawing</div>
+              <div class="upload-zone__sub">PNG, JPG, WebP — front elevation works best</div>
+            </div>
+          </div>
+
+          <!-- House Style -->
+          <div class="form-section">
+            <label class="form-section__label" for="plans-style">House Style</label>
+            <select id="plans-style" class="form-select">
+              <option value="Modern Australian Contemporary">Modern Australian Contemporary</option>
+              <option value="Hamptons Coastal">Hamptons Coastal</option>
+              <option value="Heritage Federation">Heritage Federation</option>
+              <option value="Farmhouse Rural">Farmhouse Rural</option>
+              <option value="Slimline Urban">Slimline Urban</option>
+              <option value="Classic Brick Traditional">Classic Brick Traditional</option>
+            </select>
+          </div>
+
+          <!-- Material Selections (reuse swatch system) -->
+          <div class="form-section">
+            <label class="form-section__label">Choose Materials <span style="font-size:10px;font-weight:400;color:var(--text-muted)">(optional — improves results)</span></label>
+
+            <div class="material-section">
+              <div class="material-label"><span class="material-icon">🧱</span> Brick / Cladding</div>
+              <div class="swatch-grid" id="plans-swatches-brick" data-material="brick">
+                <div class="swatch-none selected" data-colour="" data-prompt="" onclick="selectPlansSwatch(this,'brick')">–</div>
+              </div>
+            </div>
+
+            <div class="material-section">
+              <div class="material-label"><span class="material-icon">🏠</span> Roof Iron</div>
+              <div class="swatch-grid" id="plans-swatches-roof" data-material="roof">
+                <div class="swatch-none selected" data-colour="" data-prompt="" onclick="selectPlansSwatch(this,'roof')">–</div>
+              </div>
+            </div>
+
+            <div class="material-section">
+              <div class="material-label"><span class="material-icon">🎨</span> Render / Paint</div>
+              <div class="swatch-grid" id="plans-swatches-render" data-material="render">
+                <div class="swatch-none selected" data-colour="" data-prompt="" onclick="selectPlansSwatch(this,'render')">–</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Extra Notes -->
+          <div class="form-section">
+            <label class="form-section__label" for="plans-notes">Extra Notes (Optional)</label>
+            <input type="text" id="plans-notes" class="form-input" placeholder="e.g. double garage, feature stone pier, alfresco area on right">
+          </div>
+
+          <hr class="divider">
+          <button class="btn-generate" id="btn-plans" onclick="generateFromPlans()" type="button" style="background:linear-gradient(135deg,#1a2a4a,#2d4a8f);">
+            <div class="spinner"></div>
+            <span class="btn-text">📐 Generate Render from Plans</span>
+          </button>
+        </div><!-- /panel-plans -->
+
         <!-- =================== MODE: ADD TO DESIGN =================== -->
         <div class="mode-panel" id="panel-design">
           <div class="info-pill">📐 Template Injection</div>
@@ -895,10 +976,141 @@
       const titles = {
         generate: ['Image Settings', 'Configure your asset, then generate.'],
         enhance:  ['Enhance a Photo', 'Upload a photo and AI will restyle it with Cavalier branding.'],
+        plans:    ['From Plans', 'Upload an elevation drawing — AI generates a photorealistic render.'],
         design:   ['Add to Design', 'Place an image into a document or social template.'],
       };
-      document.getElementById('panel-title').textContent = titles[mode][0];
-      document.getElementById('panel-subtitle').textContent = titles[mode][1];
+      document.getElementById('panel-title').textContent = titles[mode]?.[0] || '';
+      document.getElementById('panel-subtitle').textContent = titles[mode]?.[1] || '';
+
+      // When switching to Plans tab, populate swatches if not done yet
+      if (mode === 'plans' && !document.querySelector('#plans-swatches-brick .supplier-swatch')) {
+        initPlansSwatches();
+      }
+    }
+
+
+    /* =============================================
+       FROM PLANS MODE
+    ============================================= */
+    const plansSelections = { brick: null, roof: null, render: null };
+
+    function initPlansSwatches() {
+      ['brick', 'roof', 'render'].forEach(mat => {
+        const grid = document.getElementById('plans-swatches-' + mat);
+        if (!grid || !SWATCHES[mat]) return;
+        SWATCHES[mat].forEach(sw => {
+          const div = document.createElement('div');
+          div.className = `swatch supplier-swatch type-${mat}`;
+          if (sw.image) {
+            div.style.backgroundImage = `url('${sw.image}')`;
+            div.style.backgroundSize = 'cover';
+            div.style.backgroundPosition = 'center';
+          } else {
+            div.style.backgroundColor = sw.hex;
+            if (sw.hex && parseInt(sw.hex.replace('#',''), 16) > 0xD5D5D5) div.style.borderColor = '#bbbbbb';
+          }
+          div.dataset.colour = sw.name;
+          div.dataset.prompt = sw.prompt;
+          div.setAttribute('aria-label', `${sw.name} by ${sw.supplier}`);
+          div.onclick = () => selectPlansSwatch(div, mat);
+          div.innerHTML = `<span class="swatch-tooltip">${sw.name}<br><em>${sw.supplier}</em></span>`;
+          grid.appendChild(div);
+        });
+      });
+    }
+
+    function selectPlansSwatch(el, material) {
+      const grid = el.closest('.swatch-grid');
+      grid.querySelectorAll('.swatch, .swatch-none, .supplier-swatch').forEach(s => s.classList.remove('selected'));
+      el.classList.add('selected');
+      const colour = el.dataset.colour || '';
+      const prompt = el.dataset.prompt || '';
+      plansSelections[material] = colour ? { colour, prompt } : null;
+    }
+
+    function handlePlansFile(input) {
+      const file = input.files[0];
+      if (!file) return;
+      if (!validateUploadFile(file)) { input.value = ''; return; }
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = document.getElementById('plans-preview');
+        img.src = e.target.result;
+        img.classList.add('visible');
+        document.getElementById('plans-dropzone').style.display = 'none';
+        document.getElementById('plans-clear').style.display = 'block';
+        document.getElementById('plans-preview-wrap').classList.add('visible');
+        document.getElementById('plans-hint').innerHTML =
+          '<span>✅ Drawing loaded. Choose materials below, then hit Generate.</span>';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function clearPlansUpload() {
+      document.getElementById('plans-file').value = '';
+      const img = document.getElementById('plans-preview');
+      img.src = ''; img.classList.remove('visible');
+      document.getElementById('plans-dropzone').style.display = '';
+      document.getElementById('plans-clear').style.display = 'none';
+      document.getElementById('plans-preview-wrap').classList.remove('visible');
+      document.getElementById('plans-hint').innerHTML =
+        '<span>GPT-4 Vision will read this drawing and extract the architecture automatically.</span>';
+    }
+
+    async function generateFromPlans() {
+      const fileInput = document.getElementById('plans-file');
+      if (!fileInput.files[0]) {
+        showToast('Please upload an elevation drawing first.', 'error'); return;
+      }
+
+      const btn = document.getElementById('btn-plans');
+      btn.disabled = true; btn.classList.add('loading');
+      setState('loading');
+      disableActions(true);
+      document.getElementById('loading-title').textContent = 'Analysing your elevation drawing…';
+      document.getElementById('loading-sub').textContent = 'GPT-4 Vision reads the plans, then AI generates a photorealistic render — may take 60–90s';
+
+      try {
+        // Build material prompt from swatch selections
+        const matParts = [];
+        if (plansSelections.brick) matParts.push(`brick: ${plansSelections.brick.prompt}`);
+        if (plansSelections.roof)  matParts.push(`roof: ${plansSelections.roof.prompt}`);
+        if (plansSelections.render) matParts.push(`render: ${plansSelections.render.prompt}`);
+        const materialPrompt = matParts.join('; ');
+
+        const formData = new FormData();
+        formData.append('elevation_image', fileInput.files[0]);
+        formData.append('style', document.getElementById('plans-style').value);
+        formData.append('notes', document.getElementById('plans-notes').value.trim());
+        formData.append('material_prompt', materialPrompt);
+
+        const elevationPreviewSrc = document.getElementById('plans-preview').src;
+
+        const { resp, data } = await safeJsonFetch('/api/generate-from-plans', { method: 'POST', body: formData });
+        if (!resp.ok || data.error) throw new Error(data.error || 'Generation failed');
+        if (!data.image_url) throw new Error('No image URL returned.');
+
+        // Show in compare panel
+        currentImageUrl = data.image_url;
+        generatedPrompt = data.prompt;
+        document.getElementById('compare-before').src = elevationPreviewSrc;
+        document.getElementById('compare-after').src = data.image_url;
+        document.getElementById('prompt-display').textContent =
+          `Vision Analysis: ${data.vision_analysis || '—'}\n\nGeneration Engine: ${data.engine || 'kie_img2img'}`;
+        setState('compare');
+        disableActions(false);
+        addToHistory(data.image_url, '📐');
+        document.getElementById('add-design-banner').classList.remove('hidden');
+        showToast('Render generated from elevation!', 'success');
+
+      } catch (err) {
+        setState('error');
+        document.getElementById('error-msg').textContent = err.message;
+        showToast('Generation failed.', 'error');
+      } finally {
+        btn.disabled = false; btn.classList.remove('loading');
+        disableActions(false);
+      }
     }
 
     /* =============================================
