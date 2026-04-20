@@ -771,6 +771,7 @@ def uploaded_file(filename):
     return send_file(os.path.join("resources", "uploads", filename))
 
 
+
 @app.route('/api/generate-from-plans', methods=['POST'])
 @require_role(['admin', 'marketing'])
 def api_generate_from_plans():
@@ -778,15 +779,14 @@ def api_generate_from_plans():
     Generate a photorealistic facade render from an architectural elevation drawing.
 
     Multipart form fields:
-      elevation_image  — the elevation drawing file (PNG, JPG, PDF page)
-      style            — house style e.g. "Modern Australian", "Hamptons", "Heritage"
+      elevation_image  — the elevation drawing file (PNG, JPG, WebP)
+      style            — house style e.g. "Modern Australian Contemporary"
       notes            — free text notes from the user
-      material_prompt  — swatch-derived material descriptions (e.g. "Colorbond Monument roof, PGH Urban Gull brick")
+      material_prompt  — swatch-derived material descriptions
 
     Returns JSON: { image_url, vision_analysis, prompt, engine }
     """
     import traceback
-    import time
 
     try:
         file = request.files.get('elevation_image')
@@ -798,109 +798,120 @@ def api_generate_from_plans():
         if ext not in allowed_ext:
             return jsonify({'error': f'Unsupported file type .{ext}. Use PNG, JPG, or WebP.'}), 400
 
-        style = request.form.get('style', 'Modern Australian Contemporary')
-        notes = request.form.get('notes', '')
+        style       = request.form.get('style', 'Modern Australian Contemporary')
+        notes       = request.form.get('notes', '')
         material_prompt = request.form.get('material_prompt', '')
 
-        # Save to uploads dir (needed for Replicate which reads local file)
+        # Save locally (Replicate needs a local path)
         upload_dir = os.path.join(os.getcwd(), 'resources', 'uploads')
         os.makedirs(upload_dir, exist_ok=True)
-        safe_name = f"plan_{uuid.uuid4().hex}.{ext}"
-        file_path = os.path.join(upload_dir, safe_name)
+        safe_name  = f"plan_{uuid.uuid4().hex}.{ext}"
+        file_path  = os.path.join(upload_dir, safe_name)
         file.save(file_path)
 
-        # ── Step 1: GPT-4 Vision — read the elevation ──────────────────────────
+        # ── Step 1: GPT-4 Vision reads the elevation ───────────────────────────
         from marketing.llm_client import LLMClient
         client = LLMClient(provider="openai")
 
-        vision_prompt = f"""You are an architectural building surveyor analysing an elevation drawing for a photorealistic render.
-Extract these details concisely:
-1. ROOF: type (hip/gable/skillion), pitch direction, material
-2. WALLS: number of storeys, wall zones (brick/render/cladding), window positions
-3. EAVES: overhang or flush? width?
-4. GARAGE: present? flush or separate?
-5. COLUMNS/PIERS: material and height
-6. OVERALL STYLE: e.g. contemporary, traditional, federation
+        vision_prompt = f"""You are a professional architectural renderer. 
+I will show you an architectural elevation drawing of a house. Your job is to write a detailed, vivid description of what the FINISHED, BUILT house would look like in real life — suitable as a prompt for an AI image generator like Stable Diffusion or Flux.
 
-User style preference: {style}
-User notes: {notes}
+Analyse the elevation drawing and describe:
+- Roof: shape (hip/gable/skillion/flat), number of pitches, overhangs/eaves
+- Facade composition: how many wall segments, garage position (left/right/centre), entry porch
+- Window layout: number, size, shape of windows across the facade  
+- Architectural features: columns, piers, bulkheads, pergolas, feature walls
+- Number of storeys
+- Proportions: wide and low, or tall and narrow?
 
-Output a concise paragraph describing what a photorealistic render of this elevation should look like, suitable for an AI image generator. Focus on architectural features and proportions, not measurements."""
+Target style: {style}
+{f"Extra notes: {notes}" if notes else ""}
+{f"Materials specified: {material_prompt}" if material_prompt else "Default materials: contemporary face brick walls, Colorbond roof, rendered feature panels."}
+
+Output ONLY a single vivid descriptive paragraph (3–5 sentences) describing the finished house exterior for an AI image generator. Do NOT list bullet points. Do NOT mention the drawing, dimensions, or annotations. Write as if describing a real photograph."""
 
         vision_analysis = client.generate_text(vision_prompt, image_path=file_path)
-        print(f"[Plans] Vision analysis: {vision_analysis[:200]}...")
+        print(f"[Plans] Vision: {vision_analysis[:250]}...")
 
-        # ── Step 2: Build the generation prompt ────────────────────────────────
-        material_section = f" Materials: {material_prompt}." if material_prompt else ""
-        base_desc = (
-            f"Photorealistic Australian residential house facade exterior, "
-            f"professional architectural visualisation, {style} style, "
-            f"sunny day, manicured Australian garden, blue sky, clean driveway. "
-            f"{vision_analysis}{material_section} "
-            f"Cinematic lighting, sharp focus, no text, no watermarks."
+        # ── Step 2: Build generation prompt ────────────────────────────────────
+        material_section = f" {material_prompt}." if material_prompt else \
+            " Contemporary face brick lower walls, rendered upper panels, Colorbond steel roof, aluminium window frames."
+
+        gen_prompt = (
+            f"Photorealistic architectural exterior photograph of a newly built Australian residential house, "
+            f"professional real estate photography, {style} style, "
+            f"shot from the street, eye-level perspective, sunny day with blue sky and white clouds, "
+            f"manicured front lawn, clean concrete driveway, established garden beds. "
+            f"{vision_analysis} "
+            f"{material_section} "
+            f"Sharp focus, high detail, cinematic lighting, no text, no watermarks, no annotations, "
+            f"photorealistic, 8K quality."
         )
 
-        # ── Step 3: Try Replicate ControlNet, fallback to KIE.ai img2img ───────
+        negative = (
+            "drawing, sketch, blueprint, line art, architectural plan, annotations, dimensions, "
+            "text labels, cartoon, render artefacts, low quality, blurry, watermark, signature, "
+            "oversized trees, vegetation blocking facade"
+        )
+
+        # ── Step 3: Replicate ControlNet (best) or KIE text-to-image (fallback) ─
         replicate_key = os.environ.get("REPLICATE_API_TOKEN")
-        engine_used = "replicate_controlnet"
 
         if replicate_key:
+            # PRIMARY: Flux Canny ControlNet — preserves elevation structure exactly
             try:
+                engine_used = "replicate_controlnet"
                 from utils.replicate_client import generate_image_controlnet
                 image_url = generate_image_controlnet(
-                    prompt=base_desc,
+                    prompt=gen_prompt,
                     image_path=file_path,
                     api_token=replicate_key
                 )
             except Exception as rep_err:
-                print(f"[Plans] Replicate failed ({rep_err}), falling back to KIE.ai img2img")
-                engine_used = "kie_img2img_fallback"
-                # Upload to Supabase first for public URL
-                with open(file_path, 'rb') as f_read:
-                    file_bytes = f_read.read()
-                unique_name = f"studio/plan_{uuid.uuid4().hex}.{ext}"
-                if supabase:
-                    supabase.storage.from_("cavalierone_uploads").upload(
-                        unique_name, file_bytes, {"content-type": f"image/{ext}"}
-                    )
-                    public_url = supabase.storage.from_("cavalierone_uploads").get_public_url(unique_name)
-                else:
-                    public_url = request.host_url.rstrip('/') + f'/uploads/{safe_name}'
-
-                from utils.kie_client import enhance_image as kie_enhance
-                urls = kie_enhance(image_url=public_url, prompt=base_desc, model='flux-2/flex-image-to-image', strength=0.85, aspect_ratio='16:9')
+                print(f"[Plans] Replicate failed ({rep_err}), falling back to KIE text-to-image")
+                engine_used = "kie_text2img_fallback"
+                from utils.kie_client import generate_image as kie_txt2img
+                urls = kie_txt2img(
+                    prompt=gen_prompt,
+                    model='flux-2/flex-text-to-image',
+                    aspect_ratio='16:9',
+                    resolution='2K',
+                    negative_prompt=negative,
+                )
                 image_url = urls[0] if urls else None
         else:
-            # No Replicate key → KIE.ai img2img
-            engine_used = "kie_img2img"
-            with open(file_path, 'rb') as f_read:
-                file_bytes = f_read.read()
-            unique_name = f"studio/plan_{uuid.uuid4().hex}.{ext}"
-            if supabase:
-                supabase.storage.from_("cavalierone_uploads").upload(
-                    unique_name, file_bytes, {"content-type": f"image/{ext}"}
-                )
-                public_url = supabase.storage.from_("cavalierone_uploads").get_public_url(unique_name)
-            else:
-                public_url = request.host_url.rstrip('/') + f'/uploads/{safe_name}'
-
-            from utils.kie_client import enhance_image as kie_enhance
-            urls = kie_enhance(image_url=public_url, prompt=base_desc, model='flux-2/flex-image-to-image', strength=0.85, aspect_ratio='16:9')
+            # FALLBACK: KIE text-to-image from vision description
+            # NOTE: We do NOT use img2img here — an elevation drawing on white paper
+            # looks nothing like a real house photo, so img2img just colourises the drawing.
+            # Text-to-image generates a proper render from the GPT-4 description.
+            engine_used = "kie_text2img"
+            from utils.kie_client import generate_image as kie_txt2img
+            urls = kie_txt2img(
+                prompt=gen_prompt,
+                model='flux-2/flex-text-to-image',
+                aspect_ratio='16:9',
+                resolution='2K',
+                negative_prompt=negative,
+            )
             image_url = urls[0] if urls else None
 
         if not image_url:
             return jsonify({'error': 'AI generation returned no image'}), 500
 
         return jsonify({
-            'image_url': image_url,
+            'image_url':       image_url,
             'vision_analysis': vision_analysis,
-            'prompt': base_desc,
-            'engine': engine_used,
+            'prompt':          gen_prompt,
+            'engine':          engine_used,
         })
 
     except Exception as e:
         print(f"[Plans] Error: {e}")
-        return jsonify({'error': f'Generation failed: {str(e)}', 'detail': traceback.format_exc()[-600:]}), 500
+        return jsonify({
+            'error':  f'Generation failed: {str(e)}',
+            'detail': traceback.format_exc()[-800:],
+        }), 500
+
 
 @app.route('/sales-training')
 def sales_training():
