@@ -802,9 +802,10 @@ def api_generate_from_plans():
         notes       = request.form.get('notes', '')
         material_prompt = request.form.get('material_prompt', '')
 
-        # Save locally (Replicate needs a local path)
-        upload_dir = os.path.join(os.getcwd(), 'resources', 'uploads')
-        os.makedirs(upload_dir, exist_ok=True)
+        # Save to system temp dir — Vercel serverless only allows writes to /tmp
+        # resources/uploads/ is in the read-only task bundle on Vercel (Errno 30)
+        import tempfile
+        upload_dir = tempfile.gettempdir()  # /tmp on Linux/Vercel, %TEMP% locally
         safe_name  = f"plan_{uuid.uuid4().hex}.{ext}"
         file_path  = os.path.join(upload_dir, safe_name)
         file.save(file_path)
