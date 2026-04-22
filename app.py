@@ -839,23 +839,30 @@ def api_generate_from_plans():
                 + "\nUse these coloured zones to understand WHICH PART of the facade each material should be applied to."
             )
 
-        vision_prompt = f"""You are a professional architectural renderer. 
-I will show you an architectural elevation drawing of a house. Your job is to write a detailed, vivid description of what the FINISHED, BUILT house would look like in real life — suitable as a prompt for an AI image generator like Stable Diffusion or Flux.
+        vision_prompt = f"""You are a professional architectural renderer.
+I will show you an architectural elevation drawing of a residential house. Your task is to produce an ARCHITECTURALLY PRECISE description of the FINISHED, BUILT house suitable for an AI image generator.
 
-Analyse the elevation drawing and describe:
-- Roof: shape (hip/gable/skillion/flat), number of pitches, overhangs/eaves
-- Facade composition: how many wall segments, garage position (left/right/centre), entry porch
-- Window layout: number, size, shape of windows across the facade  
-- Architectural features: columns, piers, bulkheads, pergolas, feature walls
-- Number of storeys
-- Proportions: wide and low, or tall and narrow?
+CRITICAL REQUIREMENT — ROOFLINE ACCURACY:
+You MUST describe the roofline section by section from left to right. Many houses have MULTIPLE distinct roof planes at DIFFERENT heights — do NOT merge them into a single generic roofline. For example:
+- A gable over the main body + a lower skillion or hip over the entry porch = TWO separate roof sections that must BOTH appear in your description
+- A double gable = TWO gables at the same or different heights
+- A hip with a lower skillion over the garage = TWO sections
+If you see ANY step-down, break, or height change in the roofline, describe BOTH sections explicitly.
+
+Describe the following precisely:
+1. ROOFLINE: List each distinct roof section LEFT-TO-RIGHT. For each: shape (gable/hip/skillion/flat), relative height, and where it sits over the facade.
+2. FACADE ZONES: garage position and width, entry porch location, main living section, any feature walls
+3. WINDOWS: number, position, and approximate size of each window group
+4. ENTRY: porch depth, columns/piers if any, front door position
+5. PROPORTIONS: overall width vs height ratio
 
 Target style: {style}
 {f"Extra notes: {notes}" if notes else ""}
-{f"Materials specified: {material_prompt}" if material_prompt else "Default materials: contemporary face brick walls, Colorbond steel sheet roof (NOT tiles), rendered feature panels."}
+{f"Materials: {material_prompt}" if material_prompt else "Default materials: contemporary face brick walls, Colorbond steel sheet metal roof (NOT tiles), rendered feature panels."}
 {zone_context}
 
-Output ONLY a single vivid descriptive paragraph (3–5 sentences) describing the finished house exterior for an AI image generator. Do NOT list bullet points. Do NOT mention the drawing, dimensions, annotations, or colour zones. Write as if describing a real photograph."""
+Now write ONE coherent paragraph (4–6 sentences) for an AI image generator. Include ALL distinct roof sections. Do NOT mention the drawing, dimensions, annotations, or colour zones. Write as if describing a real photograph of the finished house."""
+
 
         vision_analysis = client.generate_text(vision_prompt, image_path=file_path)
         print(f"[Plans] Vision: {vision_analysis[:250]}...")
@@ -899,6 +906,7 @@ Output ONLY a single vivid descriptive paragraph (3–5 sentences) describing th
             f"shot from the street, eye-level perspective, sunny day with blue sky and white clouds, "
             f"manicured front lawn, clean concrete driveway, established garden beds. "
             f"{vision_analysis} "
+            f"IMPORTANT: reproduce the EXACT roofline geometry including ALL separate roof planes, breaks and step-downs — do NOT simplify or merge distinct roof sections. "
             f"{material_section} "
             f"Sharp focus, high detail, cinematic lighting, no text, no watermarks, no annotations, "
             f"photorealistic, 8K quality."
@@ -907,7 +915,9 @@ Output ONLY a single vivid descriptive paragraph (3–5 sentences) describing th
         negative = (
             "drawing, sketch, blueprint, line art, architectural plan, annotations, dimensions, "
             "text labels, cartoon, render artefacts, low quality, blurry, watermark, signature, "
-            "oversized trees, vegetation blocking facade"
+            "oversized trees, vegetation blocking facade, "
+            "merged rooflines, incorrect roofline, simplified roof, wrong roof shape, "
+            "missing roof section, extra roof section, tile roof, terracotta tiles"
         )
 
         # ── Step 3: Replicate ControlNet (best) or KIE text-to-image (fallback) ─

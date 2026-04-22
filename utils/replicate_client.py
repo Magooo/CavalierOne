@@ -57,7 +57,7 @@ def generate_image_controlnet(prompt, image_path, api_token=None):
                 "control_image": control_image,
                 "prompt": high_quality_prompt,
                 "steps": 28,
-                "guidance": 3.5,      # Flux Canny Pro range: 2.5–4. Higher values ignore the text prompt.
+                "guidance": 5.0,      # 3.5 was too loose for complex rooflines; 5.0 holds canny structure without overriding materials
                 "safety_tolerance": 5,
                 "output_format": "jpg"
             }
