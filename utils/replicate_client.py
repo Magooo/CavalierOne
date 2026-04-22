@@ -56,8 +56,8 @@ def generate_image_controlnet(prompt, image_path, api_token=None):
             input={
                 "control_image": control_image,
                 "prompt": high_quality_prompt,
-                "steps": 50,
-                "guidance": 12,       # Lower guidance to ignore faint text/dimension lines
+                "steps": 28,
+                "guidance": 3.5,      # Flux Canny Pro range: 2.5–4. Higher values ignore the text prompt.
                 "safety_tolerance": 5,
                 "output_format": "jpg"
             }

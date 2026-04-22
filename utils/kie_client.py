@@ -29,14 +29,19 @@ MAX_WAIT_SECONDS = 180
 
 
 def _headers() -> dict:
-    """Return authorisation headers for kie.ai requests."""
-    if not KIE_API_KEY:
+    """Return authorisation headers for kie.ai requests.
+    
+    IMPORTANT: Read the key fresh from os.environ each call — NOT from the module-level
+    constant — so Vercel env vars (injected after cold-start import) are always picked up.
+    """
+    key = os.environ.get("KIE_API_KEY", "")
+    if not key:
         raise RuntimeError(
-            "KIE_API_KEY is not set. Add it to your .env file.\n"
+            "KIE_API_KEY is not set. Add it to your Vercel environment variables.\n"
             "Get your key at: https://kie.ai/api-key"
         )
     return {
-        "Authorization": f"Bearer {KIE_API_KEY}",
+        "Authorization": f"Bearer {key}",
         "Content-Type": "application/json",
     }
 
