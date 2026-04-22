@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cavalier One | Marketing Generator</title>
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
     <style>
@@ -170,19 +171,22 @@
         /* Tabs CSS */
         .tabs {
             display: flex;
+            flex-wrap: wrap;          /* Allow tabs to wrap onto multiple rows */
+            gap: 4px;
             margin-bottom: 0;
         }
 
         .tab-btn {
-            padding: 1rem 2rem;
+            padding: 0.7rem 1.2rem;
             border: none;
             background: #e2e8f0;
             cursor: pointer;
-            border-radius: 12px 12px 0 0;
+            border-radius: 10px 10px 0 0;
             font-weight: 600;
+            font-size: 0.85rem;
             color: var(--secondary);
-            margin-right: 0.5rem;
             transition: all 0.2s;
+            white-space: nowrap;      /* Don't break text within a tab */
         }
 
         .tab-btn.active {
@@ -193,7 +197,6 @@
 
         .card {
             border-top-left-radius: 0;
-            /* Connect to tab */
         }
 
         .tab-content {
@@ -202,6 +205,25 @@
 
         .tab-content.active {
             display: block;
+        }
+
+        /* ── Responsive ────────────────────────────────── */
+        @media (max-width: 700px) {
+            body { padding: 0.75rem; }
+            .container { max-width: 100%; }
+            .tabs { gap: 3px; }
+            .tab-btn {
+                flex: 1 1 45%;        /* 2 per row on phone */
+                border-radius: 8px 8px 0 0;
+                padding: 0.6rem 0.5rem;
+                font-size: 0.78rem;
+                text-align: center;
+            }
+            .header h1 { font-size: 1.6rem; }
+            .header p  { font-size: 0.9rem; }
+        }
+        @media (max-width: 400px) {
+            .tab-btn { flex: 1 1 100%; border-radius: 6px 6px 0 0; }
         }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
