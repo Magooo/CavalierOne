@@ -220,6 +220,20 @@
     .history-thumb:hover { border-color: var(--accent); transform: scale(1.04); }
     .history-empty { color: var(--mid); font-size: 13px; display: flex; align-items: center; padding: 0 0 8px; }
 
+    /* Vision Analysis callout */
+    .vision-insight { background: var(--white); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); overflow: hidden; display: none; }
+    .vision-insight.visible { display: block; }
+    .vision-insight__header { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; cursor: pointer; background: #f0f4ff; border-bottom: 1px solid #d0d9f0; user-select: none; }
+    .vision-insight__title { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #3b52a5; display: flex; align-items: center; gap: 8px; }
+    .vision-insight__engine { font-size: 10px; font-weight: 600; padding: 2px 8px; background: #3b52a5; color: #fff; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .vision-insight__chevron { font-size: 10px; color: #3b52a5; transition: transform 0.2s; }
+    .vision-insight__chevron.open { transform: rotate(180deg); }
+    .vision-insight__body { padding: 14px 20px; display: none; }
+    .vision-insight__body.open { display: block; }
+    .vision-insight__text { font-size: 13px; color: var(--text); line-height: 1.7; font-style: italic; }
+    .vision-insight__hint { margin-top: 10px; font-size: 11px; color: var(--text-muted); background: #f8f8f8; border-radius: var(--radius-sm); padding: 8px 12px; border-left: 3px solid #3b52a5; }
+
+
     /* Toast */
     .toast { position: fixed; bottom: 32px; right: 32px; background: var(--footer); color: var(--white); padding: 14px 20px; border-radius: var(--radius-md); font-size: 13px; font-weight: 500; box-shadow: var(--shadow-lg); z-index: 9999; transform: translateY(80px); opacity: 0; transition: transform 0.3s ease, opacity 0.3s ease; max-width: 360px; }
     .toast.show { transform: translateY(0); opacity: 1; }
@@ -1101,6 +1115,21 @@
         </div>
       </div>
 
+      <!-- Vision Analysis callout (Plans mode only) -->
+      <div class="vision-insight" id="vision-insight">
+        <div class="vision-insight__header" onclick="toggleVisionInsight()">
+          <span class="vision-insight__title">
+            🧠 What the AI understood
+            <span class="vision-insight__engine" id="vision-engine-badge">Flux ControlNet</span>
+          </span>
+          <span class="vision-insight__chevron" id="vision-chevron">▼</span>
+        </div>
+        <div class="vision-insight__body" id="vision-insight-body">
+          <p class="vision-insight__text" id="vision-insight-text">—</p>
+          <div class="vision-insight__hint">💡 <strong>Roofline wrong?</strong> Check the description above — if it missed a section, add a correction in the <strong>Notes</strong> field and regenerate. Use the <strong>Eraser</strong> to remove dimension lines before generating for best results.</div>
+        </div>
+      </div>
+
       <!-- Add to Design Banner (shown after result) -->
       <div class="add-design-banner hidden" id="add-design-banner">
         <div class="add-design-banner__text">
@@ -1648,8 +1677,24 @@
         generatedPrompt = data.prompt;
         document.getElementById('compare-before').src = elevationPreviewSrc;
         document.getElementById('compare-after').src = data.image_url;
+        // Populate Vision Analysis callout
+        const visionEl = document.getElementById('vision-insight');
+        const visionText = document.getElementById('vision-insight-text');
+        const visionBadge = document.getElementById('vision-engine-badge');
+        const visionChevron = document.getElementById('vision-chevron');
+        const visionBody = document.getElementById('vision-insight-body');
+        if (data.vision_analysis) {
+          visionText.textContent = data.vision_analysis;
+          visionBadge.textContent = data.engine === 'replicate_controlnet' ? 'Flux ControlNet' : 'KIE Text-to-Image';
+          visionEl.classList.add('visible');
+          // Auto-open it so user can immediately verify the roofline was read correctly
+          visionBody.classList.add('open');
+          visionChevron.classList.add('open');
+        } else {
+          visionEl.classList.remove('visible');
+        }
         document.getElementById('prompt-display').textContent =
-          `Vision Analysis: ${data.vision_analysis || '—'}\n\nGeneration Engine: ${data.engine || 'kie_img2img'}`;
+          `${data.vision_analysis || ''}\n\nEngine: ${data.engine || 'kie'}`;
         setState('compare');
         disableActions(false);
         addToHistory(data.image_url, '📐');
@@ -2301,6 +2346,13 @@
     function toggleFinetunePanel() {
       const body    = document.getElementById('ft-body');
       const chevron = document.getElementById('ft-chevron');
+      body.classList.toggle('open');
+      chevron.classList.toggle('open');
+    }
+
+    function toggleVisionInsight() {
+      const body    = document.getElementById('vision-insight-body');
+      const chevron = document.getElementById('vision-chevron');
       body.classList.toggle('open');
       chevron.classList.toggle('open');
     }
