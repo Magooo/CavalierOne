@@ -1,6 +1,3 @@
-import scrapetube
-from youtube_transcript_api import YouTubeTranscriptApi
-from youtube_transcript_api.formatters import TextFormatter
 
 def get_channel_videos(channel_id, limit=5):
     """
@@ -11,6 +8,7 @@ def get_channel_videos(channel_id, limit=5):
     Returns:
         list: List of dicts with video_id and title (title might be missing depending on scrapetube).
     """
+    import scrapetube
     print(f"Fetching videos for channel: {channel_id}")
     videos = []
     try:
@@ -42,6 +40,7 @@ def get_video_transcript(video_id):
         str: The full transcript text, or None if not available.
     """
     try:
+        from youtube_transcript_api import YouTubeTranscriptApi
         # 2026-01-21: Environment uses non-standard API requiring instantiation
         api = YouTubeTranscriptApi()
         transcript_obj = api.fetch(video_id)

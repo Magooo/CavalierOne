@@ -40,6 +40,25 @@ def request_entity_too_large(e):
                  f'{"Please resize your image (e.g. save as JPEG at 80% quality) before uploading." if IS_VERCEL else "Try a different format or reduce resolution."}'
     }), 413
 
+@app.errorhandler(500)
+def internal_error(e):
+    """Temporary: expose traceback so we can diagnose Vercel startup crashes."""
+    import traceback
+    tb = traceback.format_exc()
+    return f"<pre style='padding:2rem;font-family:monospace;white-space:pre-wrap'><b>500 Internal Server Error</b>\n\n{tb}</pre>", 500
+
+@app.route('/api/health')
+def health_check():
+    """Diagnostic endpoint — shows startup import errors and Python version."""
+    import sys
+    errors = globals().get('_STARTUP_ERRORS', [])
+    return jsonify({
+        'status': 'ok' if not errors else 'degraded',
+        'python': sys.version,
+        'startup_errors': errors,
+        'is_vercel': bool(os.environ.get('VERCEL')),
+    })
+
 
 import io
 
@@ -110,22 +129,52 @@ def global_auth_check():
             "Access Denied: You are authenticated, but you do not have an active role in CavalierOne. "
             "If you need access, ask your Admin to assign you a role in the CavalierOne Admin Panel.", 403
         )
-# ---------------------------------------------
+# -----------------------------------------------------------------------------
+# Safe module imports — each wrapped so one failure doesn't crash the whole app.
+# Errors are captured in _STARTUP_ERRORS and exposed via /api/health.
+# -----------------------------------------------------------------------------
+_STARTUP_ERRORS = []
 
-# Configuration
-from config import Config
-# MASTER_PROMPT_PATH is now handled by utils.data_loader
+def _safe_import(label, fn):
+    try:
+        return fn()
+    except Exception as _e:
+        import traceback as _tb
+        _STARTUP_ERRORS.append(f"[{label}] {_e}\n{_tb.format_exc()}")
+        return None
 
-from utils.prompt_builder import build_marketing_prompt
+# Config
+_config_result = _safe_import("config", lambda: __import__('config').Config)
+Config = _config_result
 
-from utils.youtube_miner import get_channel_videos, get_video_transcript
+# prompt_builder
+_pb = _safe_import("prompt_builder", lambda: __import__('utils.prompt_builder', fromlist=['build_marketing_prompt']))
+build_marketing_prompt = getattr(_pb, 'build_marketing_prompt', None) if _pb else None
 
-from utils.data_loader import load_json_template, load_master_prompt, get_style_guide, get_company_info
-from marketing import SocialMediaPost
-from utils.notebook_client import NotebookLMClient
-from utils.fireflies_client import FirefliesClient
+# youtube_miner
+_ym = _safe_import("youtube_miner", lambda: __import__('utils.youtube_miner', fromlist=['get_channel_videos', 'get_video_transcript']))
+get_channel_videos  = getattr(_ym, 'get_channel_videos',  None) if _ym else None
+get_video_transcript = getattr(_ym, 'get_video_transcript', None) if _ym else None
 
-# Initialize Supabase
+# data_loader
+_dl = _safe_import("data_loader", lambda: __import__('utils.data_loader', fromlist=['load_json_template', 'load_master_prompt', 'get_style_guide', 'get_company_info']))
+load_json_template = getattr(_dl, 'load_json_template', None) if _dl else None
+load_master_prompt  = getattr(_dl, 'load_master_prompt',  None) if _dl else None
+get_style_guide     = getattr(_dl, 'get_style_guide',     None) if _dl else None
+get_company_info    = getattr(_dl, 'get_company_info',    None) if _dl else None
+
+# marketing
+_mkt = _safe_import("marketing", lambda: __import__('marketing', fromlist=['SocialMediaPost']))
+SocialMediaPost = getattr(_mkt, 'SocialMediaPost', None) if _mkt else None
+
+# notebook_client / fireflies_client
+_nc = _safe_import("notebook_client", lambda: __import__('utils.notebook_client', fromlist=['NotebookLMClient']))
+NotebookLMClient = getattr(_nc, 'NotebookLMClient', None) if _nc else None
+
+_fc = _safe_import("fireflies_client", lambda: __import__('utils.fireflies_client', fromlist=['FirefliesClient']))
+FirefliesClient = getattr(_fc, 'FirefliesClient', None) if _fc else None
+
+# Supabase
 from supabase import create_client, Client
 import tempfile
 import uuid
@@ -136,9 +185,9 @@ supabase: Client = None
 if supabase_url and supabase_key:
     supabase = create_client(supabase_url, supabase_key)
 
-# Initialize Clients
-notebook_client = NotebookLMClient()
-fireflies_client = FirefliesClient()
+# Initialize Clients (guard against failed imports)
+notebook_client  = NotebookLMClient()  if NotebookLMClient  else None
+fireflies_client = FirefliesClient()   if FirefliesClient   else None
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
