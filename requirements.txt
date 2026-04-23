@@ -14,4 +14,4 @@ xhtml2pdf
 requests
 replicate
 supabase
-svglib==1.5.1
+

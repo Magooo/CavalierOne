@@ -1,7 +1,6 @@
 import os
-from xhtml2pdf import pisa
-from flask import render_template
 import io
+from flask import render_template
 
 def create_brochure_from_html(output_filename, html_content):
     """
@@ -39,6 +38,12 @@ def create_brochure_from_html(output_filename, html_content):
             return uri
             
         return path
+
+    try:
+        from xhtml2pdf import pisa
+    except ImportError as e:
+        print(f"[pdf_generator] xhtml2pdf not available: {e}")
+        return False
 
     with open(output_filename, "wb") as result_file:
         pisa_status = pisa.CreatePDF(
