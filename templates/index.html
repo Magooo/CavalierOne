@@ -788,6 +788,12 @@
                                 <input type="text" id="platform" style="width:100%; padding:10px; border-radius:6px; border:1px solid #ccc;" value="LinkedIn, Facebook, and Instagram">
                             </div>
 
+                            <div class="form-group" style="margin-bottom:25px;">
+                                <label for="job_hero_image">Hero Image URL (Optional)</label>
+                                <input type="text" id="job_hero_image" style="width:100%; padding:10px; border-radius:6px; border:1px solid #ccc;" placeholder="Paste an image URL to override default" oninput="updateHeroImage()">
+                                <div class="helper-text" style="font-size: 11px; color: #64748b; margin-top: 4px;">Leave blank for default architecture lifestyle image.</div>
+                            </div>
+
                             <button type="button" class="btn-generate" id="btnGenerateJobAd" onclick="generateJobAdAJAX()">
                                 ✨ Generate Job Ad
                             </button>
@@ -800,7 +806,10 @@
                         <!-- Top: Controls & Status -->
                         <div style="display: flex; justify-content: space-between; align-items: center; background: white; padding: 15px 20px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
                             <div id="jobAdStatus" style="font-weight: 500; color: #64748b;">Ready to generate.</div>
-                            <button onclick="copyJobAd()" style="padding: 8px 16px; background: #0f172a; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">Copy Poster Text</button>
+                            <div style="display: flex; gap: 10px;">
+                                <button onclick="copyJobAd()" style="padding: 8px 16px; background: #e2e8f0; color: #0f172a; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">Copy Text</button>
+                                <button onclick="downloadJobAdPoster(this)" style="padding: 8px 16px; background: #0f172a; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">Download Poster</button>
+                            </div>
                         </div>
                         
                         <!-- Middle: Split Screen Editor -->
@@ -834,10 +843,21 @@
             </div>
             
             <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+            <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
             <script>
+                function updateHeroImage() {
+                    const hero = document.querySelector('.job-ad-hero');
+                    const url = document.getElementById('job_hero_image').value.trim();
+                    if (url) {
+                        hero.style.backgroundImage = `url('${url}')`;
+                    } else {
+                        hero.style.backgroundImage = `url('https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1200&auto=format&fit=crop')`;
+                    }
+                }
+
                 // Retain form data
                 document.addEventListener('DOMContentLoaded', () => {
-                    const fields = ['job_template_select', 'custom_role_title', 'job_location', 'job_salary', 'job_perks', 'job_extra', 'platform'];
+                    const fields = ['job_template_select', 'custom_role_title', 'job_location', 'job_salary', 'job_perks', 'job_extra', 'platform', 'job_hero_image'];
                     fields.forEach(id => {
                         const el = document.getElementById(id);
                         if (el) {
@@ -853,6 +873,8 @@
                         const customGroup = document.getElementById('custom_role_group');
                         if(customGroup) customGroup.style.display = 'block';
                     }
+                    
+                    updateHeroImage();
                 });
 
                 function updateJobAdPreview() {
@@ -867,6 +889,37 @@
                     navigator.clipboard.writeText(content).then(() => {
                         alert('Copied to clipboard!');
                     });
+                }
+                
+                function downloadJobAdPoster(btn) {
+                    const poster = document.querySelector('.job-ad-poster');
+                    const originalText = btn.innerText;
+                    btn.innerText = "Generating...";
+                    btn.disabled = true;
+                    
+                    if (typeof html2canvas !== 'undefined') {
+                        html2canvas(poster, {
+                            scale: 2,
+                            useCORS: true,
+                            backgroundColor: '#f4f4f4'
+                        }).then(canvas => {
+                            const link = document.createElement('a');
+                            link.download = 'Cavalier_Job_Ad.png';
+                            link.href = canvas.toDataURL('image/png');
+                            link.click();
+                            btn.innerText = originalText;
+                            btn.disabled = false;
+                        }).catch(err => {
+                            console.error(err);
+                            alert('Failed to generate image. Ensure background image is accessible.');
+                            btn.innerText = originalText;
+                            btn.disabled = false;
+                        });
+                    } else {
+                        alert('Image rendering library not loaded. Try refreshing the page.');
+                        btn.innerText = originalText;
+                        btn.disabled = false;
+                    }
                 }
 
                 async function generateJobAdAJAX() {
