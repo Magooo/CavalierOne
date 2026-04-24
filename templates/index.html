@@ -700,93 +700,225 @@
             </div>
             {% endif %}
 
-            <!-- TAB 6: JOB ADS (New) -->
+            <!-- TAB 6: JOB ADS (Refactored to Studio Layout) -->
             {% if user_can_access('job_ads') %}
+            <style>
+                .job-ads-studio { display: grid; grid-template-columns: 380px 1fr; gap: 32px; align-items: start; margin-top: 20px; }
+                @media (max-width: 900px) { .job-ads-studio { grid-template-columns: 1fr; } }
+                
+                .controls-panel { background: #ffffff; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); overflow: hidden; position: sticky; top: 20px; }
+                .controls-panel__header { padding: 24px 28px 20px; border-bottom: 1px solid #e2e8f0; }
+                .controls-panel__title { font-family: 'Playfair Display', serif; font-size: 18px; color: #000; margin: 0; }
+                .controls-panel__subtitle { font-size: 12px; color: #64748b; margin-top: 4px; }
+                .controls-panel__body { padding: 24px 28px; }
+                
+                .btn-generate { width: 100%; padding: 16px; background: #AD4B43; color: white; border: none; border-radius: 6px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 10px; }
+                .btn-generate:hover:not(:disabled) { background: #8e3c35; }
+                .btn-generate:disabled { opacity: 0.6; cursor: not-allowed; }
+                
+                .job-ad-poster { border-radius: 12px; max-width: 700px; margin: 0 auto; background: #ffffff; font-family: 'Century Gothic', Arial, sans-serif; box-shadow: 0 12px 30px rgba(0,0,0,0.08); overflow: hidden; border: 1px solid #e2e8f0; }
+                .job-ad-header { background: #ad4b43; padding: 30px 40px; text-align: center; color: white; border-bottom: 5px solid #54595f; }
+                .job-ad-header h2 { margin: 0; font-family: 'Playfair Display', serif; font-size: 32px; letter-spacing: 1px; font-weight: 700; }
+                .job-ad-header p { margin: 5px 0 0 0; font-size: 14px; text-transform: uppercase; letter-spacing: 3px; opacity: 0.9; }
+                .job-ad-content { padding: 40px 50px; color: #334155; font-size: 15px; line-height: 1.6; }
+                .job-ad-content h1, .job-ad-content h2, .job-ad-content h3 { color: #ad4b43; font-family: 'Playfair Display', serif; margin-top: 1.5em; margin-bottom: 0.5em; }
+                .job-ad-content h1 { font-size: 24px; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; margin-top: 0; }
+                .job-ad-content h2 { font-size: 20px; }
+                .job-ad-content ul { padding-left: 20px; margin-bottom: 1.5em; }
+                .job-ad-content li { margin-bottom: 8px; }
+                .job-ad-footer { background: #f8fafc; padding: 20px 40px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 13px; }
+            </style>
+            
             <div id="tab-job-ads" class="tab-content" style="display: none;">
-                <div class="header-small" style="margin-bottom: 20px;">
-                    <h2 style="margin-top:0;">💼 Job Advertisements</h2>
-                    <p style="color: #64748b;">Generate formal, punchy ad copy for new roles across platforms.</p>
+                <div class="header-small" style="margin-bottom: 10px;">
+                    <h2 style="margin-top:0;">💼 Job Advertisements Studio</h2>
+                    <p style="color: #64748b;">Generate formal, punchy ad copy for new roles. (AJAX powered)</p>
                 </div>
-                <form action="/" method="POST">
-                    <input type="hidden" name="form_type" value="job_ads">
+                
+                <div class="job-ads-studio">
+                    <!-- LEFT PANEL -->
+                    <aside class="controls-panel">
+                        <div class="controls-panel__header">
+                            <h2 class="controls-panel__title">Ad Parameters</h2>
+                            <p class="controls-panel__subtitle">Configure the role details.</p>
+                        </div>
+                        <div class="controls-panel__body">
+                            <div class="form-group">
+                                <label for="job_template_select">Select Role (from Library)</label>
+                                <select id="job_template_select" style="width:100%; padding:10px; border-radius:6px; border:1px solid #ccc;" onchange="document.getElementById('custom_role_group').style.display = this.value === 'custom' ? 'block' : 'none';">
+                                    <option value="">-- Choose a Role --</option>
+                                    {% for job in job_templates %}
+                                    <option value="{{ job.role_title }}">{{ job.role_title }} ({{ job.department }})</option>
+                                    {% endfor %}
+                                    <option value="custom">Custom Entry</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group" id="custom_role_group" style="display: none; margin-top:15px;">
+                                <label for="custom_role_title">Custom Role Title</label>
+                                <input type="text" id="custom_role_title" style="width:100%; padding:10px; border-radius:6px; border:1px solid #ccc;" placeholder="e.g. Colour Consultant">
+                            </div>
+                            
+                            <div class="form-group" style="margin-top:15px;">
+                                <label for="job_location">Location / Site</label>
+                                <input type="text" id="job_location" style="width:100%; padding:10px; border-radius:6px; border:1px solid #ccc;" placeholder="e.g. Shepparton Office">
+                            </div>
+
+                            <div class="form-group" style="margin-top:15px;">
+                                <label for="job_salary">Salary & Remuneration Details</label>
+                                <input type="text" id="job_salary" style="width:100%; padding:10px; border-radius:6px; border:1px solid #ccc;" placeholder="e.g. $80k-$100k + Super">
+                            </div>
+
+                            <div class="form-group" style="margin-top:15px;">
+                                <label for="job_perks">Key Perks / Selling Points</label>
+                                <input type="text" id="job_perks" style="width:100%; padding:10px; border-radius:6px; border:1px solid #ccc;" placeholder="e.g. 4-day work week">
+                            </div>
+
+                            <div class="form-group" style="margin-top:15px;">
+                                <label for="job_extra">Extra Requirements</label>
+                                <textarea id="job_extra" style="width:100%; padding:10px; border-radius:6px; border:1px solid #ccc; min-height:80px;" placeholder="e.g. Must have 5+ years experience."></textarea>
+                            </div>
+
+                            <div class="form-group" style="margin-top:15px; margin-bottom:25px;">
+                                <label for="platform">Target Platforms</label>
+                                <input type="text" id="platform" style="width:100%; padding:10px; border-radius:6px; border:1px solid #ccc;" value="LinkedIn, Facebook, and Instagram">
+                            </div>
+
+                            <button type="button" class="btn-generate" id="btnGenerateJobAd" onclick="generateJobAdAJAX()">
+                                ✨ Generate Job Ad
+                            </button>
+                        </div>
+                    </aside>
                     
-                    <div class="form-group">
-                        <label for="job_template_select">Select Role (from Library)</label>
-                        <select name="job_template_select" id="job_template_select" required onchange="document.getElementById('custom_role_group').style.display = this.value === 'custom' ? 'block' : 'none';">
-                            <option value="">-- Choose a Role --</option>
-                            {% for job in job_templates %}
-                            <option value="{{ job.role_title }}">{{ job.role_title }} ({{ job.department }})</option>
-                            {% endfor %}
-                            <option value="custom">Custom Entry</option>
-                        </select>
-                        <div class="helper-text">You can add new roles in input_templates.json</div>
+                    <!-- RIGHT PANEL: Split Screen Preview -->
+                    <div style="display: flex; flex-direction: column; gap: 20px;">
+                        
+                        <!-- Top: Controls & Status -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; background: white; padding: 15px 20px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
+                            <div id="jobAdStatus" style="font-weight: 500; color: #64748b;">Ready to generate.</div>
+                            <button onclick="copyJobAd()" style="padding: 8px 16px; background: #0f172a; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">Copy Poster Text</button>
+                        </div>
+                        
+                        <!-- Middle: Split Screen Editor -->
+                        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                            <!-- Left: Markdown -->
+                            <div style="flex: 1; min-width: 300px; display: flex; flex-direction: column;">
+                                <h3 style="margin-top: 0; color: #334155; font-size:14px; text-transform:uppercase; letter-spacing:1px;">Raw Editor (Markdown)</h3>
+                                <textarea id="jobAdRawEditor" style="flex: 1; width: 100%; min-height: 500px; padding: 15px; border-radius: 8px; border: 1px solid #cbd5e1; font-family: monospace; font-size: 14px; resize: vertical; box-sizing: border-box;" oninput="updateJobAdPreview()" placeholder="Generate an ad to start editing..."></textarea>
+                            </div>
+                            
+                            <!-- Right: Live Poster Preview -->
+                            <div style="flex: 1; min-width: 400px;">
+                                <h3 style="margin-top: 0; color: #334155; font-size:14px; text-transform:uppercase; letter-spacing:1px;">Live Preview Poster</h3>
+                                <div class="job-ad-poster">
+                                    <div class="job-ad-header">
+                                        <h2>CAVALIER HOMES</h2>
+                                        <p>Goulburn Valley</p>
+                                    </div>
+                                    <div class="job-ad-content" id="jobAdPreviewContent">
+                                        <p style="text-align:center; margin: 40px 0; color:#94a3b8;"><em>Your generated job advertisement will appear here.</em></p>
+                                    </div>
+                                    <div class="job-ad-footer">
+                                        <strong>Real Homes. Real People.</strong><br>
+                                        Join the Cavalier Homes Goulburn Valley Team
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-
-                    <div class="form-group" id="custom_role_group" style="display: none;">
-                        <label for="custom_role_title">Custom Role Title</label>
-                        <input type="text" name="custom_role_title" id="custom_role_title" placeholder="e.g. Colour Consultant, New Homes Consultant">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="job_location">Location / Site</label>
-                        <input type="text" name="job_location" id="job_location" placeholder="e.g. Shepparton Office, On-site">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="job_salary">Salary & Remuneration Details</label>
-                        <input type="text" name="job_salary" id="job_salary" placeholder="e.g. $80k-$100k + Super + Company Vehicle">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="job_perks">Key Perks / Selling Points</label>
-                        <input type="text" name="job_perks" id="job_perks" placeholder="e.g. 4-day work week, ongoing training, great team culture">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="job_extra">Extra Requirements or Context</label>
-                        <textarea name="job_extra" id="job_extra" placeholder="Any specific skills needed for this particular hire? e.g. Must have 5+ years experience in volume building." style="min-height: 80px;"></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="platform">Target Platforms</label>
-                        <input type="text" name="platform" id="platform" value="LinkedIn, Facebook, and Instagram" required>
-                    </div>
-
-                    <button type="submit" style="background-color: #059669;">✨ Generate Job Ad</button>
-                </form>
+                </div>
             </div>
             
+            <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
             <script>
-                // Retain form data for Job Ads so it's not lost when navigating back
+                // Retain form data
                 document.addEventListener('DOMContentLoaded', () => {
                     const fields = ['job_template_select', 'custom_role_title', 'job_location', 'job_salary', 'job_perks', 'job_extra', 'platform'];
-                    
-                    // Restore from localStorage
                     fields.forEach(id => {
                         const el = document.getElementById(id);
                         if (el) {
                             const saved = localStorage.getItem('c1_job_ad_' + id);
-                            if (saved !== null) {
-                                el.value = saved;
-                            }
-                            
-                            // Save on change
-                            el.addEventListener('input', () => {
-                                localStorage.setItem('c1_job_ad_' + id, el.value);
-                            });
-                            el.addEventListener('change', () => {
-                                localStorage.setItem('c1_job_ad_' + id, el.value);
-                            });
+                            if (saved !== null) el.value = saved;
+                            el.addEventListener('input', () => localStorage.setItem('c1_job_ad_' + id, el.value));
+                            el.addEventListener('change', () => localStorage.setItem('c1_job_ad_' + id, el.value));
                         }
                     });
                     
-                    // Ensure custom field display is correct on load
                     const selectEl = document.getElementById('job_template_select');
                     if (selectEl && selectEl.value === 'custom') {
                         const customGroup = document.getElementById('custom_role_group');
                         if(customGroup) customGroup.style.display = 'block';
                     }
                 });
+
+                function updateJobAdPreview() {
+                    const rawText = document.getElementById('jobAdRawEditor').value;
+                    if (typeof marked !== 'undefined') {
+                        document.getElementById('jobAdPreviewContent').innerHTML = marked.parse(rawText);
+                    }
+                }
+                
+                function copyJobAd() {
+                    const content = document.getElementById('jobAdPreviewContent').innerText;
+                    navigator.clipboard.writeText(content).then(() => {
+                        alert('Copied to clipboard!');
+                    });
+                }
+
+                async function generateJobAdAJAX() {
+                    const btn = document.getElementById('btnGenerateJobAd');
+                    const status = document.getElementById('jobAdStatus');
+                    
+                    // Gather data
+                    const payload = {
+                        job_template_select: document.getElementById('job_template_select').value,
+                        custom_role_title: document.getElementById('custom_role_title').value,
+                        job_location: document.getElementById('job_location').value,
+                        job_salary: document.getElementById('job_salary').value,
+                        job_perks: document.getElementById('job_perks').value,
+                        job_extra: document.getElementById('job_extra').value,
+                        platform: document.getElementById('platform').value
+                    };
+                    
+                    if (!payload.job_template_select) {
+                        alert('Please select a role.');
+                        return;
+                    }
+
+                    btn.disabled = true;
+                    btn.innerHTML = '⏳ Generating...';
+                    status.innerHTML = 'Generating with AI... this may take up to 30 seconds.';
+                    status.style.color = '#d97706';
+
+                    try {
+                        const response = await fetch('/api/generate_job_ad', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                        
+                        if (!response.ok) throw new Error('Network error or server error.');
+                        
+                        const data = await response.json();
+                        
+                        if (data.error) {
+                            status.innerHTML = '❌ Error: ' + data.error;
+                            status.style.color = '#ef4444';
+                        } else {
+                            document.getElementById('jobAdRawEditor').value = data.raw_content;
+                            updateJobAdPreview();
+                            status.innerHTML = '✅ Generation complete. You can edit the markdown below.';
+                            status.style.color = '#10b981';
+                        }
+                    } catch (e) {
+                        status.innerHTML = '❌ Request failed.';
+                        status.style.color = '#ef4444';
+                        console.error(e);
+                    } finally {
+                        btn.disabled = false;
+                        btn.innerHTML = '✨ Generate Job Ad';
+                    }
+                }
             </script>
             {% endif %}
 

@@ -538,39 +538,7 @@ Output ONLY the formatted document. Let the user's "Extra Notes" guide WHAT you 
                 raw_markdown=generated_text
             )
             
-        elif form_type == 'job_ads':
-            role_title = request.form.get('job_template_select')
-            custom_role_title = request.form.get('custom_role_title', '').strip()
-            
-            if role_title == 'custom' and custom_role_title:
-                role_title = custom_role_title
-                
-            platform = request.form.get('platform', 'LinkedIn, Facebook, and Instagram')
-            
-            # Find the role details
-            role_data = next((j for j in job_templates if j.get('role_title') == role_title), {})
-            
-            # If not found, just use the title
-            if not role_data:
-                role_data = {'role_title': role_title or 'Custom Role'}
-                
-            role_data['platform'] = platform
-            role_data['location'] = request.form.get('job_location', '')
-            role_data['salary'] = request.form.get('job_salary', '')
-            role_data['perks'] = request.form.get('job_perks', '')
-            role_data['extra'] = request.form.get('job_extra', '')
-            
-            # Assuming build_job_ad_prompt is imported or we can just import it
-            from utils.prompt_builder import build_job_ad_prompt
-            final_prompt = build_job_ad_prompt(role_data)
-            
-            from marketing.llm_client import LLMClient
-            client = LLMClient(provider="openai")
-            generated_text = client.generate_text(final_prompt)
-            html_content = markdown.markdown(generated_text)
-            
-            user_data = {'media_type': f"Job Ad ({role_title})", 'platform': platform}
-            return render_template('output.html', prompt=generated_text, content=html_content, raw_content=generated_text, data=user_data)
+
 
         else:
             # LEGACY / HOUSE & LAND HANDLER
@@ -602,6 +570,53 @@ Output ONLY the formatted document. Let the user's "Extra Notes" guide WHAT you 
             return render_template('output.html', prompt=final_prompt, content=None, data=user_data)
         
     return render_template('index.html', home_designs=home_designs, land_info=land_info, job_templates=job_templates, brand=brand_config)
+
+@app.route('/api/generate_job_ad', methods=['POST'])
+def api_generate_job_ad():
+    try:
+        data = request.json
+        role_title = data.get('job_template_select')
+        custom_role_title = data.get('custom_role_title', '').strip()
+        
+        if role_title == 'custom' and custom_role_title:
+            role_title = custom_role_title
+            
+        platform = data.get('platform', 'LinkedIn, Facebook, and Instagram')
+        
+        # Reload job templates just to be safe
+        import json
+        with open('resources/input_templates.json') as f:
+            all_templates = json.load(f)
+        job_templates = all_templates.get('job_templates', [])
+        
+        # Find the role details
+        role_data = next((j for j in job_templates if j.get('role_title') == role_title), {})
+        
+        # If not found, just use the title
+        if not role_data:
+            role_data = {'role_title': role_title or 'Custom Role'}
+            
+        role_data['platform'] = platform
+        role_data['location'] = data.get('job_location', '')
+        role_data['salary'] = data.get('job_salary', '')
+        role_data['perks'] = data.get('job_perks', '')
+        role_data['extra'] = data.get('job_extra', '')
+        
+        from utils.prompt_builder import build_job_ad_prompt
+        final_prompt = build_job_ad_prompt(role_data)
+        
+        from marketing.llm_client import LLMClient
+        import markdown
+        client = LLMClient(provider="openai")
+        generated_text = client.generate_text(final_prompt)
+        
+        return jsonify({
+            'raw_content': generated_text
+        })
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
 
 import time
 from flask import send_file
