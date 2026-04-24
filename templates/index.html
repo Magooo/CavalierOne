@@ -264,6 +264,9 @@
             {% if user_can_access('doc_formatter') %}
             <button class="tab-btn" onclick="openTab(event, 'tab-doc-formatter')">📝 Doc Formatter</button>
             {% endif %}
+            {% if user_can_access('social_media') %}
+            <button class="tab-btn" onclick="openTab(event, 'tab-job-ads')">💼 Job Ads</button>
+            {% endif %}
             {% if user_can_access('sales_estimate') %}
             <button class="tab-btn" onclick="window.location.href='/sales-estimate'" style="background: #ad4b43; color: white; border-radius: 12px 12px 0 0;">💲 Sales Estimate</button>
             {% endif %}
@@ -693,6 +696,38 @@
 
 
                     <button type="submit" style="background-color: #f59e0b;">✨ Format Document</button>
+                </form>
+            </div>
+            {% endif %}
+
+            <!-- TAB 6: JOB ADS (New) -->
+            {% if user_can_access('social_media') %}
+            <div id="tab-job-ads" class="tab-content" style="display: none;">
+                <div class="header-small" style="margin-bottom: 20px;">
+                    <h2 style="margin-top:0;">💼 Job Advertisements</h2>
+                    <p style="color: #64748b;">Generate formal, punchy ad copy for new roles across platforms.</p>
+                </div>
+                <form action="/" method="POST">
+                    <input type="hidden" name="form_type" value="job_ads">
+                    
+                    <div class="form-group">
+                        <label for="job_template_select">Select Role (from Library)</label>
+                        <select name="job_template_select" id="job_template_select" required>
+                            <option value="">-- Choose a Role --</option>
+                            {% for job in job_templates %}
+                            <option value="{{ job.role_title }}">{{ job.role_title }} ({{ job.department }})</option>
+                            {% endfor %}
+                            <option value="custom">Custom Entry</option>
+                        </select>
+                        <div class="helper-text">You can add new roles in input_templates.json</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="platform">Target Platforms</label>
+                        <input type="text" name="platform" id="platform" value="LinkedIn, Facebook, and Instagram" required>
+                    </div>
+
+                    <button type="submit" style="background-color: #059669;">✨ Generate Job Ad</button>
                 </form>
             </div>
             {% endif %}

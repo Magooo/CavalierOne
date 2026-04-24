@@ -93,3 +93,39 @@ def build_image_prompt(data):
     )
     
     return prompt
+
+def build_job_ad_prompt(data):
+    """
+    Constructs a structured prompt for generating Job Advertisements
+    using the formal, 'Punchy' protocol inspired by the image generator.
+    """
+    # Extract specifics
+    role_title = data.get('role_title', 'Job Opening')
+    department = data.get('department', 'General')
+    location = data.get('location', 'Shepparton, VIC')
+    job_type = data.get('job_type', 'Full-Time')
+    
+    responsibilities = "\n- ".join(data.get('key_responsibilities', []))
+    if responsibilities: responsibilities = "- " + responsibilities
+    
+    requirements = "\n- ".join(data.get('requirements', []))
+    if requirements: requirements = "- " + requirements
+        
+    benefits = "\n- ".join(data.get('benefits', []))
+    if benefits: benefits = "- " + benefits
+
+    platform = data.get('platform', 'LinkedIn, Facebook, and Instagram')
+
+    prompt = (
+        f"FORMAL AD COPY MODE. STRICT BRAND ADHERENCE.\\n"
+        f"1. ROLE: {role_title} ({job_type})\\n"
+        f"2. DEPARTMENT: {department} | LOCATION: {location}\\n"
+        f"3. RESPONSIBILITIES:\\n{responsibilities}\\n"
+        f"4. REQUIREMENTS:\\n{requirements}\\n"
+        f"5. BENEFITS:\\n{benefits}\\n"
+        f"6. STYLE: Fresh, modern, professional. Clear, scannable structure. No overly hyped superlatives.\\n"
+        f"7. PLATFORMS: {platform}. Generate suitable lengths for each.\\n"
+        f"8. INSTRUCTION: Write the job advertisement using the strict structural style above. Keep it formal, highly legible, and aligned with Cavalier Homes Goulburn Valley branding."
+    )
+    
+    return prompt

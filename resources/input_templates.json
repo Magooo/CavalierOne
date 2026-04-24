@@ -488,5 +488,28 @@
             "has_covenants": true,
             "covenants_file": "KYABRAM COVENANT.pdf"
         }
+    ],
+    "job_ad_template": [
+        {
+            "role_title": "Sales Consultant",
+            "department": "Sales",
+            "location": "Shepparton, VIC",
+            "job_type": "Full-Time",
+            "key_responsibilities": [
+                "Guide clients through the new home building journey",
+                "Manage leads and drive sales performance",
+                "Maintain display home presentation"
+            ],
+            "requirements": [
+                "Previous sales experience (Real Estate or Construction preferred)",
+                "Strong communication and negotiation skills",
+                "Driver's license"
+            ],
+            "benefits": [
+                "Competitive base salary + uncapped commission",
+                "Work with a reputable local builder",
+                "Ongoing training and development"
+            ]
+        }
     ]
 }

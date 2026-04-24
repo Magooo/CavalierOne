@@ -294,6 +294,7 @@ def index():
     # Load library data
     home_designs = load_json_template('home_design_template')
     land_info = load_json_template('land_details_template')
+    job_templates = load_json_template('job_ad_template')
     
     # Load Brand Config
     brand_config_path = os.path.join("resources", "brand_config.json")
@@ -307,6 +308,7 @@ def index():
     # Ideally, input_templates.json should store lists. For now, we wrap single items.
     if isinstance(home_designs, dict): home_designs = [home_designs]
     if isinstance(land_info, dict): land_info = [land_info]
+    if isinstance(job_templates, dict): job_templates = [job_templates]
     
     if request.method == 'POST':
         form_type = request.form.get('form_type', 'house_land')
@@ -536,6 +538,31 @@ Output ONLY the formatted document. Let the user's "Extra Notes" guide WHAT you 
                 raw_markdown=generated_text
             )
             
+        elif form_type == 'job_ads':
+            role_title = request.form.get('job_template_select')
+            platform = request.form.get('platform', 'LinkedIn, Facebook, and Instagram')
+            
+            # Find the role details
+            role_data = next((j for j in job_templates if j.get('role_title') == role_title), {})
+            
+            # If not found, just use the title
+            if not role_data:
+                role_data = {'role_title': role_title or 'Custom Role'}
+                
+            role_data['platform'] = platform
+            
+            # Assuming build_job_ad_prompt is imported or we can just import it
+            from utils.prompt_builder import build_job_ad_prompt
+            final_prompt = build_job_ad_prompt(role_data)
+            
+            from marketing.llm_client import LLMClient
+            client = LLMClient(provider="openai")
+            generated_text = client.generate_text(final_prompt)
+            html_content = markdown.markdown(generated_text)
+            
+            user_data = {'media_type': f"Job Ad ({role_title})", 'platform': platform}
+            return render_template('output.html', prompt=generated_text, content=html_content, data=user_data)
+
         else:
             # LEGACY / HOUSE & LAND HANDLER
             data = {
@@ -565,7 +592,7 @@ Output ONLY the formatted document. Let the user's "Extra Notes" guide WHAT you 
         
             return render_template('output.html', prompt=final_prompt, content=None, data=user_data)
         
-    return render_template('index.html', home_designs=home_designs, land_info=land_info, brand=brand_config)
+    return render_template('index.html', home_designs=home_designs, land_info=land_info, job_templates=job_templates, brand=brand_config)
 
 import time
 from flask import send_file
