@@ -570,7 +570,7 @@ Output ONLY the formatted document. Let the user's "Extra Notes" guide WHAT you 
             html_content = markdown.markdown(generated_text)
             
             user_data = {'media_type': f"Job Ad ({role_title})", 'platform': platform}
-            return render_template('output.html', prompt=generated_text, content=html_content, data=user_data)
+            return render_template('output.html', prompt=generated_text, content=html_content, raw_content=generated_text, data=user_data)
 
         else:
             # LEGACY / HOUSE & LAND HANDLER

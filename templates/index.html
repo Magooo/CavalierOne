@@ -755,6 +755,39 @@
                     <button type="submit" style="background-color: #059669;">✨ Generate Job Ad</button>
                 </form>
             </div>
+            
+            <script>
+                // Retain form data for Job Ads so it's not lost when navigating back
+                document.addEventListener('DOMContentLoaded', () => {
+                    const fields = ['job_template_select', 'custom_role_title', 'job_location', 'job_salary', 'job_perks', 'job_extra', 'platform'];
+                    
+                    // Restore from localStorage
+                    fields.forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el) {
+                            const saved = localStorage.getItem('c1_job_ad_' + id);
+                            if (saved !== null) {
+                                el.value = saved;
+                            }
+                            
+                            // Save on change
+                            el.addEventListener('input', () => {
+                                localStorage.setItem('c1_job_ad_' + id, el.value);
+                            });
+                            el.addEventListener('change', () => {
+                                localStorage.setItem('c1_job_ad_' + id, el.value);
+                            });
+                        }
+                    });
+                    
+                    // Ensure custom field display is correct on load
+                    const selectEl = document.getElementById('job_template_select');
+                    if (selectEl && selectEl.value === 'custom') {
+                        const customGroup = document.getElementById('custom_role_group');
+                        if(customGroup) customGroup.style.display = 'block';
+                    }
+                });
+            </script>
             {% endif %}
 
             <!-- TAB 4: RENDERING (New) -->

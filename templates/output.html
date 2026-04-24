@@ -202,19 +202,41 @@
                         font-size: 13px;
                     }
                 </style>
-                <div class="job-ad-poster">
-                    <div class="job-ad-header">
-                        <h2>CAVALIER HOMES</h2>
-                        <p>Goulburn Valley</p>
+                <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+                <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-top: 20px;">
+                    <!-- Left: Raw Editor -->
+                    <div style="flex: 1; min-width: 300px; display: flex; flex-direction: column;">
+                        <h3 style="margin-top: 0; color: #334155;">Edit Draft</h3>
+                        <textarea id="rawEditor" style="flex: 1; width: 100%; min-height: 600px; padding: 15px; border-radius: 8px; border: 1px solid #cbd5e1; font-family: monospace; font-size: 14px; resize: vertical; box-sizing: border-box;" oninput="updatePreview()">{{ raw_content }}</textarea>
                     </div>
-                    <div class="job-ad-content" id="generatedContentText">
-                        {{ content|safe }}
-                    </div>
-                    <div class="job-ad-footer">
-                        <strong>Real Homes. Real People.</strong><br>
-                        Join the Cavalier Homes Goulburn Valley Team
+                    
+                    <!-- Right: Live Preview Poster -->
+                    <div style="flex: 1; min-width: 400px;">
+                        <h3 style="margin-top: 0; color: #334155;">Live Preview</h3>
+                        <div class="job-ad-poster">
+                            <div class="job-ad-header">
+                                <h2>CAVALIER HOMES</h2>
+                                <p>Goulburn Valley</p>
+                            </div>
+                            <div class="job-ad-content" id="generatedContentText">
+                                {{ content|safe }}
+                            </div>
+                            <div class="job-ad-footer">
+                                <strong>Real Homes. Real People.</strong><br>
+                                Join the Cavalier Homes Goulburn Valley Team
+                            </div>
+                        </div>
                     </div>
                 </div>
+
+                <script>
+                    function updatePreview() {
+                        const rawText = document.getElementById('rawEditor').value;
+                        if (typeof marked !== 'undefined') {
+                            document.getElementById('generatedContentText').innerHTML = marked.parse(rawText);
+                        }
+                    }
+                </script>
                 {% else %}
                 <!-- Social Media Post Preview -->
                 <div class="social-card"
