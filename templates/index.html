@@ -789,9 +789,9 @@
                             </div>
 
                             <div class="form-group" style="margin-bottom:25px;">
-                                <label for="job_hero_image">Hero Image URL (Optional)</label>
-                                <input type="text" id="job_hero_image" style="width:100%; padding:10px; border-radius:6px; border:1px solid #ccc;" placeholder="Paste an image URL to override default" oninput="updateHeroImage()">
-                                <div class="helper-text" style="font-size: 11px; color: #64748b; margin-top: 4px;">Leave blank for default architecture lifestyle image.</div>
+                                <label for="job_hero_upload">Upload Hero Image (Optional)</label>
+                                <input type="file" id="job_hero_upload" accept="image/*" style="width:100%; padding:10px; border-radius:6px; border:1px solid #ccc; background: white;" onchange="handleHeroUpload(event)">
+                                <div class="helper-text" style="font-size: 11px; color: #64748b; margin-top: 4px;">Upload an image from your computer to override default. Applies instantly.</div>
                             </div>
 
                             <button type="button" class="btn-generate" id="btnGenerateJobAd" onclick="generateJobAdAJAX()">
@@ -845,11 +845,15 @@
             <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
             <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
             <script>
-                function updateHeroImage() {
+                function handleHeroUpload(event) {
+                    const file = event.target.files[0];
                     const hero = document.querySelector('.job-ad-hero');
-                    const url = document.getElementById('job_hero_image').value.trim();
-                    if (url) {
-                        hero.style.backgroundImage = `url('${url}')`;
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            hero.style.backgroundImage = `url('${e.target.result}')`;
+                        };
+                        reader.readAsDataURL(file);
                     } else {
                         hero.style.backgroundImage = `url('https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1200&auto=format&fit=crop')`;
                     }
@@ -857,7 +861,7 @@
 
                 // Retain form data
                 document.addEventListener('DOMContentLoaded', () => {
-                    const fields = ['job_template_select', 'custom_role_title', 'job_location', 'job_salary', 'job_perks', 'job_extra', 'platform', 'job_hero_image'];
+                    const fields = ['job_template_select', 'custom_role_title', 'job_location', 'job_salary', 'job_perks', 'job_extra', 'platform'];
                     fields.forEach(id => {
                         const el = document.getElementById(id);
                         if (el) {
@@ -873,8 +877,7 @@
                         const customGroup = document.getElementById('custom_role_group');
                         if(customGroup) customGroup.style.display = 'block';
                     }
-                    
-                    updateHeroImage();
+
                 });
 
                 function updateJobAdPreview() {
