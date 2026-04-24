@@ -68,8 +68,8 @@ AUTH_ENABLED = os.environ.get('SUPABASE_AUTH_ENABLED', 'true').lower() == 'true'
 # --- Permissions Mapping ---
 ROLE_PERMISSIONS = {
     'admin': ['all'],
-    'sales': ['house_land', 'sales_estimate', 'rendering'],
-    'marketing': ['social_media', 'youtube_miner', 'doc_formatter', 'rendering', 'house_land']
+    'sales': ['house_land', 'sales_estimate', 'rendering', 'job_ads'],
+    'marketing': ['social_media', 'youtube_miner', 'doc_formatter', 'rendering', 'house_land', 'job_ads']
 }
 
 def user_can_access(tool_id):

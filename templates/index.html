@@ -264,7 +264,7 @@
             {% if user_can_access('doc_formatter') %}
             <button class="tab-btn" onclick="openTab(event, 'tab-doc-formatter')">📝 Doc Formatter</button>
             {% endif %}
-            {% if user_can_access('social_media') %}
+            {% if user_can_access('job_ads') %}
             <button class="tab-btn" onclick="openTab(event, 'tab-job-ads')">💼 Job Ads</button>
             {% endif %}
             {% if user_can_access('sales_estimate') %}
@@ -701,7 +701,7 @@
             {% endif %}
 
             <!-- TAB 6: JOB ADS (New) -->
-            {% if user_can_access('social_media') %}
+            {% if user_can_access('job_ads') %}
             <div id="tab-job-ads" class="tab-content" style="display: none;">
                 <div class="header-small" style="margin-bottom: 20px;">
                     <h2 style="margin-top:0;">💼 Job Advertisements</h2>
