@@ -712,7 +712,7 @@
                     
                     <div class="form-group">
                         <label for="job_template_select">Select Role (from Library)</label>
-                        <select name="job_template_select" id="job_template_select" required>
+                        <select name="job_template_select" id="job_template_select" required onchange="document.getElementById('custom_role_group').style.display = this.value === 'custom' ? 'block' : 'none';">
                             <option value="">-- Choose a Role --</option>
                             {% for job in job_templates %}
                             <option value="{{ job.role_title }}">{{ job.role_title }} ({{ job.department }})</option>
@@ -720,6 +720,11 @@
                             <option value="custom">Custom Entry</option>
                         </select>
                         <div class="helper-text">You can add new roles in input_templates.json</div>
+                    </div>
+
+                    <div class="form-group" id="custom_role_group" style="display: none;">
+                        <label for="custom_role_title">Custom Role Title</label>
+                        <input type="text" name="custom_role_title" id="custom_role_title" placeholder="e.g. Colour Consultant, New Homes Consultant">
                     </div>
                     
                     <div class="form-group">

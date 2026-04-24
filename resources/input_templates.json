@@ -510,6 +510,127 @@
                 "Work with a reputable local builder",
                 "Ongoing training and development"
             ]
+        },
+        {
+            "role_title": "Administration Assistant",
+            "department": "Administration",
+            "location": "Shepparton, VIC",
+            "job_type": "Full-Time",
+            "key_responsibilities": [
+                "Provide frontline customer service and reception duties",
+                "Assist with document management and data entry",
+                "Support the broader team with general office administration"
+            ],
+            "requirements": [
+                "Strong organizational and time-management skills",
+                "Proficiency in Microsoft Office suite",
+                "Excellent written and verbal communication"
+            ],
+            "benefits": [
+                "Friendly and supportive office environment",
+                "Monday to Friday hours for work-life balance"
+            ]
+        },
+        {
+            "role_title": "Accounts Officer",
+            "department": "Finance",
+            "location": "Shepparton, VIC",
+            "job_type": "Full-Time",
+            "key_responsibilities": [
+                "Manage accounts payable and receivable",
+                "Process subcontractor and supplier invoices",
+                "Assist with payroll and monthly reconciliations"
+            ],
+            "requirements": [
+                "Experience in accounts or bookkeeping (construction industry preferred)",
+                "High attention to detail and accuracy",
+                "Familiarity with accounting software (e.g., Xero, Databuild)"
+            ],
+            "benefits": [
+                "Stable career with a growing local builder",
+                "Professional development opportunities"
+            ]
+        },
+        {
+            "role_title": "Site Supervisor",
+            "department": "Construction",
+            "location": "Goulburn Valley Region",
+            "job_type": "Full-Time",
+            "key_responsibilities": [
+                "Oversee day-to-day on-site construction activities",
+                "Coordinate trades and ensure strict adherence to build schedules",
+                "Enforce quality control and OH&S standards"
+            ],
+            "requirements": [
+                "Proven experience as a Site Supervisor in residential construction",
+                "Strong leadership and problem-solving abilities",
+                "Valid builder's license or relevant qualifications"
+            ],
+            "benefits": [
+                "Fully maintained company vehicle",
+                "Phone and tablet provided",
+                "Work with reliable, long-term trades"
+            ]
+        },
+        {
+            "role_title": "Estimator",
+            "department": "Estimating",
+            "location": "Shepparton, VIC",
+            "job_type": "Full-Time",
+            "key_responsibilities": [
+                "Prepare accurate and timely bill of quantities (BOQ)",
+                "Generate production estimates and variations",
+                "Liaise with suppliers to ensure up-to-date pricing"
+            ],
+            "requirements": [
+                "Experience in residential estimating",
+                "Strong analytical and mathematical skills",
+                "Ability to read and interpret architectural working drawings"
+            ],
+            "benefits": [
+                "Competitive salary package",
+                "Collaborative team culture"
+            ]
+        },
+        {
+            "role_title": "Draftsperson",
+            "department": "Design & Drafting",
+            "location": "Shepparton, VIC",
+            "job_type": "Full-Time",
+            "key_responsibilities": [
+                "Create detailed architectural working drawings for residential builds",
+                "Ensure designs comply with the BCA and local council regulations",
+                "Revise plans based on client variations and structural engineering"
+            ],
+            "requirements": [
+                "Proficiency in AutoCAD, ArchiCAD, or similar drafting software",
+                "Strong understanding of residential construction methods",
+                "High attention to detail"
+            ],
+            "benefits": [
+                "Work on diverse, modern home designs",
+                "Excellent office facilities"
+            ]
+        },
+        {
+            "role_title": "Qualified Carpenter",
+            "department": "Construction / Trades",
+            "location": "Goulburn Valley Region",
+            "job_type": "Full-Time",
+            "key_responsibilities": [
+                "Perform high-quality carpentry work on residential builds (framing, lock-up, fix)",
+                "Work effectively alongside other trades on-site",
+                "Maintain a safe and clean work environment"
+            ],
+            "requirements": [
+                "Trade qualification (Certificate III in Carpentry)",
+                "White card and own basic tools",
+                "Reliable transport and strong work ethic"
+            ],
+            "benefits": [
+                "Consistent, ongoing work pipeline",
+                "Great team culture and support"
+            ]
         }
     ]
 }

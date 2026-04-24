@@ -540,6 +540,11 @@ Output ONLY the formatted document. Let the user's "Extra Notes" guide WHAT you 
             
         elif form_type == 'job_ads':
             role_title = request.form.get('job_template_select')
+            custom_role_title = request.form.get('custom_role_title', '').strip()
+            
+            if role_title == 'custom' and custom_role_title:
+                role_title = custom_role_title
+                
             platform = request.form.get('platform', 'LinkedIn, Facebook, and Instagram')
             
             # Find the role details
