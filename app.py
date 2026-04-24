@@ -550,6 +550,10 @@ Output ONLY the formatted document. Let the user's "Extra Notes" guide WHAT you 
                 role_data = {'role_title': role_title or 'Custom Role'}
                 
             role_data['platform'] = platform
+            role_data['location'] = request.form.get('job_location', '')
+            role_data['salary'] = request.form.get('job_salary', '')
+            role_data['perks'] = request.form.get('job_perks', '')
+            role_data['extra'] = request.form.get('job_extra', '')
             
             # Assuming build_job_ad_prompt is imported or we can just import it
             from utils.prompt_builder import build_job_ad_prompt

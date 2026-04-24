@@ -92,7 +92,7 @@
             <a href="/" class="btn-back">← Back to Generator</a>
         </div>
 
-        {% if 'Social' not in data.media_type and 'Rendering' not in data.media_type %}
+        {% if 'Social' not in data.media_type and 'Rendering' not in data.media_type and 'Job Ad' not in data.media_type %}
         <div class="notice">
             <strong>Next Step:</strong>
             <ol style="margin-top: 0.5rem; margin-bottom: 0;">
@@ -107,7 +107,7 @@
         <div class="output-card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                 <h2 style="margin: 0;">
-                    {% if 'Social' in data.media_type %}
+                    {% if 'Social' in data.media_type or 'Job Ad' in data.media_type %}
                     Generative AI Draft
                     {% elif 'Rendering' in data.media_type %}
                     Architectural Rendering
@@ -131,7 +131,7 @@
                     {% endif %}
                     <button onclick="copyToClipboard()" id="copyBtn"
                         style="width: auto; padding: 0.5rem 1rem; background: var(--accent); color: white; border: none; border-radius: 8px; font-size: 0.9rem; cursor: pointer;">
-                        {% if 'Social' in data.media_type %}Copy Text{% else %}Copy Prompt{% endif %}
+                        {% if 'Social' in data.media_type or 'Job Ad' in data.media_type %}Copy Text{% else %}Copy Prompt{% endif %}
                     </button>
                 </div>
             </div>
@@ -153,13 +153,8 @@
                 </div>
 
                 <!-- Caption (AI Text) -->
-                <div style="padding: 12px; color: #050505; font-size: 15px; line-height: 1.5;">
-                    <p style="margin-bottom:8px; font-weight:bold; color: #ff0000; font-size: 13px;">INTERNAL AI
-                        ANALYSIS (DEBUG):</p>
-                    <div
-                        style="background:#f1f5f9; padding:10px; border-radius:6px; font-size:13px; color:#475569; margin-bottom:15px; border:1px dashed #cbd5e1;">
-                        {{ content|safe }}
-                    </div>
+                <div style="padding: 12px; color: #050505; font-size: 15px; line-height: 1.5; white-space: pre-wrap;" id="generatedContentText">
+                    {{ content|safe }}
                 </div>
 
                 <!-- Image -->
@@ -186,13 +181,24 @@
 
     <script>
         function copyToClipboard() {
-            const text = document.getElementById('promptText').innerText;
-            navigator.clipboard.writeText(text).then(() => {
+            let textToCopy = "";
+            const isGeneratedDraft = {% if 'Social' in data.media_type or 'Job Ad' in data.media_type %}true{% else %}false{% endif %};
+            
+            if (isGeneratedDraft) {
+                const contentDiv = document.getElementById('generatedContentText');
+                if (contentDiv) {
+                    textToCopy = contentDiv.innerText;
+                }
+            } else {
+                textToCopy = document.getElementById('promptText').innerText;
+            }
+
+            navigator.clipboard.writeText(textToCopy).then(() => {
                 const btn = document.getElementById('copyBtn');
                 btn.innerText = "Copied!";
                 btn.style.backgroundColor = "#10b981"; // Green
                 setTimeout(() => {
-                    btn.innerText = "Copy Prompt";
+                    btn.innerText = isGeneratedDraft ? "Copy Text" : "Copy Prompt";
                     btn.style.backgroundColor = ""; // Reset
                 }, 2000);
             });

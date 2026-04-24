@@ -103,6 +103,9 @@ def build_job_ad_prompt(data):
     role_title = data.get('role_title', 'Job Opening')
     department = data.get('department', 'General')
     location = data.get('location', 'Shepparton, VIC')
+    if not location:
+        location = 'Shepparton, VIC'
+        
     job_type = data.get('job_type', 'Full-Time')
     
     responsibilities = "\n- ".join(data.get('key_responsibilities', []))
@@ -114,6 +117,11 @@ def build_job_ad_prompt(data):
     benefits = "\n- ".join(data.get('benefits', []))
     if benefits: benefits = "- " + benefits
 
+    # User inputs
+    salary = data.get('salary', '')
+    perks = data.get('perks', '')
+    extra = data.get('extra', '')
+    
     platform = data.get('platform', 'LinkedIn, Facebook, and Instagram')
 
     prompt = (
@@ -122,10 +130,19 @@ def build_job_ad_prompt(data):
         f"2. DEPARTMENT: {department} | LOCATION: {location}\\n"
         f"3. RESPONSIBILITIES:\\n{responsibilities}\\n"
         f"4. REQUIREMENTS:\\n{requirements}\\n"
-        f"5. BENEFITS:\\n{benefits}\\n"
+        f"5. BENEFITS/PERKS:\\n{benefits}\\n"
+    )
+    if salary:
+        prompt += f"-> REMUNERATION: {salary}\\n"
+    if perks:
+        prompt += f"-> EXTRA PERKS: {perks}\\n"
+    if extra:
+        prompt += f"-> EXTRA CONTEXT/REQUIREMENTS: {extra}\\n"
+        
+    prompt += (
         f"6. STYLE: Fresh, modern, professional. Clear, scannable structure. No overly hyped superlatives.\\n"
         f"7. PLATFORMS: {platform}. Generate suitable lengths for each.\\n"
-        f"8. INSTRUCTION: Write the job advertisement using the strict structural style above. Keep it formal, highly legible, and aligned with Cavalier Homes Goulburn Valley branding."
+        f"8. INSTRUCTION: Write the job advertisement using the strict structural style above. Keep it formal, highly legible, and aligned with Cavalier Homes Goulburn Valley branding. DO NOT include any internal debug messages, just write the final ad."
     )
     
     return prompt
