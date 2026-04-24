@@ -145,4 +145,13 @@ def build_job_ad_prompt(data):
         f"8. INSTRUCTION: Write the job advertisement using the strict structural style above. Keep it formal, highly legible, and aligned with Cavalier Homes Goulburn Valley branding. DO NOT include any internal debug messages, just write the final ad."
     )
     
+    # Inject standard brand context
+    try:
+        style_guide = get_style_guide()
+        company_info = get_company_info()
+        context_block = f"\n\n--- BRAND CONTEXT ---\n{style_guide}\n\n{company_info}\n"
+        prompt += context_block
+    except Exception:
+        pass # Fallback to prompt without context if files missing
+    
     return prompt

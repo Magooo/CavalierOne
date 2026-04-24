@@ -116,7 +116,7 @@
                     {% endif %}
                 </h2>
                 <div style="display: flex; gap: 10px;">
-                    {% if 'Social' not in data.media_type and 'Rendering' not in data.media_type %}
+                    {% if 'Social' not in data.media_type and 'Rendering' not in data.media_type and 'Job Ad' not in data.media_type %}
                     <form action="/generate_pdf" method="POST" target="_blank">
                         <!-- Pass data for PDF generation -->
                         <input type="hidden" name="home_name" value="{{ data.home_name }}">
