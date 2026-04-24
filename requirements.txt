@@ -10,7 +10,6 @@ youtube-transcript-api
 reportlab
 pymupdf
 Pillow
-xhtml2pdf
 requests
 replicate
 supabase
