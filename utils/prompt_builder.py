@@ -96,8 +96,8 @@ def build_image_prompt(data):
 
 def build_job_ad_prompt(data):
     """
-    Constructs a structured prompt for generating Job Advertisements
-    using the formal, 'Punchy' protocol inspired by the image generator.
+    Constructs a prompt for generating Job Advertisements.
+    Focus: Sell the ROLE, the TEAM, and the CAREER — NOT the houses.
     """
     # Extract specifics
     role_title = data.get('role_title', 'Job Opening')
@@ -124,34 +124,53 @@ def build_job_ad_prompt(data):
     
     platform = data.get('platform', 'LinkedIn, Facebook, and Instagram')
 
-    prompt = (
-        f"FORMAL AD COPY MODE. STRICT BRAND ADHERENCE.\\n"
-        f"1. ROLE: {role_title} ({job_type})\\n"
-        f"2. DEPARTMENT: {department} | LOCATION: {location}\\n"
-        f"3. RESPONSIBILITIES:\\n{responsibilities}\\n"
-        f"4. REQUIREMENTS:\\n{requirements}\\n"
-        f"5. BENEFITS/PERKS:\\n{benefits}\\n"
-    )
+    prompt = f"""You are a recruitment copywriter for Cavalier Homes Goulburn Valley — a respected residential home builder in regional Victoria.
+
+CRITICAL TONE INSTRUCTION:
+You are writing a JOB ADVERTISEMENT, NOT a property listing. Your job is to SELL THE ROLE AND THE TEAM to potential candidates.
+- Write like a great recruiter, NOT like a real estate agent.
+- Focus on: the people, the team culture, career growth, day-to-day impact, and why someone would love coming to work here.
+- DO NOT talk about "quality craftsmanship", "trusted builder", "supplier relationships", or "integrity in every project" — that's house-selling language.
+- Instead talk about: supportive team, career development, meaningful work, great leadership, flexible culture, regional lifestyle benefits.
+- Be warm, energetic, and genuine. Make the reader think "I want to work there!"
+- Use punchy, scannable formatting with clear headings. Keep paragraphs short.
+
+ROLE DETAILS:
+- Title: {role_title}
+- Type: {job_type}
+- Department: {department}
+- Location: {location}
+
+KEY RESPONSIBILITIES:
+{responsibilities if responsibilities else '(Use common responsibilities for this type of role)'}
+
+REQUIREMENTS:
+{requirements if requirements else '(Use reasonable requirements for this type of role)'}
+
+BENEFITS & PERKS:
+{benefits if benefits else '(Emphasise team culture, regional lifestyle, career growth)'}
+"""
     if salary:
-        prompt += f"-> REMUNERATION: {salary}\\n"
+        prompt += f"\nSALARY/REMUNERATION: {salary}"
     if perks:
-        prompt += f"-> EXTRA PERKS: {perks}\\n"
+        prompt += f"\nADDITIONAL PERKS: {perks}"
     if extra:
-        prompt += f"-> EXTRA CONTEXT/REQUIREMENTS: {extra}\\n"
+        prompt += f"\nEXTRA CONTEXT: {extra}"
         
-    prompt += (
-        f"6. STYLE: Fresh, modern, professional. Clear, scannable structure. No overly hyped superlatives.\\n"
-        f"7. PLATFORMS: {platform}. Generate suitable lengths for each.\\n"
-        f"8. INSTRUCTION: Write the job advertisement using the strict structural style above. Keep it formal, highly legible, and aligned with Cavalier Homes Goulburn Valley branding. DO NOT include any internal debug messages, just write the final ad."
-    )
-    
-    # Inject standard brand context
-    try:
-        style_guide = get_style_guide()
-        company_info = get_company_info()
-        context_block = f"\n\n--- BRAND CONTEXT ---\n{style_guide}\n\n{company_info}\n"
-        prompt += context_block
-    except Exception:
-        pass # Fallback to prompt without context if files missing
+    prompt += f"""
+
+OUTPUT FORMAT:
+Write in Markdown. Structure the ad with these sections:
+1. A compelling headline / hook (not just the job title — sell the opportunity)
+2. Brief intro (2-3 sentences about WHY this role is exciting — focus on the team and impact, not the company's building credentials)
+3. **What You'll Do** — responsibilities as bullet points
+4. **What You Bring** — requirements as bullet points
+5. **Why You'll Love It Here** — perks, culture, lifestyle benefits
+6. **How to Apply** — clear call to action with cavalier homes email/website
+
+TARGET PLATFORMS: {platform}
+Keep it concise enough for social media but detailed enough for LinkedIn. One version that works across all platforms.
+Do NOT include any meta-commentary. Just write the final ad copy in Markdown."""
     
     return prompt
+
