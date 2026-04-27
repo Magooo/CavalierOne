@@ -118,6 +118,43 @@
     .upload-clear { font-size: 12px; color: var(--accent); cursor: pointer; font-weight: 600; text-align: center; display: none; margin-bottom: 16px; background: none; border: none; width: 100%; }
     .upload-clear.visible { display: block; }
 
+    /* ---- REFERENCE IMAGE SECTION ---- */
+    .ref-section { margin-bottom: 24px; }
+    .ref-section__label { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; }
+    .ref-section__hint { font-size: 11px; color: var(--mid); margin-bottom: 12px; line-height: 1.5; }
+    .ref-tabs { display: flex; gap: 0; margin-bottom: 12px; border: 1.5px solid var(--border); border-radius: var(--radius-md); overflow: hidden; }
+    .ref-tab { flex: 1; padding: 8px 10px; font-size: 11px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; cursor: pointer; border: none; background: var(--bg-muted); color: var(--text-muted); transition: var(--transition); text-align: center; }
+    .ref-tab + .ref-tab { border-left: 1.5px solid var(--border); }
+    .ref-tab.active { background: var(--accent); color: var(--white); }
+    .ref-tab:hover:not(.active) { background: var(--accent-light); color: var(--accent); }
+    .ref-tab-panel { display: none; }
+    .ref-tab-panel.active { display: block; }
+
+    .ref-asset-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .ref-asset-card { border: 2px solid var(--border); border-radius: var(--radius-md); padding: 6px; cursor: pointer; transition: var(--transition); text-align: center; background: var(--bg-muted); position: relative; }
+    .ref-asset-card:hover, .ref-asset-card.selected { border-color: var(--accent); background: var(--accent-light); }
+    .ref-asset-card img { width: 100%; height: 56px; object-fit: contain; border-radius: 3px; margin-bottom: 4px; background: white; }
+    .ref-asset-card__label { font-size: 9px; font-weight: 600; letter-spacing: 0.3px; text-transform: uppercase; color: var(--text-muted); line-height: 1.3; }
+    .ref-asset-card.selected .ref-asset-card__label { color: var(--accent); }
+    .ref-asset-card .ref-check { position: absolute; top: 4px; right: 4px; width: 18px; height: 18px; border-radius: 50%; background: var(--accent); color: white; font-size: 10px; display: none; align-items: center; justify-content: center; }
+    .ref-asset-card.selected .ref-check { display: flex; }
+
+    .ref-upload-mini { border: 2px dashed var(--border); border-radius: var(--radius-md); padding: 16px 12px; text-align: center; cursor: pointer; transition: var(--transition); background: var(--bg-muted); position: relative; }
+    .ref-upload-mini:hover { border-color: var(--accent); background: var(--accent-light); }
+    .ref-upload-mini input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+    .ref-upload-mini__icon { font-size: 24px; margin-bottom: 4px; }
+    .ref-upload-mini__title { font-size: 12px; font-weight: 600; color: var(--text); }
+    .ref-upload-mini__sub { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+
+    .ref-preview { display: none; align-items: center; gap: 12px; padding: 10px 12px; background: var(--bg-muted); border-radius: var(--radius-md); border: 1px solid var(--border); margin-top: 10px; }
+    .ref-preview.visible { display: flex; }
+    .ref-preview img { width: 60px; height: 60px; object-fit: contain; border-radius: var(--radius-sm); border: 1px solid var(--border); background: white; flex-shrink: 0; }
+    .ref-preview__info { flex: 1; min-width: 0; }
+    .ref-preview__name { font-size: 12px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ref-preview__status { font-size: 10px; color: #48bb78; font-weight: 500; margin-top: 2px; }
+    .ref-preview__remove { background: none; border: none; font-size: 16px; color: var(--mid); cursor: pointer; padding: 4px; transition: var(--transition); flex-shrink: 0; }
+    .ref-preview__remove:hover { color: #fc8181; }
+
     /* Zone assignment badge pills shown below the image */
     .zone-assignments { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
     .zone-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 600; padding: 4px 8px; border-radius: 12px; background: var(--bg-muted); border: 1px solid var(--border); color: var(--text); cursor: pointer; }
@@ -629,6 +666,77 @@
           <div class="form-section">
             <label class="form-section__label" for="extras">Extra Prompt Detail (Optional)</label>
             <input type="text" id="extras" class="form-input" placeholder="e.g. sunset lighting, green hedges">
+          </div>
+
+          <!-- Reference Image -->
+          <div class="ref-section">
+            <div class="ref-section__label">
+              📎 Reference Image <span style="font-weight: 400; text-transform: none; letter-spacing: 0; font-size: 10px; color: var(--mid);">(Optional)</span>
+            </div>
+            <div class="ref-section__hint">
+              Attach a brand asset or upload a reference image. The AI will use it to guide the generation — great for accurate logos and branding.
+            </div>
+
+            <div class="ref-tabs">
+              <button class="ref-tab active" data-ref-tab="assets" onclick="switchRefTab('assets')" type="button">🏷️ Brand Assets</button>
+              <button class="ref-tab" data-ref-tab="upload" onclick="switchRefTab('upload')" type="button">📤 Upload File</button>
+            </div>
+
+            <!-- Brand Assets Tab -->
+            <div class="ref-tab-panel active" id="ref-panel-assets">
+              <div class="ref-asset-grid" id="ref-asset-grid">
+                <div class="ref-asset-card" data-asset-url="/static/brand_assets/logo_primary_page5.png" data-asset-name="Primary Logo" onclick="selectRefAsset(this)">
+                  <span class="ref-check">✓</span>
+                  <img src="/static/brand_assets/logo_primary_page5.png" alt="Primary Logo" loading="lazy">
+                  <div class="ref-asset-card__label">Primary Logo</div>
+                </div>
+                <div class="ref-asset-card" data-asset-url="/static/brand_assets/logo_text_only.png" data-asset-name="Text Logo" onclick="selectRefAsset(this)">
+                  <span class="ref-check">✓</span>
+                  <img src="/static/brand_assets/logo_text_only.png" alt="Text Only Logo" loading="lazy">
+                  <div class="ref-asset-card__label">Text Logo</div>
+                </div>
+                <div class="ref-asset-card" data-asset-url="/static/images/favicon.png" data-asset-name="Icon Mark" onclick="selectRefAsset(this)">
+                  <span class="ref-check">✓</span>
+                  <img src="/static/images/favicon.png" alt="Icon" loading="lazy">
+                  <div class="ref-asset-card__label">Icon Mark</div>
+                </div>
+                <div class="ref-asset-card" data-asset-url="/static/brand_assets/page21_img1_1500x665.jpeg" data-asset-name="Business Card" onclick="selectRefAsset(this)">
+                  <span class="ref-check">✓</span>
+                  <img src="/static/brand_assets/page21_img1_1500x665.jpeg" alt="Business Card" loading="lazy">
+                  <div class="ref-asset-card__label">Business Card</div>
+                </div>
+                <div class="ref-asset-card" data-asset-url="/static/brand_assets/page25_img1_1714x1144.jpeg" data-asset-name="Lifestyle Photo" onclick="selectRefAsset(this)">
+                  <span class="ref-check">✓</span>
+                  <img src="/static/brand_assets/page25_img1_1714x1144.jpeg" alt="Lifestyle" loading="lazy">
+                  <div class="ref-asset-card__label">Lifestyle</div>
+                </div>
+                <div class="ref-asset-card" data-asset-url="/static/brand_assets/page17_img1_2490x978.jpeg" data-asset-name="Exterior Facade" onclick="selectRefAsset(this)">
+                  <span class="ref-check">✓</span>
+                  <img src="/static/brand_assets/page17_img1_2490x978.jpeg" alt="Exterior" loading="lazy">
+                  <div class="ref-asset-card__label">Exterior</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Upload Tab -->
+            <div class="ref-tab-panel" id="ref-panel-upload">
+              <div class="ref-upload-mini" id="ref-upload-zone">
+                <input type="file" id="ref-file-input" accept="image/*" onchange="handleRefFileUpload(this)">
+                <div class="ref-upload-mini__icon">📷</div>
+                <div class="ref-upload-mini__title">Drop or click to upload</div>
+                <div class="ref-upload-mini__sub">JPG, PNG, WebP — logos, brand elements, style references</div>
+              </div>
+            </div>
+
+            <!-- Preview -->
+            <div class="ref-preview" id="ref-preview">
+              <img id="ref-preview-img" src="" alt="Reference">
+              <div class="ref-preview__info">
+                <div class="ref-preview__name" id="ref-preview-name">—</div>
+                <div class="ref-preview__status" id="ref-preview-status">✓ Ready as reference</div>
+              </div>
+              <button class="ref-preview__remove" onclick="clearRefImage()" type="button" title="Remove reference">✕</button>
+            </div>
           </div>
 
           <!-- Advanced -->
@@ -1281,6 +1389,11 @@
     let enhanceSourceUrl = null; // URL of uploaded photo for enhance mode
     let designSourceUrl  = null; // URL used for "add to design" mode
 
+    /* ---- Reference Image State ---- */
+    let refImageUrl  = null;   // Public URL of the reference image (uploaded or brand asset)
+    let refImageName = null;   // Display name of the reference image
+    let refIsUploading = false; // Upload in progress flag
+
     /* =============================================
        HELPERS
     ============================================= */
@@ -1744,7 +1857,100 @@
       document.getElementById(id).classList.toggle('open');
     }
 
+    /* =============================================
+       REFERENCE IMAGE (Generate Mode)
+    ============================================= */
+    function switchRefTab(tab) {
+      document.querySelectorAll('.ref-tab').forEach(t => t.classList.remove('active'));
+      document.querySelector(`.ref-tab[data-ref-tab="${tab}"]`).classList.add('active');
+      document.querySelectorAll('.ref-tab-panel').forEach(p => p.classList.remove('active'));
+      document.getElementById('ref-panel-' + tab).classList.add('active');
+    }
+
+    function selectRefAsset(card) {
+      const wasSelected = card.classList.contains('selected');
+      // Deselect all
+      document.querySelectorAll('.ref-asset-card').forEach(c => c.classList.remove('selected'));
+
+      if (wasSelected) {
+        // Toggle off
+        clearRefImage();
+        return;
+      }
+
+      card.classList.add('selected');
+      const assetUrl = card.dataset.assetUrl;
+      const assetName = card.dataset.assetName;
+
+      // For brand assets served locally, we need the full absolute URL for kie.ai
+      // The backend will resolve this — just pass the relative path and let it build the public URL
+      refImageUrl = assetUrl;
+      refImageName = assetName;
+
+      // Show preview
+      const preview = document.getElementById('ref-preview');
+      document.getElementById('ref-preview-img').src = assetUrl;
+      document.getElementById('ref-preview-name').textContent = assetName;
+      document.getElementById('ref-preview-status').textContent = '✓ Ready as reference';
+      document.getElementById('ref-preview-status').style.color = '#48bb78';
+      preview.classList.add('visible');
+    }
+
+    async function handleRefFileUpload(input) {
+      const file = input.files[0];
+      if (!file) return;
+      if (!validateUploadFile(file)) { input.value = ''; return; }
+
+      // Show uploading state
+      refIsUploading = true;
+      const preview = document.getElementById('ref-preview');
+      document.getElementById('ref-preview-img').src = URL.createObjectURL(file);
+      document.getElementById('ref-preview-name').textContent = file.name;
+      document.getElementById('ref-preview-status').textContent = '⏳ Uploading…';
+      document.getElementById('ref-preview-status').style.color = 'var(--accent)';
+      preview.classList.add('visible');
+
+      // Deselect any brand asset
+      document.querySelectorAll('.ref-asset-card').forEach(c => c.classList.remove('selected'));
+
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        const { resp, data } = await safeJsonFetch('/api/upload-image', { method: 'POST', body: formData });
+
+        if (!resp.ok || data.error) throw new Error(data.error || 'Upload failed');
+
+        refImageUrl = data.url;
+        refImageName = file.name;
+        document.getElementById('ref-preview-status').textContent = '✓ Uploaded — ready as reference';
+        document.getElementById('ref-preview-status').style.color = '#48bb78';
+        showToast('Reference image uploaded!', 'success');
+      } catch (err) {
+        document.getElementById('ref-preview-status').textContent = '✕ Upload failed';
+        document.getElementById('ref-preview-status').style.color = '#fc8181';
+        showToast('Reference upload failed: ' + err.message, 'error');
+        refImageUrl = null;
+        refImageName = null;
+      } finally {
+        refIsUploading = false;
+        input.value = '';
+      }
+    }
+
+    function clearRefImage() {
+      refImageUrl = null;
+      refImageName = null;
+      document.getElementById('ref-preview').classList.remove('visible');
+      document.querySelectorAll('.ref-asset-card').forEach(c => c.classList.remove('selected'));
+      document.getElementById('ref-file-input').value = '';
+    }
+
     async function generateImage() {
+      if (refIsUploading) {
+        showToast('Please wait for the reference image to finish uploading.', 'error');
+        return;
+      }
+
       const btn = document.getElementById('btn-generate');
       const payload = {
         image_type: currentType,
@@ -1754,6 +1960,13 @@
         extras:     document.getElementById('extras').value,
         prompt_override: document.getElementById('prompt_override').value.trim(),
       };
+
+      // Include reference image if one is selected
+      if (refImageUrl) {
+        payload.reference_image_url = refImageUrl;
+        payload.reference_image_name = refImageName || '';
+      }
+
       if (currentType === 'listing_hero') {
         payload.suburb     = document.getElementById('suburb').value;
         payload.house_type = document.getElementById('house_type').value;
@@ -1770,9 +1983,13 @@
       setState('loading');
       disableActions(true);
       document.getElementById('add-design-banner').classList.add('hidden');
-      document.getElementById('loading-title').textContent = 'Generating your image…';
+      document.getElementById('loading-title').textContent = refImageUrl
+        ? 'Generating with reference image…'
+        : 'Generating your image…';
       const mName = document.getElementById('model').options[document.getElementById('model').selectedIndex].text;
-      document.getElementById('loading-sub').textContent = `Using ${mName} — typically 15–40 seconds`;
+      document.getElementById('loading-sub').textContent = refImageUrl
+        ? `Using ${mName} with reference — may take 20–60 seconds`
+        : `Using ${mName} — typically 15–40 seconds`;
 
       try {
         const resp = await fetch('/api/generate-image', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
@@ -1788,7 +2005,7 @@
         disableActions(false);
         addToHistory(data.image_url, '✨');
         document.getElementById('add-design-banner').classList.remove('hidden');
-        showToast('Image generated!', 'success');
+        showToast(refImageUrl ? 'Image generated with reference!' : 'Image generated!', 'success');
       } catch (err) {
         setState('error'); document.getElementById('error-msg').textContent = err.message;
         showToast('Generation failed.', 'error');

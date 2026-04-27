@@ -650,8 +650,8 @@ def api_generate_image():
       caption_context: (for social_feed) brief description of what the post is about
       section_title: (for brochure) document section name
       prompt_override: (optional) full custom prompt, bypasses template builder
-      width:       (optional) image width in pixels, default 1024
-      height:      (optional) image height in pixels, default 768
+      reference_image_url:  (optional) URL or local path to a reference image (brand asset or upload)
+      reference_image_name: (optional) display name of the reference image
 
     Returns JSON:
       { image_url, image_urls, prompt, model, image_type }
@@ -659,7 +659,7 @@ def api_generate_image():
     import traceback
     from marketing.image_generator import generate_cavalier_image, build_listing_hero_prompt, \
         build_interior_lifestyle_prompt, build_social_feed_prompt, build_brochure_section_prompt
-    from utils.kie_client import generate_image as kie_generate
+    from utils.kie_client import generate_image as kie_generate, enhance_image as kie_enhance
 
     try:
         data = request.get_json(force=True, silent=True) or {}
@@ -669,24 +669,52 @@ def api_generate_image():
         aspect_ratio = data.get('aspect_ratio', '16:9')
         resolution = data.get('resolution', '1K')
         prompt_override = data.get('prompt_override', '').strip()
+        reference_image_url = data.get('reference_image_url', '').strip()
+        reference_image_name = data.get('reference_image_name', '').strip()
 
+        # ── Resolve reference image URL ─────────────────────────────────────
+        # Brand assets are served as relative paths (e.g. /static/brand_assets/logo.png)
+        # kie.ai needs a publicly accessible URL, so we upload to Supabase if needed
+        resolved_ref_url = None
+        if reference_image_url:
+            if reference_image_url.startswith('http'):
+                # Already a public URL (user upload via /api/upload-image)
+                resolved_ref_url = reference_image_url
+            elif reference_image_url.startswith('/static/'):
+                # Local brand asset — need to upload to Supabase for kie.ai access
+                local_path = os.path.join(os.getcwd(), reference_image_url.lstrip('/'))
+                if os.path.exists(local_path):
+                    try:
+                        ext = os.path.splitext(local_path)[1].lstrip('.').lower() or 'png'
+                        with open(local_path, 'rb') as f_asset:
+                            asset_bytes = f_asset.read()
+                        unique_name = f"studio/ref_{uuid.uuid4().hex}.{ext}"
+                        if supabase:
+                            supabase.storage.from_("cavalierone_uploads").upload(
+                                unique_name, asset_bytes, {"content-type": f"image/{ext}"}
+                            )
+                            resolved_ref_url = supabase.storage.from_("cavalierone_uploads").get_public_url(unique_name)
+                        else:
+                            # Local dev fallback
+                            upload_dir = os.path.join(os.getcwd(), 'resources', 'uploads')
+                            os.makedirs(upload_dir, exist_ok=True)
+                            local_filename = f"ref_{uuid.uuid4().hex}.{ext}"
+                            with open(os.path.join(upload_dir, local_filename), 'wb') as f_out:
+                                f_out.write(asset_bytes)
+                            resolved_ref_url = request.host_url.rstrip('/') + f'/uploads/{local_filename}'
+                        print(f"[ImageGen] Brand asset uploaded for reference: {resolved_ref_url}")
+                    except Exception as ref_err:
+                        print(f"[ImageGen] Failed to upload brand asset for reference: {ref_err}")
+                        # Continue without reference — don't block generation
+                        resolved_ref_url = None
+                else:
+                    print(f"[ImageGen] Brand asset not found at: {local_path}")
+
+        # ── Build the prompt ────────────────────────────────────────────────
         if prompt_override:
-            # Use the custom prompt directly
-            image_urls = kie_generate(
-                prompt=prompt_override,
-                model=model,
-                aspect_ratio=aspect_ratio,
-                resolution=resolution,
-            )
-            result = {
-                'image_url': image_urls[0] if image_urls else None,
-                'image_urls': image_urls,
-                'prompt': prompt_override,
-                'model': model,
-                'image_type': image_type,
-            }
+            prompt = prompt_override
         else:
-            # Build kwargs for the appropriate prompt template
+            # Build prompt from template
             kwargs = {}
             if image_type == 'listing_hero':
                 kwargs = {
@@ -694,31 +722,78 @@ def api_generate_image():
                     'house_type': data.get('house_type', ''),
                     'extras': data.get('extras', ''),
                 }
+                prompt = build_listing_hero_prompt(**kwargs)
             elif image_type == 'interior':
                 kwargs = {
                     'room': data.get('room', 'kitchen'),
                     'extras': data.get('extras', ''),
                 }
+                prompt = build_interior_lifestyle_prompt(**kwargs)
             elif image_type == 'social_feed':
                 kwargs = {
                     'caption_context': data.get('caption_context', ''),
                     'format': data.get('format', 'square'),
                     'extras': data.get('extras', ''),
                 }
+                prompt = build_social_feed_prompt(**kwargs)
             elif image_type == 'brochure':
                 kwargs = {
                     'section_title': data.get('section_title', ''),
                     'extras': data.get('extras', ''),
                 }
+                prompt = build_brochure_section_prompt(**kwargs)
+            else:
+                prompt = build_listing_hero_prompt(extras=data.get('extras', ''))
 
-            result = generate_cavalier_image(
-                image_type=image_type,
+        # ── Generate with or without reference image ────────────────────────
+        if resolved_ref_url:
+            # Use image-to-image with the reference — the AI will use
+            # the reference image as a visual guide and apply the prompt on top
+            ref_context = (
+                f"IMPORTANT: Use the provided reference image as a visual guide. "
+                f"The reference shows the '{reference_image_name}' brand asset from Cavalier Homes. "
+                f"Incorporate this branding accurately into the generated image — "
+                f"reproduce the logo, colours, and brand identity exactly as shown in the reference. "
+            )
+            full_prompt = ref_context + prompt
+
+            # Map text-to-image model to its image-to-image equivalent
+            img2img_model_map = {
+                'flux-2/flex-text-to-image': 'flux-2/flex-image-to-image',
+                'flux-2/pro-text-to-image':  'flux-2/pro-image-to-image',
+            }
+            img2img_model = img2img_model_map.get(model, 'flux-2/flex-image-to-image')
+
+            image_urls = kie_enhance(
+                image_url=resolved_ref_url,
+                prompt=full_prompt,
+                model=img2img_model,
+                strength=0.85,  # High enough to generate new content but guided by reference
+                aspect_ratio=aspect_ratio,
+            )
+            result = {
+                'image_url': image_urls[0] if image_urls else None,
+                'image_urls': image_urls,
+                'prompt': full_prompt,
+                'model': img2img_model,
+                'image_type': image_type,
+                'reference_used': reference_image_name,
+            }
+        else:
+            # Standard text-to-image generation (no reference)
+            image_urls = kie_generate(
+                prompt=prompt,
                 model=model,
                 aspect_ratio=aspect_ratio,
                 resolution=resolution,
-                **kwargs
             )
-
+            result = {
+                'image_url': image_urls[0] if image_urls else None,
+                'image_urls': image_urls,
+                'prompt': prompt,
+                'model': model,
+                'image_type': image_type,
+            }
 
         return jsonify(result)
 
