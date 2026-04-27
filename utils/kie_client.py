@@ -25,7 +25,7 @@ KIE_API_KEY = os.environ.get("KIE_API_KEY", "")
 
 # Default polling config
 POLL_INTERVAL_SECONDS = 5
-MAX_WAIT_SECONDS = 180
+MAX_WAIT_SECONDS = 300
 
 
 def _headers() -> dict:
@@ -165,6 +165,47 @@ def _extract_image_urls(result: dict) -> list[str]:
     return [u for u in urls if u]
 
 
+def _create_and_poll(payload: dict, max_wait: int, label: str = "generate_image") -> list[str]:
+    """
+    Submit a kie.ai task and poll until completion.
+    Retries once automatically on timeout.
+    """
+    for attempt in range(2):  # max 1 retry
+        resp = requests.post(
+            f"{KIE_BASE_URL}/jobs/createTask",
+            headers=_headers(),
+            json=payload,
+            timeout=30,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+
+        task_id = (
+            (data.get("data") or {}).get("taskId")
+            or (data.get("data") or {}).get("task_id")
+            or data.get("taskId")
+        )
+        if not task_id:
+            raise RuntimeError(f"kie.ai {label}: no taskId. Response: {data}")
+
+        try:
+            result = _poll_task(task_id, max_wait=max_wait)
+            urls = _extract_image_urls(result)
+            if not urls:
+                raise RuntimeError(
+                    f"kie.ai {label} completed but returned no image URLs. Response: {result}"
+                )
+            return urls
+        except TimeoutError:
+            if attempt == 0:
+                print(f"[kie_client] {label} timed out after {max_wait}s — retrying once...")
+                continue
+            raise
+
+    # Should not reach here, but just in case
+    raise RuntimeError(f"kie.ai {label}: exhausted retries")
+
+
 def generate_image(
     prompt: str,
     model: str = "flux-2/flex-text-to-image",
@@ -199,34 +240,7 @@ def generate_image(
     if negative_prompt:
         payload["input"]["negative_prompt"] = negative_prompt
 
-    resp = requests.post(
-        f"{KIE_BASE_URL}/jobs/createTask",
-        headers=_headers(),
-        json=payload,
-        timeout=30,
-    )
-    resp.raise_for_status()
-    data = resp.json()
-
-    # Extract taskId — KIE.ai returns {"code":200, "data":{"taskId":"..."}}
-    task_id = (
-        (data.get("data") or {}).get("taskId")
-        or (data.get("data") or {}).get("task_id")
-        or data.get("taskId")
-    )
-
-    if not task_id:
-        raise RuntimeError(f"kie.ai did not return a taskId. Response: {data}")
-
-    result = _poll_task(task_id, max_wait=max_wait)
-    urls = _extract_image_urls(result)
-
-    if not urls:
-        raise RuntimeError(
-            f"kie.ai completed but returned no image URLs. Full response: {result}"
-        )
-
-    return urls
+    return _create_and_poll(payload, max_wait, label="generate_image")
 
 
 def remove_background(image_url: str, max_wait: int = 60) -> str:
@@ -337,27 +351,5 @@ def enhance_image(
         },
     }
 
-    resp = requests.post(
-        f"{KIE_BASE_URL}/jobs/createTask",
-        headers=_headers(),
-        json=payload,
-        timeout=30,
-    )
-    resp.raise_for_status()
-    data = resp.json()
+    return _create_and_poll(payload, max_wait, label="enhance_image")
 
-    task_id = (
-        (data.get("data") or {}).get("taskId")
-        or (data.get("data") or {}).get("task_id")
-        or data.get("taskId")
-    )
-    if not task_id:
-        raise RuntimeError(f"kie.ai enhance_image: no taskId. Response: {data}")
-
-    result = _poll_task(task_id, max_wait=max_wait)
-    urls = _extract_image_urls(result)
-    if not urls:
-        raise RuntimeError(
-            f"enhance_image completed but returned no image URLs. Response: {result}"
-        )
-    return urls
