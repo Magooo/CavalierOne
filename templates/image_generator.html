@@ -1992,8 +1992,7 @@
         : `Using ${mName} — typically 15–40 seconds`;
 
       try {
-        const resp = await fetch('/api/generate-image', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
-        const data = await resp.json();
+        const { resp, data } = await safeJsonFetch('/api/generate-image', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
         if (!resp.ok || data.error) throw new Error(data.error || 'Server error');
         if (!data.image_url) throw new Error('No image URL returned — check KIE_API_KEY.');
 
