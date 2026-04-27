@@ -160,13 +160,29 @@ BENEFITS & PERKS:
     prompt += f"""
 
 OUTPUT FORMAT:
-Write in Markdown. Structure the ad with these sections:
-1. A compelling headline / hook (not just the job title — sell the opportunity)
-2. Brief intro (2-3 sentences about WHY this role is exciting — focus on the team and impact, not the company's building credentials)
-3. **What You'll Do** — responsibilities as bullet points
-4. **What You Bring** — requirements as bullet points
-5. **Why You'll Love It Here** — perks, culture, lifestyle benefits
-6. **How to Apply** — clear call to action with cavalier homes email/website
+Write in Markdown. Use a professional, polished structure.
+
+IMPORTANT — MULTIPLE ROLES:
+If the role details or extra context mention more than one position (e.g. "Accounts Payable Administrator" AND "Accounts & Bookkeeping Administrator"), you MUST treat each as a SEPARATE, CLEARLY DEFINED role within the ad. For each role, provide:
+- A clear role title as a heading (## or ###)
+- A brief description of what the role involves (1-2 sentences)
+- **Key Responsibilities** — bullet points specific to THAT role
+- **What You'll Bring** — requirements specific to THAT role (or shared if genuinely the same)
+
+Do NOT merge the roles into vague combined sections. The reader must be able to clearly see exactly what each position entails.
+
+OVERALL STRUCTURE:
+1. A compelling headline (sell the opportunity, not just the job title)
+2. Brief intro (2-3 sentences — why these roles are exciting, who the team is)
+3. Individual role sections (as described above)
+4. **Why You'll Love It Here** — perks, culture, lifestyle (shared across roles)
+5. **How to Apply** — clear call to action, email admin@cavalierhomesgv.com.au
+
+STYLE RULES:
+- Be specific and concrete, not vague
+- Use professional but warm language
+- Keep it scannable — short paragraphs, clear headings, bullet points
+- Do NOT use generic filler phrases like "dynamic environment" or "passionate team player"
 
 TARGET PLATFORMS: {platform}
 Keep it concise enough for social media but detailed enough for LinkedIn. One version that works across all platforms.
