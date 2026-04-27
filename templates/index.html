@@ -716,24 +716,24 @@
                 .btn-generate:hover:not(:disabled) { background: #8e3c35; }
                 .btn-generate:disabled { opacity: 0.6; cursor: not-allowed; }
                 
-                .job-ad-poster { border-radius: 6px; max-width: 1000px; width: 100%; margin: 0 auto; background: #f4f4f4; font-family: 'Inter', 'Century Gothic', Arial, sans-serif; box-shadow: 0 12px 30px rgba(0,0,0,0.08); position: relative; overflow: hidden; }
-                .job-ad-hero { width: 100%; height: 220px; background-image: url('https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1200&auto=format&fit=crop'); background-size: cover; background-position: center; position: relative; }
-                .job-ad-hero::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 80px; background: linear-gradient(transparent, rgba(0,0,0,0.3)); }
-                .job-ad-content-wrapper { background: #ffffff; margin: -40px 30px 0 30px; padding: 30px 36px; position: relative; z-index: 2; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-                .job-ad-eyebrow { color: #ad4b43; font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; }
+                .job-ad-poster { border-radius: 6px; width: 1200px; max-width: 1200px; margin: 0 auto; background: #ffffff; font-family: 'Inter', 'Century Gothic', Arial, sans-serif; box-shadow: 0 12px 30px rgba(0,0,0,0.08); position: relative; overflow: hidden; }
+                .job-ad-hero { width: 100%; height: 180px; background-image: url('https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1400&auto=format&fit=crop'); background-size: cover; background-position: center; position: relative; }
+                .job-ad-hero::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 80px; background: linear-gradient(transparent, rgba(0,0,0,0.25)); }
+                .job-ad-content-wrapper { padding: 28px 48px; }
+                .job-ad-eyebrow { color: #ad4b43; font-size: 9px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; margin-bottom: 8px; }
                 
-                .job-ad-content { color: #334155; font-size: 13px; line-height: 1.55; columns: 2; column-gap: 36px; column-rule: 1px solid #e2e8f0; }
-                .job-ad-content h1, .job-ad-content h2, .job-ad-content h3 { color: #000; font-family: 'Playfair Display', serif; margin-top: 1em; margin-bottom: 0.4em; column-span: all; }
-                .job-ad-content h1 { font-size: 26px; border-bottom: 2px solid #ad4b43; padding-bottom: 10px; margin-top: 0; display: inline-block; width: 100%; column-span: all; }
-                .job-ad-content h2 { font-size: 16px; color: #ad4b43; break-after: avoid; }
-                .job-ad-content h3 { font-size: 14px; break-after: avoid; }
-                .job-ad-content ul { padding-left: 18px; margin-bottom: 1em; break-inside: avoid; }
-                .job-ad-content li { margin-bottom: 5px; }
-                .job-ad-content p { margin-bottom: 0.8em; break-inside: avoid; }
+                .job-ad-content { color: #334155; font-size: 13px; line-height: 1.6; }
+                .job-ad-content h1 { font-size: 28px; font-family: 'Playfair Display', serif; color: #000; border-bottom: 2px solid #ad4b43; padding-bottom: 8px; margin: 0 0 14px 0; }
+                .job-ad-content h2 { font-size: 15px; font-family: 'Inter', sans-serif; font-weight: 700; color: #ad4b43; text-transform: uppercase; letter-spacing: 0.5px; margin: 18px 0 6px 0; }
+                .job-ad-content h3 { font-size: 13px; font-weight: 700; color: #1e293b; margin: 12px 0 4px 0; }
+                .job-ad-content ul { padding-left: 18px; margin: 0 0 10px 0; }
+                .job-ad-content li { margin-bottom: 3px; }
+                .job-ad-content p { margin: 0 0 8px 0; }
                 .job-ad-content a { color: #ad4b43; }
+                .job-ad-content strong { color: #1e293b; }
                 
-                .job-ad-footer { background: #000000; padding: 16px 36px; display: flex; justify-content: space-between; align-items: center; color: white; font-size: 12px; margin-top: 24px; }
-                .job-ad-footer span { opacity: 0.8; }
+                .job-ad-footer { background: #000000; padding: 12px 48px; display: flex; justify-content: space-between; align-items: center; color: white; font-size: 11px; }
+                .job-ad-footer span { opacity: 0.7; }
                 .job-ad-footer strong { font-weight: 600; letter-spacing: 0.5px; }
             </style>
             
@@ -908,24 +908,18 @@
                         // Clone poster into a fixed-width off-screen container
                         // so html2canvas renders it at full width (not cramped by the split panel)
                         const offscreen = document.createElement('div');
-                        offscreen.style.cssText = 'position:fixed; left:-9999px; top:0; width:1000px; z-index:-1;';
+                        offscreen.style.cssText = 'position:fixed; left:-9999px; top:0; width:1200px; z-index:-1;';
                         const clone = poster.cloneNode(true);
-                        clone.style.width = '1000px';
-                        clone.style.maxWidth = '1000px';
-                        // Force single-page layout by removing CSS columns on small widths
-                        const contentEl = clone.querySelector('.job-ad-content');
-                        if (contentEl) {
-                            contentEl.style.columns = '2';
-                            contentEl.style.columnGap = '36px';
-                        }
+                        clone.style.width = '1200px';
+                        clone.style.maxWidth = '1200px';
                         offscreen.appendChild(clone);
                         document.body.appendChild(offscreen);
 
                         html2canvas(clone, {
                             scale: 2,
                             useCORS: true,
-                            backgroundColor: '#f4f4f4',
-                            width: 1000
+                            backgroundColor: '#ffffff',
+                            width: 1200
                         }).then(canvas => {
                             const link = document.createElement('a');
                             link.download = 'Cavalier_Job_Ad.png';
