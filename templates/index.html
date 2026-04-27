@@ -905,10 +905,27 @@
                     btn.disabled = true;
                     
                     if (typeof html2canvas !== 'undefined') {
-                        html2canvas(poster, {
+                        // Clone poster into a fixed-width off-screen container
+                        // so html2canvas renders it at full width (not cramped by the split panel)
+                        const offscreen = document.createElement('div');
+                        offscreen.style.cssText = 'position:fixed; left:-9999px; top:0; width:1000px; z-index:-1;';
+                        const clone = poster.cloneNode(true);
+                        clone.style.width = '1000px';
+                        clone.style.maxWidth = '1000px';
+                        // Force single-page layout by removing CSS columns on small widths
+                        const contentEl = clone.querySelector('.job-ad-content');
+                        if (contentEl) {
+                            contentEl.style.columns = '2';
+                            contentEl.style.columnGap = '36px';
+                        }
+                        offscreen.appendChild(clone);
+                        document.body.appendChild(offscreen);
+
+                        html2canvas(clone, {
                             scale: 2,
                             useCORS: true,
-                            backgroundColor: '#f4f4f4'
+                            backgroundColor: '#f4f4f4',
+                            width: 1000
                         }).then(canvas => {
                             const link = document.createElement('a');
                             link.download = 'Cavalier_Job_Ad.png';
@@ -916,11 +933,13 @@
                             link.click();
                             btn.innerText = originalText;
                             btn.disabled = false;
+                            document.body.removeChild(offscreen);
                         }).catch(err => {
                             console.error(err);
                             alert('Failed to generate image. Ensure background image is accessible.');
                             btn.innerText = originalText;
                             btn.disabled = false;
+                            document.body.removeChild(offscreen);
                         });
                     } else {
                         alert('Image rendering library not loaded. Try refreshing the page.');
