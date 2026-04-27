@@ -172,8 +172,8 @@ If the role details or extra context mention more than one position (e.g. "Accou
 Do NOT merge the roles into vague combined sections. The reader must be able to clearly see exactly what each position entails.
 
 OVERALL STRUCTURE:
-1. A compelling headline (sell the opportunity, not just the job title)
-2. Brief intro (2-3 sentences — why these roles are exciting, who the team is)
+1. A professional headline that names the actual role(s) — e.g. "Accounts Payable Administrator — Cavalier Homes Goulburn Valley" or "Two Finance Roles Available — Cavalier Homes, Kialla". Do NOT use vague, fluffy headlines like "Join Our Vibrant Team" or "Elevate Your Career" — they are unprofessional for a finance role.
+2. Brief intro (2-3 sentences — who you are, what's the opportunity, where it is)
 3. Individual role sections (as described above)
 4. **Why You'll Love It Here** — perks, culture, lifestyle (shared across roles)
 5. **How to Apply** — clear call to action, email admin@cavalierhomesgv.com.au
@@ -182,7 +182,8 @@ STYLE RULES:
 - Be specific and concrete, not vague
 - Use professional but warm language
 - Keep it scannable — short paragraphs, clear headings, bullet points
-- Do NOT use generic filler phrases like "dynamic environment" or "passionate team player"
+- Do NOT use generic filler phrases like "dynamic environment", "passionate team player", "vibrant team", "in the heart of", "switch up your career", or "dive into"
+- Write like a professional recruiter, not a lifestyle blogger
 
 TARGET PLATFORMS: {platform}
 Keep it concise enough for social media but detailed enough for LinkedIn. One version that works across all platforms.
