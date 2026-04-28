@@ -717,7 +717,7 @@
                 .btn-generate:disabled { opacity: 0.6; cursor: not-allowed; }
                 
                 .job-ad-poster-scaler { width: 100%; overflow: hidden; }
-                .job-ad-poster { border-radius: 6px; width: 1080px; background: #ffffff; font-family: 'Inter', 'Century Gothic', Arial, sans-serif; box-shadow: 0 12px 30px rgba(0,0,0,0.08); position: relative; overflow: hidden; transform-origin: top left; }
+                .job-ad-poster { border-radius: 6px; width: 1200px; background: #ffffff; font-family: 'Inter', 'Century Gothic', Arial, sans-serif; box-shadow: 0 12px 30px rgba(0,0,0,0.08); position: relative; overflow: hidden; transform-origin: top left; }
                 .job-ad-hero { width: 100%; position: relative; overflow: hidden; }
                 .job-ad-hero img { width: 100%; height: auto; display: block; }
                 .job-ad-content-wrapper { background: #ffffff; margin: 0; padding: 44px 56px; position: relative; z-index: 2; }
@@ -917,7 +917,7 @@
                             scale: 2,
                             useCORS: true,
                             backgroundColor: '#ffffff',
-                            width: 1080
+                            width: 1200
                         }).then(canvas => {
                             poster.style.transform = origTransform;
                             scalePoster(); // re-apply scale
@@ -948,7 +948,7 @@
                     const poster = document.getElementById('jobAdPoster');
                     if (!scaler || !poster) return;
                     const containerWidth = scaler.offsetWidth;
-                    const scale = Math.min(1, containerWidth / 1080);
+                    const scale = Math.min(1, containerWidth / 1200);
                     poster.style.transform = 'scale(' + scale + ')';
                     // Set scaler height to match scaled poster height
                     scaler.style.height = (poster.offsetHeight * scale) + 'px';
