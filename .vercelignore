@@ -1,21 +1,35 @@
+.env
 .venv
-env
-venv
-ENV
-env.bak
-venv.bak
-__pycache__
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+test_venv/
+node_modules/
+
+__pycache__/
 *.py[cod]
 *$py.class
-.vscode
-.idea
+
+.vscode/
+.idea/
 *.swp
 *.swo
-resources/uploads
-resources/sharepoint_files
-memory
-node_modules
-pics for posts
-skills
-_agent/workflows
+
+resources/uploads/
+resources/sharepoint_files/
+*.pdf
+*.log
+
 .vercel
+Cavalier home Job adds/
+pics for posts/
+Meeting Notes/
+_agent/
+test_*.png
+margin_*.png
+page*.png
+CavalierKickOff_*.png
+office job.png
+ashwood_*.png
