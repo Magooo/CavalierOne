@@ -718,8 +718,8 @@
                 
                 .job-ad-poster-scaler { width: 100%; overflow: hidden; }
                 .job-ad-poster { border-radius: 6px; width: 1200px; background: #f4f4f4; font-family: 'Inter', 'Century Gothic', Arial, sans-serif; box-shadow: 0 12px 30px rgba(0,0,0,0.08); position: relative; overflow: hidden; transform-origin: top left; }
-                .job-ad-hero { width: 100%; height: 300px; position: relative; overflow: hidden; }
-                .job-ad-hero img { width: 100%; height: 100%; object-fit: cover; object-position: top center; display: block; }
+                .job-ad-hero { width: 100%; aspect-ratio: 16 / 9; position: relative; overflow: hidden; }
+                .job-ad-hero img { width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; }
                 .job-ad-content-wrapper { background: #ffffff; margin: -60px 40px 0 40px; padding: 40px 50px; position: relative; z-index: 2; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
                 .job-ad-eyebrow { color: #ad4b43; font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 15px; }
                 
@@ -852,15 +852,15 @@
             <script>
                 function handleHeroUpload(event) {
                     const file = event.target.files[0];
-                    const hero = document.querySelector('.job-ad-hero');
-                    if (file) {
+                    const heroImg = document.querySelector('.job-ad-hero img');
+                    if (file && heroImg) {
                         const reader = new FileReader();
                         reader.onload = function(e) {
-                            hero.style.backgroundImage = `url('${e.target.result}')`;
+                            heroImg.src = e.target.result;
                         };
                         reader.readAsDataURL(file);
-                    } else {
-                        hero.style.backgroundImage = `url('https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1200&auto=format&fit=crop')`;
+                    } else if (heroImg) {
+                        heroImg.src = '/static/brand_assets/job_ad_hero.jpg';
                     }
                 }
 
