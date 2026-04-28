@@ -717,25 +717,25 @@
                 .btn-generate:disabled { opacity: 0.6; cursor: not-allowed; }
                 
                 .job-ad-poster-scaler { width: 100%; overflow: hidden; }
-                .job-ad-poster { border-radius: 6px; width: 1200px; background: #f4f4f4; font-family: 'Inter', 'Century Gothic', Arial, sans-serif; box-shadow: 0 12px 30px rgba(0,0,0,0.08); position: relative; overflow: hidden; transform-origin: top left; }
+                .job-ad-poster { border-radius: 6px; width: 1080px; background: #ffffff; font-family: 'Inter', 'Century Gothic', Arial, sans-serif; box-shadow: 0 12px 30px rgba(0,0,0,0.08); position: relative; overflow: hidden; transform-origin: top left; }
                 .job-ad-hero { width: 100%; position: relative; overflow: hidden; }
                 .job-ad-hero img { width: 100%; height: auto; display: block; }
-                .job-ad-content-wrapper { background: #ffffff; margin: -60px 60px 0 60px; padding: 60px 70px; position: relative; z-index: 2; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-                .job-ad-eyebrow { color: #ad4b43; font-size: 18px; font-weight: 700; letter-spacing: 4px; text-transform: uppercase; margin-bottom: 24px; }
+                .job-ad-content-wrapper { background: #ffffff; margin: 0; padding: 44px 56px; position: relative; z-index: 2; }
+                .job-ad-eyebrow { color: #ad4b43; font-size: 15px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 16px; }
                 
-                .job-ad-content { color: #334155; font-size: 28px; line-height: 1.7; }
-                .job-ad-content h1, .job-ad-content h2, .job-ad-content h3 { color: #000; font-family: 'Playfair Display', serif; margin-top: 1.3em; margin-bottom: 0.5em; }
-                .job-ad-content h1 { font-size: 56px; border-bottom: 4px solid #ad4b43; padding-bottom: 20px; margin-top: 0; display: inline-block; width: 100%; }
-                .job-ad-content h2 { font-size: 36px; color: #ad4b43; }
-                .job-ad-content h3 { font-size: 30px; }
-                .job-ad-content p { margin-bottom: 20px; }
-                .job-ad-content ul { padding-left: 36px; margin-bottom: 1.5em; }
-                .job-ad-content li { margin-bottom: 14px; }
+                .job-ad-content { color: #334155; font-size: 22px; line-height: 1.65; }
+                .job-ad-content h1, .job-ad-content h2, .job-ad-content h3 { color: #000; font-family: 'Playfair Display', serif; margin-top: 1.2em; margin-bottom: 0.4em; }
+                .job-ad-content h1 { font-size: 40px; border-bottom: 3px solid #ad4b43; padding-bottom: 14px; margin-top: 0; display: inline-block; width: 100%; }
+                .job-ad-content h2 { font-size: 30px; color: #ad4b43; }
+                .job-ad-content h3 { font-size: 24px; font-weight: 700; }
+                .job-ad-content p { margin-bottom: 16px; }
+                .job-ad-content ul { padding-left: 30px; margin-bottom: 1.2em; }
+                .job-ad-content li { margin-bottom: 10px; }
                 .job-ad-content a { color: #ad4b43; }
                 
-                .job-ad-footer { background: #000000; padding: 30px 60px; display: flex; justify-content: space-between; align-items: center; color: white; font-size: 22px; margin-top: 50px; }
+                .job-ad-footer { background: #000000; padding: 24px 56px; display: flex; justify-content: space-between; align-items: center; color: white; font-size: 18px; margin-top: 0; }
                 .job-ad-footer span { opacity: 0.8; }
-                .job-ad-footer strong { font-weight: 600; letter-spacing: 1px; font-size: 24px; }
+                .job-ad-footer strong { font-weight: 600; letter-spacing: 1px; font-size: 20px; }
             </style>
             
             <div id="tab-job-ads" class="tab-content" style="display: none;">
@@ -909,15 +909,15 @@
                     btn.disabled = true;
                     
                     if (typeof html2canvas !== 'undefined') {
-                        // Temporarily remove the scale transform so html2canvas captures at full 1200px
+                        // Temporarily remove the scale transform so html2canvas captures at full 1080px
                         const origTransform = poster.style.transform;
                         poster.style.transform = 'none';
 
                         html2canvas(poster, {
                             scale: 2,
                             useCORS: true,
-                            backgroundColor: '#f4f4f4',
-                            width: 1200
+                            backgroundColor: '#ffffff',
+                            width: 1080
                         }).then(canvas => {
                             poster.style.transform = origTransform;
                             scalePoster(); // re-apply scale
@@ -942,13 +942,13 @@
                     }
                 }
 
-                // Scale the 1200px poster to fit the preview container
+                // Scale the 1080px poster to fit the preview container
                 function scalePoster() {
                     const scaler = document.getElementById('posterScaler');
                     const poster = document.getElementById('jobAdPoster');
                     if (!scaler || !poster) return;
                     const containerWidth = scaler.offsetWidth;
-                    const scale = Math.min(1, containerWidth / 1200);
+                    const scale = Math.min(1, containerWidth / 1080);
                     poster.style.transform = 'scale(' + scale + ')';
                     // Set scaler height to match scaled poster height
                     scaler.style.height = (poster.offsetHeight * scale) + 'px';
