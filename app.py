@@ -1021,29 +1021,31 @@ def api_generate_from_plans():
                   + "\nUse these coloured zones to understand WHICH PART of the facade each material should be applied to."
               )
 
-          vision_prompt = f"""You are an expert architectural drafter producing a PRECISE structural description of a house from its elevation drawing.
+          vision_prompt = f"""You are an expert architectural drafter. Describe this elevation drawing as a PRECISE paragraph for an AI image generator.
 
-CRITICAL RULES:
-- Count EVERY structural element EXACTLY: posts, columns, piers, windows, doors. If there are TWO posts, say "two posts". If there are ZERO windows on a section, say "no windows".
-- Do NOT invent or add any element not visible in the drawing.
-- Do NOT merge adjacent elements. If two posts are side by side with a gap, describe them as TWO separate posts with a gap between them.
-- Describe feature walls/cladding panels as CONTINUOUS SURFACES, not as piers or columns.
-- Vertical lines that are cladding joints or panel edges are NOT separate columns or piers.
+RULES:
+- Traverse LEFT to RIGHT across the facade.
+- Count every element EXACTLY (TWO posts, ONE window, ZERO openings).
+- Feature walls/cladding = one continuous surface, NOT separate piers.
+- Do NOT invent elements. If a wall is blank, say "solid wall with no openings".
+- Describe each roof section separately (gable, hip, skillion) and where each meets the fascia/eave.
 
-DESCRIBE PRECISELY (left to right across the facade):
-1. ROOFLINE: Each distinct roof section left-to-right (gable/hip/skillion/flat), height changes, where each meets the fascia.
-2. GARAGE: Position (left/right), width relative to facade, door type.
-3. ENTRY ZONE: Exact number of posts/columns (0, 1, 2, etc.), spacing between them, whether they are thin posts or thick piers, the door position and type.
-4. FEATURE WALLS: Any vertical cladding panels or feature sections — describe as a single continuous surface.
-5. WINDOWS: Exact count and position. If a section has NO windows, explicitly state "no windows on this section".
-6. SOLID WALLS: Any blank wall with no openings — describe as "solid wall with no windows or openings".
+EXAMPLE of the precision required (for a different house):
+"Single-storey contemporary home. From the left: a solid brick wall with no openings leads into a double garage under a low hip roof. The roofline steps up into a prominent central gable rising to a sharp point above the entry. Under the gable is a continuous vertical cladding feature panel running from the gable apex down to porch level. Below the cladding, two thin square posts stand side-by-side with an even gap, framing the entry porch. The front door is a single hinged door with a sidelight. To the right of the entry is one large picture window. The gable roof descends on both sides meeting the eave line — the right section continues as a lower hip roof over the right wing, which is a solid brick wall with no windows."
+
+Now describe THIS elevation drawing in the same style. Be equally specific about:
+- How many posts/columns (and their spacing)
+- Whether cladding is one panel or separate elements
+- Each roof plane and where it transitions
+- Exact window count per section
+- Where there are NO windows
 
 Target style: {style}
-{f"Extra notes: {notes}" if notes else ""}
-{f"Materials: {material_prompt}" if material_prompt else "Default materials: contemporary face brick walls, Colorbond steel sheet metal roof (NOT tiles), rendered feature panels."}
+{f"Notes: {notes}" if notes else ""}
+{f"Materials: {material_prompt}" if material_prompt else "Default materials: face brick walls, Colorbond steel sheet metal roof (NOT tiles), rendered feature panels."}
 {zone_context}
 
-Now write ONE dense paragraph (5-8 sentences) describing the BUILT house as a real photograph. Include EXACT element counts. Do NOT mention the drawing, dimensions, annotations, or colour zones. Do NOT add elements that are not in the drawing."""
+Write ONE paragraph (5-8 sentences). Do NOT mention the drawing, annotations, or dimensions."""
 
 
           vision_analysis = client.generate_text(vision_prompt, image_path=file_path)
@@ -1083,12 +1085,11 @@ Now write ONE dense paragraph (5-8 sentences) describing the BUILT house as a re
             )
 
         gen_prompt = (
-            f"Photorealistic exterior photograph of a newly built {style} Australian home, "
-            f"professional real estate photography, eye-level street view, sunny day, blue sky, "
-            f"manicured lawn, concrete driveway, established gardens. "
-            f"IMPORTANT: Only render windows and doors EXACTLY as described below — do NOT add extra windows or openings. "
             f"{vision_analysis} "
-            f"{material_section}"
+            f"{material_section} "
+            f"Photorealistic exterior photograph, {style} Australian home, "
+            f"eye-level street view, sunny day, blue sky, manicured lawn, concrete driveway. "
+            f"Render ONLY the elements described — no extra windows or openings."
         )
 
         negative = (
