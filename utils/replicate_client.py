@@ -1,7 +1,7 @@
 import os
 import replicate
 
-def generate_image_controlnet(prompt, image_path, api_token=None, guidance=3.5):
+def generate_image_controlnet(prompt, image_path, api_token=None, guidance=25):
     """
     Generates an image using ControlNet (Canny Edge) via Replicate.
     

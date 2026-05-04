@@ -1021,29 +1021,29 @@ def api_generate_from_plans():
                   + "\nUse these coloured zones to understand WHICH PART of the facade each material should be applied to."
               )
 
-          vision_prompt = f"""You are a professional architectural renderer.
-I will show you an architectural elevation drawing of a residential house. Your task is to produce an ARCHITECTURALLY PRECISE description of the FINISHED, BUILT house suitable for an AI image generator.
+          vision_prompt = f"""You are an expert architectural drafter producing a PRECISE structural description of a house from its elevation drawing.
 
-CRITICAL REQUIREMENT — ROOFLINE ACCURACY:
-You MUST describe the roofline section by section from left to right. Many houses have MULTIPLE distinct roof planes at DIFFERENT heights — do NOT merge them into a single generic roofline. For example:
-- A gable over the main body + a lower skillion or hip over the entry porch = TWO separate roof sections that must BOTH appear in your description
-- A double gable = TWO gables at the same or different heights
-- A hip with a lower skillion over the garage = TWO sections
-If you see ANY step-down, break, or height change in the roofline, describe BOTH sections explicitly.
+CRITICAL RULES:
+- Count EVERY structural element EXACTLY: posts, columns, piers, windows, doors. If there are TWO posts, say "two posts". If there are ZERO windows on a section, say "no windows".
+- Do NOT invent or add any element not visible in the drawing.
+- Do NOT merge adjacent elements. If two posts are side by side with a gap, describe them as TWO separate posts with a gap between them.
+- Describe feature walls/cladding panels as CONTINUOUS SURFACES, not as piers or columns.
+- Vertical lines that are cladding joints or panel edges are NOT separate columns or piers.
 
-Describe the following precisely:
-1. ROOFLINE: List each distinct roof section LEFT-TO-RIGHT. For each: shape (gable/hip/skillion/flat), relative height, and where it sits over the facade.
-2. FACADE ZONES: garage position and width, entry porch location, main living section, any feature walls
-3. WINDOWS: number, position, and approximate size of each window group
-4. ENTRY: porch depth, columns/piers if any, front door position
-5. PROPORTIONS: overall width vs height ratio
+DESCRIBE PRECISELY (left to right across the facade):
+1. ROOFLINE: Each distinct roof section left-to-right (gable/hip/skillion/flat), height changes, where each meets the fascia.
+2. GARAGE: Position (left/right), width relative to facade, door type.
+3. ENTRY ZONE: Exact number of posts/columns (0, 1, 2, etc.), spacing between them, whether they are thin posts or thick piers, the door position and type.
+4. FEATURE WALLS: Any vertical cladding panels or feature sections — describe as a single continuous surface.
+5. WINDOWS: Exact count and position. If a section has NO windows, explicitly state "no windows on this section".
+6. SOLID WALLS: Any blank wall with no openings — describe as "solid wall with no windows or openings".
 
 Target style: {style}
 {f"Extra notes: {notes}" if notes else ""}
 {f"Materials: {material_prompt}" if material_prompt else "Default materials: contemporary face brick walls, Colorbond steel sheet metal roof (NOT tiles), rendered feature panels."}
 {zone_context}
 
-Now write ONE coherent paragraph (4–6 sentences) for an AI image generator. Include ALL distinct roof sections. Do NOT mention the drawing, dimensions, annotations, or colour zones. Write as if describing a real photograph of the finished house."""
+Now write ONE dense paragraph (5-8 sentences) describing the BUILT house as a real photograph. Include EXACT element counts. Do NOT mention the drawing, dimensions, annotations, or colour zones. Do NOT add elements that are not in the drawing."""
 
 
           vision_analysis = client.generate_text(vision_prompt, image_path=file_path)
@@ -1127,8 +1127,9 @@ Now write ONE coherent paragraph (4–6 sentences) for an AI image generator. In
                 engine_used = "replicate_controlnet"
                 from utils.replicate_client import generate_image_controlnet
                 # Boost guidance when user is correcting — gives prompt more weight vs edge map
+                # flux-canny-pro guidance range is 1-100 (NOT 0-10)
                 correction_active = bool(vision_override and 'CRITICAL CORRECTIONS' in vision_override)
-                guidance_val = 5.5 if correction_active else 3.5
+                guidance_val = 40 if correction_active else 25
                 if correction_active:
                     print(f"[Plans] Correction mode — boosting guidance to {guidance_val}")
                 image_url = generate_image_controlnet(
