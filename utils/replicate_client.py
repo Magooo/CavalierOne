@@ -28,14 +28,13 @@ def generate_image_controlnet(prompt, image_path, api_token=None):
     # State-of-the-art Canny ControlNet for Flux.1
     model_id = "black-forest-labs/flux-canny-pro"
     
-    # PROMPT BOOSTING: FIX "BASIC" LOOK & REMOVE HALLUCINATIONS
-    # REMOVED "8k" because Flux was literally writing "8K" on the wall.
-    # ADDED "Clean" to discourage text rendering.
+    # PROMPT BOOSTING: produce premium architectural renders
+    # Keep it concise — Flux hallucinates text from long keyword-stuffed prompts.
     high_quality_prompt = (
-        f"Professional Architectural Visualization, High Definition, Photorealistic, "
-        f"Cinematic Lighting, Soft Shadows, Hyperdetailed. "
+        f"Professional architectural exterior photograph, photorealistic, "
+        f"golden hour natural lighting, soft shadows, shallow depth of field. "
         f"{prompt} "
-        f"Minimalist, Modern, Sharp Focus, Clean, No Text, No Annotations, No Dimensions."
+        f"No text, no labels, no watermarks."
     )
     
     print(f"Starting Flux ControlNet generation...")
@@ -56,10 +55,12 @@ def generate_image_controlnet(prompt, image_path, api_token=None):
             input={
                 "control_image": control_image,
                 "prompt": high_quality_prompt,
-                "steps": 28,
-                "guidance": 5.0,      # 3.5 was too loose for complex rooflines; 5.0 holds canny structure without overriding materials
+                "steps": 40,
+                "guidance": 3.5,
                 "safety_tolerance": 5,
-                "output_format": "jpg"
+                "output_format": "jpg",
+                "output_quality": 100,
+                "megapixels": "1",
             }
         )
         

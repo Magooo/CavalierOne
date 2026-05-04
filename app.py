@@ -1076,23 +1076,17 @@ Now write ONE coherent paragraph (4–6 sentences) for an AI image generator. In
             )
 
         gen_prompt = (
-            f"Photorealistic architectural exterior photograph of a newly built Australian residential house, "
-            f"professional real estate photography, {style} style, "
-            f"shot from the street, eye-level perspective, sunny day with blue sky and white clouds, "
-            f"manicured front lawn, clean concrete driveway, established garden beds. "
+            f"Photorealistic exterior photograph of a newly built {style} Australian home, "
+            f"professional real estate photography, eye-level street view, sunny day, blue sky, "
+            f"manicured lawn, concrete driveway, established gardens. "
             f"{vision_analysis} "
-            f"IMPORTANT: reproduce the EXACT roofline geometry including ALL separate roof planes, breaks and step-downs — do NOT simplify or merge distinct roof sections. "
-            f"{material_section} "
-            f"Sharp focus, high detail, cinematic lighting, no text, no watermarks, no annotations, "
-            f"photorealistic, 8K quality."
+            f"{material_section}"
         )
 
         negative = (
-            "drawing, sketch, blueprint, line art, architectural plan, annotations, dimensions, "
-            "text labels, cartoon, render artefacts, low quality, blurry, watermark, signature, "
-            "oversized trees, vegetation blocking facade, "
-            "merged rooflines, incorrect roofline, simplified roof, wrong roof shape, "
-            "missing roof section, extra roof section, tile roof, terracotta tiles"
+            "drawing, sketch, blueprint, line art, annotations, dimensions, "
+            "text, labels, watermark, cartoon, low quality, blurry, "
+            "tile roof, terracotta tiles"
         )
 
         # ── Step 3: Replicate ControlNet (best) or KIE text-to-image (fallback) ─
