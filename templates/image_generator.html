@@ -1028,6 +1028,11 @@
                   <div class="paint-swatch" id="ps-garage" data-colour="rgba(210,200,180,0.65)" data-label="Garage" onclick="selectPaintSwatch(this)" style="background:#d2c8b4" title="Garage door"></div>
                   <div class="paint-swatch-name">Garage</div>
                 </div>
+                <div id="custom-zones-container"></div>
+                <div class="paint-swatch-wrap">
+                  <button class="eraser-btn" id="add-zone-btn" onclick="addCustomZone()" style="font-size:18px;padding:2px 8px;min-width:26px;height:26px;line-height:1" title="Add a custom zone">＋</button>
+                  <div class="paint-swatch-name">Add Zone</div>
+                </div>
               </div>
 
               <div class="eraser-hint" id="eraser-hint">Drag to erase annotation text and dimension lines. Switch to 🎨 Paint Product to colour-code zones for the AI.</div>
@@ -1214,9 +1219,30 @@
               <div class="compare-label">Before</div>
               <img id="compare-before" class="compare-img" src="" alt="Original photo">
             </div>
-            <div class="compare-side">
+            <div class="compare-side" style="position:relative">
               <div class="compare-label">After (AI Enhanced)</div>
               <img id="compare-after" class="compare-img" src="" alt="AI enhanced photo">
+              <!-- Correction overlay canvas (hidden until activated) -->
+              <canvas id="correction-canvas" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;cursor:crosshair;z-index:10"></canvas>
+            </div>
+          </div>
+          <!-- Correction toolbar (hidden until activated) -->
+          <div id="correction-toolbar" style="display:none;margin-top:8px;padding:10px 14px;background:var(--card-bg);border:1px solid var(--border);border-radius:8px;">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px;">
+              <span style="font-size:12px;font-weight:600;color:var(--text-primary)">🖊 Circle what's wrong:</span>
+              <label style="font-size:11px;color:var(--text-muted)">Brush
+                <input type="range" id="correction-brush-size" min="8" max="60" value="24" style="width:80px;vertical-align:middle">
+              </label>
+              <button class="eraser-btn" onclick="correctionUndo()">↩ Undo</button>
+              <button class="eraser-btn" onclick="correctionClear()">↺ Clear</button>
+              <button class="eraser-btn" onclick="cancelCorrection()" style="margin-left:auto">✕ Cancel</button>
+            </div>
+            <div style="display:flex;gap:8px;align-items:end;flex-wrap:wrap;">
+              <div style="flex:1;min-width:200px">
+                <label style="font-size:11px;font-weight:600;color:var(--text-primary);display:block;margin-bottom:3px">What's wrong? (e.g. "remove the window on the left", "roof should be a gable not hip")</label>
+                <textarea id="correction-notes" rows="2" style="width:100%;font-size:12px;padding:6px 8px;border:1px solid var(--border);border-radius:6px;resize:vertical;font-family:inherit" placeholder="Describe what the AI got wrong..."></textarea>
+              </div>
+              <button class="btn-action btn-action--green" onclick="submitCorrection()" style="white-space:nowrap;height:fit-content">🔄 Re-generate</button>
             </div>
           </div>
 
@@ -1251,6 +1277,17 @@
         </div>
         <button class="btn-action btn-action--green" onclick="switchMode('design'); useGeneratedAsDesign();" type="button">
           📐 Add to Design →
+        </button>
+      </div>
+
+      <!-- Correct render button (shown after result) -->
+      <div class="add-design-banner hidden" id="correct-render-banner" style="background:linear-gradient(135deg,#3a1a1a 0%,#7d2d2d 100%)">
+        <div class="add-design-banner__text">
+          <div class="add-design-banner__title">Something wrong with the render?</div>
+          <div class="add-design-banner__sub">Circle problem areas and describe what to fix — AI will re-generate.</div>
+        </div>
+        <button class="btn-action" onclick="startCorrection()" type="button" style="background:#AD4B43;color:#fff">
+          ✏️ Correct This Render
         </button>
       </div>
 
@@ -1739,6 +1776,41 @@
       paintColour = el.dataset.colour;
     }
 
+    /* — Custom Zone creation — */
+    let customZoneCount = 0;
+    const customZoneColours = [
+      { bg: '#8B5CF6', rgba: 'rgba(139,92,246,0.55)' },   // purple
+      { bg: '#EC4899', rgba: 'rgba(236,72,153,0.55)' },   // pink
+      { bg: '#14B8A6', rgba: 'rgba(20,184,166,0.55)' },   // teal
+      { bg: '#F59E0B', rgba: 'rgba(245,158,11,0.55)' },   // amber
+      { bg: '#EF4444', rgba: 'rgba(239,68,68,0.55)' },    // red
+      { bg: '#06B6D4', rgba: 'rgba(6,182,212,0.55)' },    // cyan
+      { bg: '#84CC16', rgba: 'rgba(132,204,22,0.55)' },   // lime
+      { bg: '#F97316', rgba: 'rgba(249,115,22,0.55)' },   // orange
+    ];
+
+    function addCustomZone() {
+      const name = prompt('Zone name (e.g. "Feature Wall 2", "Fascia", "Portico"):');
+      if (!name || !name.trim()) return;
+      const label = name.trim();
+      const colIdx = customZoneCount % customZoneColours.length;
+      const col = customZoneColours[colIdx];
+      customZoneCount++;
+
+      const container = document.getElementById('custom-zones-container');
+      const wrap = document.createElement('div');
+      wrap.className = 'paint-swatch-wrap';
+      wrap.innerHTML = `
+        <div class="paint-swatch" data-colour="${col.rgba}" data-label="${label}"
+             onclick="selectPaintSwatch(this)" style="background:${col.bg}"
+             title="${label}"></div>
+        <div class="paint-swatch-name">${label}</div>
+      `;
+      container.appendChild(wrap);
+      // Auto-select the new zone
+      selectPaintSwatch(wrap.querySelector('.paint-swatch'));
+    }
+
     /* — Undo / Reset — */
     function eraserSaveSnapshot() {
       const canvas = document.getElementById('eraser-canvas');
@@ -2064,6 +2136,7 @@
         disableActions(false);
         addToHistory(data.image_url, '📐');
         document.getElementById('add-design-banner').classList.remove('hidden');
+        document.getElementById('correct-render-banner').classList.remove('hidden');
         // Show Fine-Tune panel and auto-open it
         const ftPanel = document.getElementById('finetune-panel');
         ftPanel.classList.remove('hidden');
@@ -2081,6 +2154,108 @@
         disableActions(false);
       }
     }
+
+    /* =============================================
+       CORRECTION MODE — paint over wrong areas
+    ============================================= */
+    let corrCtx = null;
+    let corrDrawing = false;
+    let corrSnapshots = [];
+
+    function startCorrection() {
+      const afterImg = document.getElementById('compare-after');
+      const canvas = document.getElementById('correction-canvas');
+      const toolbar = document.getElementById('correction-toolbar');
+      if (!afterImg.src) return;
+      // Size canvas to match the image element
+      const rect = afterImg.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+      canvas.style.display = 'block';
+      toolbar.style.display = 'block';
+      corrCtx = canvas.getContext('2d');
+      corrCtx.clearRect(0, 0, canvas.width, canvas.height);
+      corrSnapshots = [];
+      corrDrawing = false;
+
+      // Drawing events
+      canvas.onmousedown = (e) => {
+        e.preventDefault();
+        corrSnapshots.push(corrCtx.getImageData(0, 0, canvas.width, canvas.height));
+        if (corrSnapshots.length > 20) corrSnapshots.shift();
+        corrDrawing = true;
+        corrPaint(e);
+      };
+      canvas.onmousemove = (e) => { if (corrDrawing) corrPaint(e); };
+      canvas.onmouseup = () => { corrDrawing = false; };
+      canvas.onmouseleave = () => { corrDrawing = false; };
+      // Touch
+      canvas.ontouchstart = (e) => { e.preventDefault(); corrSnapshots.push(corrCtx.getImageData(0, 0, canvas.width, canvas.height)); corrDrawing = true; corrPaint(e); };
+      canvas.ontouchmove = (e) => { e.preventDefault(); if (corrDrawing) corrPaint(e); };
+      canvas.ontouchend = () => { corrDrawing = false; };
+    }
+
+    function corrPaint(e) {
+      if (!corrCtx) return;
+      const canvas = document.getElementById('correction-canvas');
+      const rect = canvas.getBoundingClientRect();
+      const src = e.touches ? e.touches[0] : e;
+      const x = src.clientX - rect.left;
+      const y = src.clientY - rect.top;
+      const size = parseInt(document.getElementById('correction-brush-size').value);
+      corrCtx.globalCompositeOperation = 'source-over';
+      corrCtx.fillStyle = 'rgba(255, 50, 50, 0.45)';
+      corrCtx.strokeStyle = 'rgba(255, 0, 0, 0.8)';
+      corrCtx.lineWidth = 2;
+      corrCtx.beginPath();
+      corrCtx.arc(x, y, size / 2, 0, Math.PI * 2);
+      corrCtx.fill();
+      corrCtx.stroke();
+    }
+
+    function correctionUndo() {
+      if (!corrCtx || !corrSnapshots.length) return;
+      const canvas = document.getElementById('correction-canvas');
+      corrCtx.putImageData(corrSnapshots.pop(), 0, 0);
+    }
+    function correctionClear() {
+      if (!corrCtx) return;
+      const canvas = document.getElementById('correction-canvas');
+      corrCtx.clearRect(0, 0, canvas.width, canvas.height);
+      corrSnapshots = [];
+    }
+    function cancelCorrection() {
+      const canvas = document.getElementById('correction-canvas');
+      canvas.style.display = 'none';
+      document.getElementById('correction-toolbar').style.display = 'none';
+      corrCtx = null; corrSnapshots = [];
+    }
+
+    async function submitCorrection() {
+      const notes = document.getElementById('correction-notes').value.trim();
+      if (!notes) { showToast('Please describe what needs fixing.', 'error'); return; }
+
+      // Get the current render URL and original elevation
+      const afterSrc = document.getElementById('compare-after').src;
+      const fileInput = document.getElementById('plans-file');
+      if (!afterSrc) { showToast('No render to correct.', 'error'); return; }
+
+      // Build correction prompt and re-generate via existing plans endpoint
+      const style = document.getElementById('plans-style').value;
+      const existingNotes = document.getElementById('plans-notes').value.trim();
+      const correctionNote = `CORRECTIONS FROM PREVIOUS RENDER: ${notes}. ${existingNotes}`;
+
+      // Update the notes field so the user can see what was sent
+      document.getElementById('plans-notes').value = correctionNote;
+
+      cancelCorrection(); // hide correction UI
+      showToast('Re-generating with corrections…', 'info');
+
+      // Trigger the same generate flow with updated notes
+      await generateFromPlans();
+    }
+
+
 
     /* =============================================
        GENERATE MODE
