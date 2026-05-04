@@ -478,6 +478,8 @@
     .eraser-wrap.visible { display: block; }
     .eraser-scroller { overflow: auto; max-height: 340px; position: relative; }
     .eraser-canvas { display: block; transform-origin: top left; cursor: none; touch-action: none; }
+    .eraser-canvas.mode-fill { cursor: crosshair; }
+    .eraser-canvas.mode-rect { cursor: crosshair; }
     /* Floating cursor */
     #eraser-cursor { position: fixed; pointer-events: none; z-index: 9999; display: none;
       border: 2.5px solid rgba(0,0,0,0.7); box-shadow: 0 0 0 1px rgba(255,255,255,0.8);
@@ -978,7 +980,9 @@
                 <!-- Mode toggle -->
                 <div class="eraser-mode-group">
                   <button class="eraser-mode-btn active" id="mode-btn-erase" onclick="setCanvasMode('erase')">🧹 Erase</button>
-                  <button class="eraser-mode-btn" id="mode-btn-paint" onclick="setCanvasMode('paint')">🎨 Paint Product</button>
+                  <button class="eraser-mode-btn" id="mode-btn-paint" onclick="setCanvasMode('paint')">🎨 Brush</button>
+                  <button class="eraser-mode-btn" id="mode-btn-fill" onclick="setCanvasMode('fill')">🪣 Fill</button>
+                  <button class="eraser-mode-btn" id="mode-btn-rect" onclick="setCanvasMode('rect')">▭ Rectangle</button>
                 </div>
                 <div class="eraser-sep"></div>
                 <!-- Brush size -->
@@ -1512,6 +1516,55 @@
     let paintColour       = 'rgba(60,60,60,0.55)'; // default = Roof
     let canvasZoomLevel   = 1.0;
     let paintedZones      = [];         // labels of zones painted (for vision prompt)
+    let rectStart         = null;       // {x,y} for rectangle drag start
+
+    /* — Flood Fill (paint bucket) — */
+    function floodFill(startX, startY, fillColour) {
+      const canvas = document.getElementById('eraser-canvas');
+      const w = canvas.width, h = canvas.height;
+      const sx = Math.round(startX), sy = Math.round(startY);
+      if (sx < 0 || sx >= w || sy < 0 || sy >= h) return;
+      const imgData = eraserCtx.getImageData(0, 0, w, h);
+      const data = imgData.data;
+      // Parse fill colour rgba string
+      const m = fillColour.match(/[\d.]+/g);
+      const fr = Math.round(parseFloat(m[0]));
+      const fg = Math.round(parseFloat(m[1]));
+      const fb = Math.round(parseFloat(m[2]));
+      const fa = Math.round(parseFloat(m[3]) * 255);
+      // Get target colour at click point
+      const idx0 = (sy * w + sx) * 4;
+      const tr = data[idx0], tg = data[idx0+1], tb = data[idx0+2], ta = data[idx0+3];
+      // Don't fill if clicking on same colour
+      if (tr === fr && tg === fg && tb === fb) return;
+      const tol = 40; // colour tolerance
+      function match(i) {
+        return Math.abs(data[i] - tr) <= tol &&
+               Math.abs(data[i+1] - tg) <= tol &&
+               Math.abs(data[i+2] - tb) <= tol &&
+               Math.abs(data[i+3] - ta) <= tol;
+      }
+      // Scanline flood fill
+      const stack = [[sx, sy]];
+      const visited = new Uint8Array(w * h);
+      while (stack.length) {
+        const [cx, cy] = stack.pop();
+        if (cx < 0 || cx >= w || cy < 0 || cy >= h) continue;
+        const vi = cy * w + cx;
+        if (visited[vi]) continue;
+        const pi = vi * 4;
+        if (!match(pi)) continue;
+        visited[vi] = 1;
+        // Blend fill colour onto pixel
+        const srcA = fa / 255;
+        data[pi]   = Math.round(data[pi]   * (1 - srcA) + fr * srcA);
+        data[pi+1] = Math.round(data[pi+1] * (1 - srcA) + fg * srcA);
+        data[pi+2] = Math.round(data[pi+2] * (1 - srcA) + fb * srcA);
+        data[pi+3] = Math.min(255, data[pi+3] + fa);
+        stack.push([cx+1,cy],[cx-1,cy],[cx,cy+1],[cx,cy-1]);
+      }
+      eraserCtx.putImageData(imgData, 0, 0);
+    }
 
     /* — Init — */
     function initEraserCanvas(src) {
@@ -1580,16 +1633,28 @@
     /* — Mode toggle — */
     function setCanvasMode(mode) {
       canvasMode = mode;
-      document.getElementById('mode-btn-erase').classList.toggle('active', mode === 'erase');
-      document.getElementById('mode-btn-paint').classList.toggle('active', mode === 'paint');
+      ['erase','paint','fill','rect'].forEach(m => {
+        const btn = document.getElementById('mode-btn-' + m);
+        if (btn) btn.classList.toggle('active', mode === m);
+      });
       const cursor = document.getElementById('eraser-cursor');
-      cursor.className = 'mode-' + mode;
+      cursor.className = mode === 'fill' ? 'mode-paint' : mode === 'rect' ? 'mode-paint' : 'mode-' + mode;
       const palette = document.getElementById('eraser-palette');
-      palette.classList.toggle('visible', mode === 'paint');
+      palette.classList.toggle('visible', mode !== 'erase');
       const hint = document.getElementById('eraser-hint');
-      hint.textContent = mode === 'erase'
-        ? 'Drag to erase annotation text and dimension lines. Switch to 🎨 Paint Product to colour-code zones for the AI.'
-        : 'Paint coloured zones: Roof (dark) • Brick (red-brown) • Render (cream) • Feature (blue) • Windows • Garage. AI uses these zones spatially.';
+      const hints = {
+        erase: 'Drag to erase annotation text and dimension lines.',
+        paint: 'Drag to brush colour. Use 🪣 Fill or ▭ Rectangle for faster coverage.',
+        fill:  '🪣 Click on an area to flood-fill it with the selected colour. Works great for roofs and walls.',
+        rect:  '▭ Click and drag a rectangle to fill a block area. Perfect for large sections like walls.'
+      };
+      hint.textContent = hints[mode] || '';
+      // Hide brush cursor for click-based tools
+      if (mode === 'fill') { cursor.style.display = 'none'; }
+      // Toggle canvas CSS cursor class
+      const cvs = document.getElementById('eraser-canvas');
+      cvs.classList.toggle('mode-fill', mode === 'fill');
+      cvs.classList.toggle('mode-rect', mode === 'rect');
     }
 
     /* — Paint swatch selection — */
@@ -1657,38 +1722,111 @@
       });
 
       // ─── Eraser canvas events ─────────────────────────────────────────────
-      canvas.addEventListener('mouseenter', () => cursor.style.display = 'block');
-      canvas.addEventListener('mouseleave', () => { cursor.style.display = 'none'; eraserDrawing = false; });
+      canvas.addEventListener('mouseenter', () => { if (canvasMode !== 'fill') cursor.style.display = 'block'; });
+      canvas.addEventListener('mouseleave', () => { cursor.style.display = 'none'; eraserDrawing = false; rectStart = null; });
       canvas.addEventListener('mousemove', e => updateCursor(e));
+
+      let lastDrawPos = null; // for brush interpolation
+
+      function trackPaintZone() {
+        const activeEl = document.querySelector('.paint-swatch.active');
+        const label = activeEl ? activeEl.dataset.label : '';
+        if (label && !paintedZones.includes(label)) paintedZones.push(label);
+      }
 
       function startDraw(e) {
         if (!eraserCtx) return;
         e.preventDefault();
+        const pos = eraserGetPos(e);
+
+        if (canvasMode === 'fill') {
+          // Flood fill: single click
+          eraserSaveSnapshot();
+          const col = paintColour;
+          floodFill(pos.x, pos.y, col);
+          trackPaintZone();
+          return;
+        }
+        if (canvasMode === 'rect') {
+          // Rectangle: record start
+          eraserSaveSnapshot();
+          rectStart = pos;
+          return;
+        }
+        // Brush modes (erase / paint)
         eraserSaveSnapshot();
         eraserDrawing = true;
+        lastDrawPos = pos;
+        // Draw initial dot
+        doDraw(e);
       }
+
       function doDraw(e) {
-        if (!eraserDrawing || !eraserCtx) return;
+        if (!eraserCtx) return;
         e.preventDefault();
-        const size     = parseInt(sizeSlider.value);
-        const {x, y}   = eraserGetPos(e);
-        const radius   = size / 2;
+        const pos = eraserGetPos(e);
+
+        if (canvasMode === 'rect' && rectStart) {
+          // Live rubber-band preview: restore snapshot + draw outline
+          if (eraserSnapshots.length) {
+            eraserCtx.putImageData(eraserSnapshots[eraserSnapshots.length - 1], 0, 0);
+          }
+          eraserCtx.globalCompositeOperation = 'source-over';
+          eraserCtx.fillStyle = paintColour;
+          const rx = Math.min(rectStart.x, pos.x);
+          const ry = Math.min(rectStart.y, pos.y);
+          const rw = Math.abs(pos.x - rectStart.x);
+          const rh = Math.abs(pos.y - rectStart.y);
+          eraserCtx.fillRect(rx, ry, rw, rh);
+          if (e.type === 'mousemove') updateCursor(e);
+          return;
+        }
+
+        if (!eraserDrawing) return;
+
+        const size   = parseInt(sizeSlider.value);
+        const radius = size / 2;
         eraserCtx.globalCompositeOperation = 'source-over';
         if (canvasMode === 'erase') {
           eraserCtx.fillStyle = '#ffffff';
         } else {
-          // Paint mode — semi-transparent product colour
           eraserCtx.fillStyle = paintColour;
-          const activeEl = document.querySelector('.paint-swatch.active');
-          const label = activeEl ? activeEl.dataset.label : '';
-          if (label && !paintedZones.includes(label)) paintedZones.push(label);
+          trackPaintZone();
         }
-        eraserCtx.beginPath();
-        eraserCtx.arc(x, y, radius, 0, Math.PI * 2);
-        eraserCtx.fill();
+
+        // Interpolate between last position and current for smooth strokes
+        if (lastDrawPos) {
+          const dx = pos.x - lastDrawPos.x;
+          const dy = pos.y - lastDrawPos.y;
+          const dist = Math.sqrt(dx*dx + dy*dy);
+          const step = Math.max(2, radius / 3);
+          const steps = Math.ceil(dist / step);
+          for (let i = 0; i <= steps; i++) {
+            const t = steps === 0 ? 1 : i / steps;
+            const px = lastDrawPos.x + dx * t;
+            const py = lastDrawPos.y + dy * t;
+            eraserCtx.beginPath();
+            eraserCtx.arc(px, py, radius, 0, Math.PI * 2);
+            eraserCtx.fill();
+          }
+        } else {
+          eraserCtx.beginPath();
+          eraserCtx.arc(pos.x, pos.y, radius, 0, Math.PI * 2);
+          eraserCtx.fill();
+        }
+        lastDrawPos = pos;
         if (e.type === 'mousemove') updateCursor(e);
       }
-      function stopDraw() { eraserDrawing = false; }
+
+      function stopDraw(e) {
+        if (canvasMode === 'rect' && rectStart && eraserCtx) {
+          // Finalize rectangle (already drawn in doDraw preview)
+          trackPaintZone();
+          rectStart = null;
+        }
+        eraserDrawing = false;
+        lastDrawPos = null;
+      }
 
       canvas.addEventListener('mousedown',  startDraw);
       canvas.addEventListener('mousemove',  doDraw);
