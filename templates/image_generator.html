@@ -1219,32 +1219,42 @@
               <div class="compare-label">Before</div>
               <img id="compare-before" class="compare-img" src="" alt="Original photo">
             </div>
-            <div class="compare-side" style="position:relative">
+            <div class="compare-side">
               <div class="compare-label">After (AI Enhanced)</div>
               <img id="compare-after" class="compare-img" src="" alt="AI enhanced photo">
-              <!-- Correction overlay canvas (hidden until activated) -->
-              <canvas id="correction-canvas" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;cursor:crosshair;z-index:10"></canvas>
             </div>
           </div>
-          <!-- Correction toolbar (hidden until activated) -->
-          <div id="correction-toolbar" style="display:none;margin-top:8px;padding:10px 14px;background:var(--card-bg);border:1px solid var(--border);border-radius:8px;">
-            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px;">
-              <span style="font-size:12px;font-weight:600;color:var(--text-primary)">🖊 Circle what's wrong:</span>
-              <label style="font-size:11px;color:var(--text-muted)">Brush
-                <input type="range" id="correction-brush-size" min="8" max="60" value="24" style="width:80px;vertical-align:middle">
+
+      <!-- Fullscreen Correction Modal -->
+      <div id="correction-modal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.92);overflow:auto">
+        <div style="max-width:1200px;margin:0 auto;padding:20px 16px;display:flex;flex-direction:column;height:100vh">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap">
+            <span style="font-size:16px;font-weight:600;color:#fff">✏️ Correct This Render</span>
+            <span style="font-size:12px;color:rgba(255,255,255,0.5)">Paint over problem areas in red, then describe what to fix</span>
+            <button onclick="cancelCorrection()" style="margin-left:auto;background:none;border:1px solid rgba(255,255,255,0.3);color:#fff;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:13px">✕ Close</button>
+          </div>
+          <div style="flex:1;position:relative;display:flex;align-items:center;justify-content:center;min-height:0;overflow:hidden">
+            <img id="correction-bg-img" src="" style="max-width:100%;max-height:100%;object-fit:contain;border-radius:8px" alt="Render">
+            <canvas id="correction-canvas" style="position:absolute;cursor:crosshair;border-radius:8px"></canvas>
+          </div>
+          <div style="margin-top:12px;padding:12px 16px;background:rgba(255,255,255,0.08);border-radius:10px;backdrop-filter:blur(10px)">
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px">
+              <label style="font-size:12px;color:rgba(255,255,255,0.7);display:flex;align-items:center;gap:6px">Brush
+                <input type="range" id="correction-brush-size" min="8" max="80" value="28" style="width:100px">
               </label>
-              <button class="eraser-btn" onclick="correctionUndo()">↩ Undo</button>
-              <button class="eraser-btn" onclick="correctionClear()">↺ Clear</button>
-              <button class="eraser-btn" onclick="cancelCorrection()" style="margin-left:auto">✕ Cancel</button>
+              <button class="eraser-btn" onclick="correctionUndo()" style="color:#fff;border-color:rgba(255,255,255,0.3)">↩ Undo</button>
+              <button class="eraser-btn" onclick="correctionClear()" style="color:#fff;border-color:rgba(255,255,255,0.3)">↺ Clear</button>
             </div>
-            <div style="display:flex;gap:8px;align-items:end;flex-wrap:wrap;">
-              <div style="flex:1;min-width:200px">
-                <label style="font-size:11px;font-weight:600;color:var(--text-primary);display:block;margin-bottom:3px">What's wrong? (e.g. "remove the window on the left", "roof should be a gable not hip")</label>
-                <textarea id="correction-notes" rows="2" style="width:100%;font-size:12px;padding:6px 8px;border:1px solid var(--border);border-radius:6px;resize:vertical;font-family:inherit" placeholder="Describe what the AI got wrong..."></textarea>
+            <div style="display:flex;gap:10px;align-items:end;flex-wrap:wrap">
+              <div style="flex:1;min-width:220px">
+                <label style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.85);display:block;margin-bottom:4px">What's wrong?</label>
+                <textarea id="correction-notes" rows="2" style="width:100%;font-size:13px;padding:8px 10px;border:1px solid rgba(255,255,255,0.2);border-radius:8px;resize:vertical;font-family:inherit;background:rgba(0,0,0,0.4);color:#fff" placeholder='e.g. "remove the window on the left", "roof should be gable not hip"'></textarea>
               </div>
-              <button class="btn-action btn-action--green" onclick="submitCorrection()" style="white-space:nowrap;height:fit-content">🔄 Re-generate</button>
+              <button class="btn-action btn-action--green" onclick="submitCorrection()" style="white-space:nowrap;padding:10px 20px;font-size:14px">🔄 Re-generate</button>
             </div>
           </div>
+        </div>
+      </div>
 
           <!-- Error -->
           <div class="canvas__error" id="state-error">
@@ -2192,19 +2202,29 @@
 
     function startCorrection() {
       const afterImg = document.getElementById('compare-after');
-      const canvas = document.getElementById('correction-canvas');
-      const toolbar = document.getElementById('correction-toolbar');
       if (!afterImg.src) return;
-      // Size canvas to match the image element
-      const rect = afterImg.getBoundingClientRect();
-      canvas.width = rect.width;
-      canvas.height = rect.height;
-      canvas.style.display = 'block';
-      toolbar.style.display = 'block';
-      corrCtx = canvas.getContext('2d');
-      corrCtx.clearRect(0, 0, canvas.width, canvas.height);
-      corrSnapshots = [];
-      corrDrawing = false;
+      const modal = document.getElementById('correction-modal');
+      const bgImg = document.getElementById('correction-bg-img');
+      const canvas = document.getElementById('correction-canvas');
+      
+      // Load the render into the modal background image
+      bgImg.src = afterImg.src;
+      modal.style.display = 'block';
+      document.body.style.overflow = 'hidden'; // prevent scroll behind modal
+
+      // Wait for image to load so we can size the canvas
+      bgImg.onload = () => {
+        canvas.width = bgImg.clientWidth;
+        canvas.height = bgImg.clientHeight;
+        canvas.style.width = bgImg.clientWidth + 'px';
+        canvas.style.height = bgImg.clientHeight + 'px';
+        corrCtx = canvas.getContext('2d');
+        corrCtx.clearRect(0, 0, canvas.width, canvas.height);
+        corrSnapshots = [];
+        corrDrawing = false;
+      };
+      // If already cached, fire onload manually
+      if (bgImg.complete) bgImg.onload();
 
       // Drawing events
       canvas.onmousedown = (e) => {
@@ -2217,7 +2237,6 @@
       canvas.onmousemove = (e) => { if (corrDrawing) corrPaint(e); };
       canvas.onmouseup = () => { corrDrawing = false; };
       canvas.onmouseleave = () => { corrDrawing = false; };
-      // Touch
       canvas.ontouchstart = (e) => { e.preventDefault(); corrSnapshots.push(corrCtx.getImageData(0, 0, canvas.width, canvas.height)); corrDrawing = true; corrPaint(e); };
       canvas.ontouchmove = (e) => { e.preventDefault(); if (corrDrawing) corrPaint(e); };
       canvas.ontouchend = () => { corrDrawing = false; };
@@ -2243,7 +2262,6 @@
 
     function correctionUndo() {
       if (!corrCtx || !corrSnapshots.length) return;
-      const canvas = document.getElementById('correction-canvas');
       corrCtx.putImageData(corrSnapshots.pop(), 0, 0);
     }
     function correctionClear() {
@@ -2253,9 +2271,8 @@
       corrSnapshots = [];
     }
     function cancelCorrection() {
-      const canvas = document.getElementById('correction-canvas');
-      canvas.style.display = 'none';
-      document.getElementById('correction-toolbar').style.display = 'none';
+      document.getElementById('correction-modal').style.display = 'none';
+      document.body.style.overflow = '';
       corrCtx = null; corrSnapshots = [];
     }
 
