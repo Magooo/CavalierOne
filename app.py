@@ -1127,17 +1127,17 @@ Write ONE paragraph (5-8 sentences). Do NOT mention the drawing, annotations, or
 
                 engine_used = "replicate_controlnet"
                 from utils.replicate_client import generate_image_controlnet
-                # Boost guidance when user is correcting — gives prompt more weight vs edge map
-                # flux-canny-pro guidance range is 1-100 (NOT 0-10)
+                # xlabs flux-dev-controlnet: guidance_scale 1-10, control_strength 0-3
                 correction_active = bool(vision_override and 'CRITICAL CORRECTIONS' in vision_override)
-                guidance_val = 40 if correction_active else 25
-                if correction_active:
-                    print(f"[Plans] Correction mode — boosting guidance to {guidance_val}")
+                guidance_val = 5.0 if correction_active else 3.5
+                ctrl_strength = 0.95 if correction_active else 0.85
+                print(f"[Plans] Engine: xlabs flux-dev-controlnet (guidance={guidance_val}, control_strength={ctrl_strength})")
                 image_url = generate_image_controlnet(
                     prompt=gen_prompt,
-                    image_path=control_image_url,  # Pass public URL — works on Vercel
+                    image_path=control_image_url,
                     api_token=replicate_key,
-                    guidance=guidance_val
+                    guidance=guidance_val,
+                    control_strength=ctrl_strength
                 )
             except Exception as rep_err:
                 print(f"[Plans] Replicate failed ({rep_err}), falling back to KIE text-to-image")
