@@ -28,17 +28,17 @@ def generate_image_controlnet(prompt, image_path, api_token=None, guidance=25):
     # State-of-the-art Canny ControlNet for Flux.1
     model_id = "black-forest-labs/flux-canny-pro"
     
-    # PROMPT BOOSTING: produce premium architectural renders
-    # Keep it concise — Flux hallucinates text from long keyword-stuffed prompts.
+    # PROMPT STRUCTURE: structural description FIRST (highest weight in Flux),
+    # then style/quality keywords after. Keep concise to avoid hallucination.
     high_quality_prompt = (
-        f"Professional architectural exterior photograph, photorealistic, "
-        f"golden hour natural lighting, soft shadows, shallow depth of field. "
         f"{prompt} "
-        f"No text, no labels, no watermarks."
+        f"Professional architectural exterior photograph, photorealistic, "
+        f"natural lighting, soft shadows. "
+        f"No text, no labels, no watermarks, no extra windows."
     )
     
-    print(f"Starting Flux ControlNet generation...")
-    print(f"Optimized Prompt: {high_quality_prompt[:100]}...")
+    print(f"Starting Flux ControlNet generation (guidance={guidance})...")
+    print(f"Full Prompt: {high_quality_prompt[:300]}...")
     
     # Support both local file paths and public URLs
     # Vercel serverless can't guarantee local file persistence, so we pass a URL
