@@ -980,6 +980,7 @@ def api_generate_from_plans():
         # e.g. "Roof,Brick,Render" — used to tell GPT-4 Vision which zones were colour-coded
         painted_zones_raw = request.form.get('painted_zones', '')
         painted_zones = [z.strip() for z in painted_zones_raw.split(',') if z.strip()]
+        vision_override = request.form.get('vision_override', '').strip()
 
         # Save to system temp dir — Vercel serverless only allows writes to /tmp
         # resources/uploads/ is in the read-only task bundle on Vercel (Errno 30)
@@ -990,31 +991,37 @@ def api_generate_from_plans():
         file.save(file_path)
 
         # ── Step 1: GPT-4 Vision reads the elevation ───────────────────────────
-        from marketing.llm_client import LLMClient
-        client = LLMClient(provider="openai")
+        # If the user edited the vision prompt, skip the expensive API call
+        if vision_override:
+            vision_analysis = vision_override
+            print(f"[Plans] Using user-edited vision: {vision_analysis[:200]}...")
+        else:
+          from marketing.llm_client import LLMClient
+          client = LLMClient(provider="openai")
 
-        # Build zone colour key to help Vision read painted zones
-        zone_colour_map = {
-            'Roof':    'dark charcoal/grey zones',
-            'Brick':   'red-brown/terracotta zones',
-            'Render':  'warm cream/beige zones',
-            'Feature': 'steel blue zones',
-            'Windows': 'near-black zones',
-            'Garage':  'sandy beige zones',
-        }
-        zone_context = ''
-        if painted_zones:
-            zone_lines = []
-            for z in painted_zones:
-                colour_hint = zone_colour_map.get(z, f'{z} zones')
-                zone_lines.append(f"- {colour_hint} on the drawing = {z} surface area")
-            zone_context = (
-                "\n\nIMPORTANT — the user has colour-coded specific zones on this elevation drawing:\n"
-                + "\n".join(zone_lines)
-                + "\nUse these coloured zones to understand WHICH PART of the facade each material should be applied to."
-            )
+        if not vision_override:
+          # Build zone colour key to help Vision read painted zones
+          zone_colour_map = {
+              'Roof':    'dark charcoal/grey zones',
+              'Brick':   'red-brown/terracotta zones',
+              'Render':  'warm cream/beige zones',
+              'Feature': 'steel blue zones',
+              'Windows': 'near-black zones',
+              'Garage':  'sandy beige zones',
+          }
+          zone_context = ''
+          if painted_zones:
+              zone_lines = []
+              for z in painted_zones:
+                  colour_hint = zone_colour_map.get(z, f'{z} zones')
+                  zone_lines.append(f"- {colour_hint} on the drawing = {z} surface area")
+              zone_context = (
+                  "\n\nIMPORTANT — the user has colour-coded specific zones on this elevation drawing:\n"
+                  + "\n".join(zone_lines)
+                  + "\nUse these coloured zones to understand WHICH PART of the facade each material should be applied to."
+              )
 
-        vision_prompt = f"""You are a professional architectural renderer.
+          vision_prompt = f"""You are a professional architectural renderer.
 I will show you an architectural elevation drawing of a residential house. Your task is to produce an ARCHITECTURALLY PRECISE description of the FINISHED, BUILT house suitable for an AI image generator.
 
 CRITICAL REQUIREMENT — ROOFLINE ACCURACY:
@@ -1039,8 +1046,8 @@ Target style: {style}
 Now write ONE coherent paragraph (4–6 sentences) for an AI image generator. Include ALL distinct roof sections. Do NOT mention the drawing, dimensions, annotations, or colour zones. Write as if describing a real photograph of the finished house."""
 
 
-        vision_analysis = client.generate_text(vision_prompt, image_path=file_path)
-        print(f"[Plans] Vision: {vision_analysis[:250]}...")
+          vision_analysis = client.generate_text(vision_prompt, image_path=file_path)
+          print(f"[Plans] Vision: {vision_analysis[:250]}...")
 
         # ── Step 2: Build generation prompt with explicit surface-zone mapping ──
         # Parse "zone: product_description; zone: product_description" format from frontend

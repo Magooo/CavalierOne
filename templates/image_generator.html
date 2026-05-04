@@ -1264,8 +1264,16 @@
           <span class="vision-insight__chevron" id="vision-chevron">▼</span>
         </div>
         <div class="vision-insight__body" id="vision-insight-body">
-          <p class="vision-insight__text" id="vision-insight-text">—</p>
-          <div class="vision-insight__hint">💡 <strong>Roofline wrong?</strong> Check the description above — if it missed a section, add a correction in the <strong>Notes</strong> field and regenerate. Use the <strong>Eraser</strong> to remove dimension lines before generating for best results.</div>
+          <textarea class="vision-insight__text" id="vision-insight-text" rows="5"
+            style="width:100%;font-size:12px;font-family:inherit;line-height:1.5;padding:8px 10px;border:1px solid var(--border);border-radius:6px;resize:vertical;background:var(--card-bg);color:var(--text-primary)"
+            placeholder="The AI's interpretation will appear here after generating. You can edit it to fix mistakes.">—</textarea>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap">
+            <div class="vision-insight__hint" style="flex:1;margin:0">💡 <strong>Edit the text above</strong> to fix any mistakes (wrong roofline, phantom windows, etc.), then click Re-generate.</div>
+            <button class="btn-action" id="btn-regen-vision" onclick="regenWithEditedVision()" type="button"
+              style="background:var(--brand-dark);color:#fff;font-size:12px;padding:6px 14px;white-space:nowrap;display:none">
+              🔄 Re-generate with edits
+            </button>
+          </div>
         </div>
       </div>
 
@@ -2057,7 +2065,7 @@
         '<span>GPT-4 Vision will read this drawing and extract the architecture automatically.</span>';
     }
 
-    async function generateFromPlans() {
+    async function generateFromPlans(visionOverride) {
       const fileInput = document.getElementById('plans-file');
       if (!fileInput.files[0] && !eraserCtx) {
         showToast('Please upload an elevation drawing first.', 'error'); return;
@@ -2067,8 +2075,12 @@
       btn.disabled = true; btn.classList.add('loading');
       setState('loading');
       disableActions(true);
-      document.getElementById('loading-title').textContent = 'Analysing your elevation drawing…';
-      document.getElementById('loading-sub').textContent = 'GPT-4 Vision reads the plans, then AI generates a photorealistic render — may take 60–90s';
+      document.getElementById('loading-title').textContent = visionOverride
+        ? 'Re-generating with your edits…'
+        : 'Analysing your elevation drawing…';
+      document.getElementById('loading-sub').textContent = visionOverride
+        ? 'Skipping Vision analysis — using your edited description. May take 30–60s'
+        : 'GPT-4 Vision reads the plans, then AI generates a photorealistic render — may take 60–90s';
 
       try {
         // Build material prompt from swatch selections — each zone prefixed for server-side mapping
@@ -2101,6 +2113,10 @@
         if (paintedZones.length) {
           formData.append('painted_zones', paintedZones.join(','));
         }
+        // If user edited the vision prompt, send it so backend skips GPT-4 Vision
+        if (visionOverride) {
+          formData.append('vision_override', visionOverride);
+        }
 
         const elevationPreviewSrc = document.getElementById('plans-preview').src;
 
@@ -2121,12 +2137,14 @@
         const visionChevron = document.getElementById('vision-chevron');
         const visionBody = document.getElementById('vision-insight-body');
         if (data.vision_analysis) {
-          visionText.textContent = data.vision_analysis;
+          visionText.value = data.vision_analysis;
           visionBadge.textContent = data.engine === 'replicate_controlnet' ? 'Flux ControlNet' : 'KIE Text-to-Image';
           visionEl.classList.add('visible');
           // Auto-open it so user can immediately verify the roofline was read correctly
           visionBody.classList.add('open');
           visionChevron.classList.add('open');
+          // Show re-generate button
+          document.getElementById('btn-regen-vision').style.display = 'inline-block';
         } else {
           visionEl.classList.remove('visible');
         }
@@ -2153,6 +2171,16 @@
         btn.disabled = false; btn.classList.remove('loading');
         disableActions(false);
       }
+    }
+
+    /* — Re-generate using the user's edited vision prompt — */
+    async function regenWithEditedVision() {
+      const editedText = document.getElementById('vision-insight-text').value.trim();
+      if (!editedText || editedText === '—') {
+        showToast('Edit the description first, then click Re-generate.', 'error');
+        return;
+      }
+      await generateFromPlans(editedText);
     }
 
     /* =============================================
