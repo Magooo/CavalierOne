@@ -1066,7 +1066,7 @@ Now write ONE coherent paragraph (4–6 sentences) for an AI image generator. In
                     'cladding': 'upper wall, feature panel, or secondary facade surface',
                     'roof':     'roof cladding (steel sheet, NOT roof tiles)',
                     'render':   'rendered or painted wall surface',
-                }.get(zone, zone)
+                }.get(zone, zone.replace('_', ' ').title() + ' zone')
                 material_section_parts.append(f"{zone_label}: {desc}")
 
         if material_section_parts:

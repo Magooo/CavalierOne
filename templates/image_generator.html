@@ -1808,24 +1808,69 @@
     ];
 
     function addCustomZone() {
-      const name = prompt('Zone name (e.g. "Feature Wall 2", "Fascia", "Portico"):');
-      if (!name || !name.trim()) return;
-      const label = name.trim();
+      // Create an inline dialog instead of basic prompt()
+      const existing = document.getElementById('zone-dialog');
+      if (existing) existing.remove();
+
+      const dialog = document.createElement('div');
+      dialog.id = 'zone-dialog';
+      dialog.style.cssText = 'position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center';
+      dialog.innerHTML = `
+        <div style="background:var(--card-bg,#fff);border-radius:12px;padding:24px;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3)">
+          <div style="font-size:16px;font-weight:700;color:var(--text-primary,#222);margin-bottom:16px">➕ Add Facade Zone</div>
+          <label style="font-size:12px;font-weight:600;color:var(--text-primary,#222);display:block;margin-bottom:4px">Zone Name</label>
+          <input type="text" id="zone-name-input" placeholder='e.g. "Feature Wall", "Fascia", "Portico"'
+            style="width:100%;padding:8px 10px;border:1px solid var(--border,#ccc);border-radius:6px;font-size:13px;font-family:inherit;margin-bottom:14px;box-sizing:border-box">
+          <label style="font-size:12px;font-weight:600;color:var(--text-primary,#222);display:block;margin-bottom:4px">Assign Product / Material</label>
+          <input type="text" id="zone-product-input" placeholder='e.g. "James Hardie Scyon Axon 133mm in Dulux Monument"'
+            style="width:100%;padding:8px 10px;border:1px solid var(--border,#ccc);border-radius:6px;font-size:13px;font-family:inherit;margin-bottom:6px;box-sizing:border-box">
+          <div style="font-size:11px;color:var(--text-muted,#888);margin-bottom:16px">The AI will render this exact product on the zone you paint.</div>
+          <div style="display:flex;gap:8px;justify-content:flex-end">
+            <button onclick="document.getElementById('zone-dialog').remove()" style="padding:7px 16px;border:1px solid var(--border,#ccc);border-radius:6px;background:none;cursor:pointer;font-size:13px;color:var(--text-primary,#222)">Cancel</button>
+            <button onclick="confirmAddZone()" style="padding:7px 16px;border:none;border-radius:6px;background:var(--brand-dark,#c0392b);color:#fff;cursor:pointer;font-size:13px;font-weight:600">Add Zone</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(dialog);
+      document.getElementById('zone-name-input').focus();
+      // Allow Enter to submit
+      dialog.addEventListener('keydown', e => {
+        if (e.key === 'Enter') { e.preventDefault(); confirmAddZone(); }
+        if (e.key === 'Escape') dialog.remove();
+      });
+    }
+
+    function confirmAddZone() {
+      const nameInput = document.getElementById('zone-name-input');
+      const productInput = document.getElementById('zone-product-input');
+      const label = (nameInput.value || '').trim();
+      const product = (productInput.value || '').trim();
+      if (!label) { nameInput.focus(); nameInput.style.borderColor = 'red'; return; }
+
+      const dialog = document.getElementById('zone-dialog');
+      if (dialog) dialog.remove();
+
       const colIdx = customZoneCount % customZoneColours.length;
       const col = customZoneColours[colIdx];
       customZoneCount++;
+
+      // Store the product assignment so it's sent to the AI
+      const zoneKey = label.toLowerCase().replace(/\s+/g, '_');
+      if (product) {
+        plansSelections[zoneKey] = { colour: label, prompt: product };
+      }
 
       const container = document.getElementById('custom-zones-container');
       const wrap = document.createElement('div');
       wrap.className = 'paint-swatch-wrap';
       wrap.innerHTML = `
-        <div class="paint-swatch" data-colour="${col.rgba}" data-label="${label}"
+        <div class="paint-swatch" data-colour="${col.rgba}" data-label="${label}" data-zone-key="${zoneKey}"
              onclick="selectPaintSwatch(this)" style="background:${col.bg}"
-             title="${label}"></div>
-        <div class="paint-swatch-name">${label}</div>
+             title="${label}${product ? '\n🏷 ' + product : ''}"></div>
+        <div class="paint-swatch-name" style="max-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${label}</div>
+        ${product ? `<div style="font-size:9px;color:var(--text-muted);max-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${product}">🏷 ${product.split(' ').slice(0,3).join(' ')}…</div>` : ''}
       `;
       container.appendChild(wrap);
-      // Auto-select the new zone
       selectPaintSwatch(wrap.querySelector('.paint-swatch'));
     }
 
@@ -2095,10 +2140,9 @@
       try {
         // Build material prompt from swatch selections — each zone prefixed for server-side mapping
         const matParts = [];
-        if (plansSelections.brick)    matParts.push(`brick: ${plansSelections.brick.prompt}`);
-        if (plansSelections.cladding) matParts.push(`cladding: ${plansSelections.cladding.prompt}`);
-        if (plansSelections.roof)     matParts.push(`roof: ${plansSelections.roof.prompt}`);
-        if (plansSelections.render)   matParts.push(`render: ${plansSelections.render.prompt}`);
+        for (const [zone, sel] of Object.entries(plansSelections)) {
+          if (sel && sel.prompt) matParts.push(`${zone}: ${sel.prompt}`);
+        }
         const materialPrompt = matParts.join('; ');
 
         // Export the (possibly erased) canvas as a Blob, fall back to raw file
