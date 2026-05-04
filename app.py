@@ -1086,6 +1086,7 @@ Now write ONE coherent paragraph (4–6 sentences) for an AI image generator. In
             f"Photorealistic exterior photograph of a newly built {style} Australian home, "
             f"professional real estate photography, eye-level street view, sunny day, blue sky, "
             f"manicured lawn, concrete driveway, established gardens. "
+            f"IMPORTANT: Only render windows and doors EXACTLY as described below — do NOT add extra windows or openings. "
             f"{vision_analysis} "
             f"{material_section}"
         )
@@ -1095,6 +1096,14 @@ Now write ONE coherent paragraph (4–6 sentences) for an AI image generator. In
             "text, labels, watermark, cartoon, low quality, blurry, "
             "tile roof, terracotta tiles"
         )
+        # If corrections mention removing elements, add them to negative prompt
+        if vision_override and 'CRITICAL CORRECTIONS' in vision_override:
+            import re
+            # Extract "remove X", "no X", "delete X" patterns
+            removals = re.findall(r'(?:remove|no|delete|without)\s+(?:the\s+)?([^,.]+)', vision_override.lower())
+            if removals:
+                negative += ", " + ", ".join(r.strip() for r in removals[:5])
+                print(f"[Plans] Added to negative prompt: {removals}")
 
         # ── Step 3: Replicate ControlNet (best) or KIE text-to-image (fallback) ─
         replicate_key = os.environ.get("REPLICATE_API_TOKEN")
@@ -1117,10 +1126,16 @@ Now write ONE coherent paragraph (4–6 sentences) for an AI image generator. In
 
                 engine_used = "replicate_controlnet"
                 from utils.replicate_client import generate_image_controlnet
+                # Boost guidance when user is correcting — gives prompt more weight vs edge map
+                correction_active = bool(vision_override and 'CRITICAL CORRECTIONS' in vision_override)
+                guidance_val = 5.5 if correction_active else 3.5
+                if correction_active:
+                    print(f"[Plans] Correction mode — boosting guidance to {guidance_val}")
                 image_url = generate_image_controlnet(
                     prompt=gen_prompt,
                     image_path=control_image_url,  # Pass public URL — works on Vercel
-                    api_token=replicate_key
+                    api_token=replicate_key,
+                    guidance=guidance_val
                 )
             except Exception as rep_err:
                 print(f"[Plans] Replicate failed ({rep_err}), falling back to KIE text-to-image")

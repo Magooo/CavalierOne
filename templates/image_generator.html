@@ -2324,24 +2324,28 @@
       const notes = document.getElementById('correction-notes').value.trim();
       if (!notes) { showToast('Please describe what needs fixing.', 'error'); return; }
 
-      // Get the current render URL and original elevation
-      const afterSrc = document.getElementById('compare-after').src;
-      const fileInput = document.getElementById('plans-file');
-      if (!afterSrc) { showToast('No render to correct.', 'error'); return; }
+      // Get the current vision analysis text
+      const currentVision = document.getElementById('vision-insight-text').value.trim();
+      if (!currentVision || currentVision === '—') {
+        showToast('No vision analysis to correct. Generate a render first.', 'error');
+        return;
+      }
 
-      // Build correction prompt and re-generate via existing plans endpoint
-      const style = document.getElementById('plans-style').value;
-      const existingNotes = document.getElementById('plans-notes').value.trim();
-      const correctionNote = `CORRECTIONS FROM PREVIOUS RENDER: ${notes}. ${existingNotes}`;
+      // Build a corrected vision with the user's fixes front-loaded
+      const correctedVision = (
+        `CRITICAL CORRECTIONS — the following MUST be applied: ${notes}. ` +
+        `DO NOT include the elements marked for removal. ` +
+        `Original description (apply corrections above): ${currentVision}`
+      );
 
-      // Update the notes field so the user can see what was sent
-      document.getElementById('plans-notes').value = correctionNote;
+      // Update the vision textarea so the user can see what was sent
+      document.getElementById('vision-insight-text').value = correctedVision;
 
-      cancelCorrection(); // hide correction UI
+      cancelCorrection(); // hide correction modal
       showToast('Re-generating with corrections…', 'info');
 
-      // Trigger the same generate flow with updated notes
-      await generateFromPlans();
+      // Use the vision override path — skips GPT-4 Vision entirely
+      await generateFromPlans(correctedVision);
     }
 
 
