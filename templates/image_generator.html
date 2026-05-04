@@ -998,6 +998,7 @@
                 <!-- Undo / Reset -->
                 <button class="eraser-btn" onclick="eraserUndo()">↩ Undo</button>
                 <button class="eraser-btn" onclick="eraserReset()">↺ Reset</button>
+                <button class="eraser-btn" id="poly-apply-btn" onclick="commitPoly()" style="display:none;background:var(--brand-dark);color:#fff;font-weight:600">✓ Apply Shape</button>
               </div>
 
               <!-- Paint palette (shown in Paint mode) -->
@@ -1517,6 +1518,10 @@
     let canvasZoomLevel   = 1.0;
     let paintedZones      = [];         // labels of zones painted (for vision prompt)
     let rectStart         = null;       // {x,y} for rectangle drag start
+    let polyPoints        = null;       // array of {x,y} — active polygon being edited
+    let polyDragIdx       = -1;         // index of corner being dragged (-1 = none)
+    let polyColour        = null;       // colour locked when polygon was created
+    let polySnapshot      = null;       // ImageData snapshot from before polygon was created
 
     /* — Flood Fill (paint bucket) — */
     function floodFill(startX, startY, fillColour) {
@@ -1564,6 +1569,74 @@
         stack.push([cx+1,cy],[cx-1,cy],[cx,cy+1],[cx,cy-1]);
       }
       eraserCtx.putImageData(imgData, 0, 0);
+    }
+
+    /* — Polygon rendering & committing — */
+    function renderPoly() {
+      if (!polyPoints || polyPoints.length < 3 || !eraserCtx) return;
+      const canvas = document.getElementById('eraser-canvas');
+      // Restore clean snapshot, then draw polygon on top
+      if (polySnapshot) eraserCtx.putImageData(polySnapshot, 0, 0);
+      eraserCtx.globalCompositeOperation = 'source-over';
+      // Draw filled polygon
+      eraserCtx.fillStyle = polyColour || paintColour;
+      eraserCtx.beginPath();
+      eraserCtx.moveTo(polyPoints[0].x, polyPoints[0].y);
+      for (let i = 1; i < polyPoints.length; i++) {
+        eraserCtx.lineTo(polyPoints[i].x, polyPoints[i].y);
+      }
+      eraserCtx.closePath();
+      eraserCtx.fill();
+      // Draw corner handles
+      const rect = canvas.getBoundingClientRect();
+      const scale = rect.width / canvas.width;
+      const handleR = Math.max(6, 10 / scale); // constant visual size
+      polyPoints.forEach((pt, i) => {
+        eraserCtx.fillStyle = '#ffffff';
+        eraserCtx.strokeStyle = '#AD4B43';
+        eraserCtx.lineWidth = Math.max(2, 3 / scale);
+        eraserCtx.beginPath();
+        eraserCtx.arc(pt.x, pt.y, handleR, 0, Math.PI * 2);
+        eraserCtx.fill();
+        eraserCtx.stroke();
+      });
+    }
+
+    function commitPoly() {
+      if (!polyPoints || polyPoints.length < 3 || !eraserCtx) { polyPoints = null; return; }
+      // Draw final polygon without handles
+      if (polySnapshot) eraserCtx.putImageData(polySnapshot, 0, 0);
+      eraserCtx.globalCompositeOperation = 'source-over';
+      eraserCtx.fillStyle = polyColour || paintColour;
+      eraserCtx.beginPath();
+      eraserCtx.moveTo(polyPoints[0].x, polyPoints[0].y);
+      for (let i = 1; i < polyPoints.length; i++) {
+        eraserCtx.lineTo(polyPoints[i].x, polyPoints[i].y);
+      }
+      eraserCtx.closePath();
+      eraserCtx.fill();
+      // Track which paint zone was used
+      const activeEl = document.querySelector('.paint-swatch.active');
+      const label = activeEl ? activeEl.dataset.label : '';
+      if (label && !paintedZones.includes(label)) paintedZones.push(label);
+      // Clean up polygon state
+      polyPoints = null; polyDragIdx = -1; polySnapshot = null; polyColour = null;
+      const applyBtn = document.getElementById('poly-apply-btn');
+      if (applyBtn) applyBtn.style.display = 'none';
+    }
+
+    function polyHitTest(pos) {
+      if (!polyPoints) return -1;
+      const canvas = document.getElementById('eraser-canvas');
+      const rect = canvas.getBoundingClientRect();
+      const scale = rect.width / canvas.width;
+      const hitR = Math.max(12, 16 / scale); // generous hit area
+      for (let i = 0; i < polyPoints.length; i++) {
+        const dx = pos.x - polyPoints[i].x;
+        const dy = pos.y - polyPoints[i].y;
+        if (Math.sqrt(dx*dx + dy*dy) <= hitR) return i;
+      }
+      return -1;
     }
 
     /* — Init — */
@@ -1632,6 +1705,8 @@
 
     /* — Mode toggle — */
     function setCanvasMode(mode) {
+      // Commit any active polygon before switching modes
+      if (polyPoints) commitPoly();
       canvasMode = mode;
       ['erase','paint','fill','rect'].forEach(m => {
         const btn = document.getElementById('mode-btn-' + m);
@@ -1646,7 +1721,7 @@
         erase: 'Drag to erase annotation text and dimension lines.',
         paint: 'Drag to brush colour. Use 🪣 Fill or ▭ Rectangle for faster coverage.',
         fill:  '🪣 Click on an area to flood-fill it with the selected colour. Works great for roofs and walls.',
-        rect:  '▭ Click and drag a rectangle to fill a block area. Perfect for large sections like walls.'
+        rect:  '▭ Drag a rectangle, then drag the corner handles to reshape it (e.g. triangle for roofs). Click "Apply Shape" when done.'
       };
       hint.textContent = hints[mode] || '';
       // Hide brush cursor for click-based tools
@@ -1739,16 +1814,26 @@
         e.preventDefault();
         const pos = eraserGetPos(e);
 
+        // ── Polygon corner dragging ──
+        if (canvasMode === 'rect' && polyPoints) {
+          const hitIdx = polyHitTest(pos);
+          if (hitIdx >= 0) {
+            polyDragIdx = hitIdx;
+            return; // start dragging this corner
+          }
+          // Clicked away from handles — commit the polygon
+          commitPoly();
+          return;
+        }
+
         if (canvasMode === 'fill') {
-          // Flood fill: single click
           eraserSaveSnapshot();
-          const col = paintColour;
-          floodFill(pos.x, pos.y, col);
+          floodFill(pos.x, pos.y, paintColour);
           trackPaintZone();
           return;
         }
         if (canvasMode === 'rect') {
-          // Rectangle: record start
+          // Start new rectangle drag
           eraserSaveSnapshot();
           rectStart = pos;
           return;
@@ -1757,7 +1842,6 @@
         eraserSaveSnapshot();
         eraserDrawing = true;
         lastDrawPos = pos;
-        // Draw initial dot
         doDraw(e);
       }
 
@@ -1766,8 +1850,16 @@
         e.preventDefault();
         const pos = eraserGetPos(e);
 
+        // ── Polygon corner dragging ──
+        if (canvasMode === 'rect' && polyPoints && polyDragIdx >= 0) {
+          polyPoints[polyDragIdx] = pos;
+          renderPoly();
+          if (e.type === 'mousemove') updateCursor(e);
+          return;
+        }
+
         if (canvasMode === 'rect' && rectStart) {
-          // Live rubber-band preview: restore snapshot + draw outline
+          // Live rubber-band preview
           if (eraserSnapshots.length) {
             eraserCtx.putImageData(eraserSnapshots[eraserSnapshots.length - 1], 0, 0);
           }
@@ -1794,7 +1886,6 @@
           trackPaintZone();
         }
 
-        // Interpolate between last position and current for smooth strokes
         if (lastDrawPos) {
           const dx = pos.x - lastDrawPos.x;
           const dy = pos.y - lastDrawPos.y;
@@ -1819,9 +1910,32 @@
       }
 
       function stopDraw(e) {
+        // ── Polygon corner drag end ──
+        if (canvasMode === 'rect' && polyDragIdx >= 0) {
+          polyDragIdx = -1;
+          return;
+        }
+        // ── Rectangle drag end → convert to editable polygon ──
         if (canvasMode === 'rect' && rectStart && eraserCtx) {
-          // Finalize rectangle (already drawn in doDraw preview)
-          trackPaintZone();
+          const pos = eraserGetPos(e);
+          const x1 = Math.min(rectStart.x, pos.x);
+          const y1 = Math.min(rectStart.y, pos.y);
+          const x2 = Math.max(rectStart.x, pos.x);
+          const y2 = Math.max(rectStart.y, pos.y);
+          // Only create polygon if rectangle is big enough
+          if (Math.abs(x2 - x1) > 5 && Math.abs(y2 - y1) > 5) {
+            polyPoints = [
+              {x: x1, y: y1}, // top-left
+              {x: x2, y: y1}, // top-right
+              {x: x2, y: y2}, // bottom-right
+              {x: x1, y: y2}, // bottom-left
+            ];
+            polyColour = paintColour;
+            polySnapshot = eraserSnapshots.length ? eraserSnapshots[eraserSnapshots.length - 1] : null;
+            renderPoly();
+            // Show Apply button
+            document.getElementById('poly-apply-btn').style.display = 'inline-block';
+          }
           rectStart = null;
         }
         eraserDrawing = false;
