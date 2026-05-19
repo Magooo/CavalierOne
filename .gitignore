@@ -6,6 +6,10 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+test_venv/
+
+# Node
+node_modules/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -23,3 +27,5 @@ resources/uploads/
 resources/sharepoint_files/
 *.pdf
 *.log
+
+.vercel
